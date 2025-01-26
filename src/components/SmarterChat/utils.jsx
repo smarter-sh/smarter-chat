@@ -4,7 +4,18 @@ import {
   ValidMessageRolesEnum,
 } from "./enums.js";
 
-export function chat_restore_from_backend(chat_history, last_response) {
+
+export function cookieMetaFactory(cookieName, cookieExpiration) {
+  /*
+  Create a cookie object.
+   */
+  return {
+    name: cookieName,
+    expiration: cookieExpiration,
+  };
+}
+
+export function chatRestoreFromBackend(chat_history, last_response) {
   /*
   Rebuild the message thread from the most recently persisted chat history.
   */
@@ -48,7 +59,7 @@ export function chat_restore_from_backend(chat_history, last_response) {
           );
         }
         console.error(
-          `chat_restore_from_backend() Invalid role received: ${chat.role}`,
+          `chatRestoreFromBackend() Invalid role received: ${chat.role}`,
         );
       })
       .filter(
@@ -72,7 +83,7 @@ export function chat_restore_from_backend(chat_history, last_response) {
     return messages;
   } catch (error) {
     console.error(
-      `chat_restore_from_backend() Error occurred while restoring chat from backend: ${error}`,
+      `chatRestoreFromBackend() Error occurred while restoring chat from backend: ${error}`,
     );
     return []; // return an empty array in case of error
   }
@@ -94,9 +105,9 @@ const examplePrompts = (prompts) => {
         })
         .join("")
     );
-};
+}
 
-export function chat_intro(welcome_message, system_role, example_prompts) {
+export function chatIntro(welcome_message, system_role, example_prompts) {
   /*
   Generate the initial message thread for the chat window. This includes the
   welcome message, and any example prompts that are configured in the
@@ -201,7 +212,7 @@ export function chatMessages2RequestMessages(messages) {
   );
 }
 
-export function chat_init(
+export function chatInit(
   welcome_message,
   system_role,
   example_prompts,
@@ -216,10 +227,10 @@ export function chat_init(
    */
 
   let messages = [];
-  messages = chat_restore_from_backend(chat_history, last_response);
+  messages = chatRestoreFromBackend(chat_history, last_response);
 
   if (messages.length === 0) {
-    messages = chat_intro(welcome_message, system_role, example_prompts);
+    messages = chatIntro(welcome_message, system_role, example_prompts);
   }
 
   return messages;

@@ -22,43 +22,47 @@
     v0.5.0:       ./test/events/langchain.response.v0.5.0.json
 -----------------------------------------------------------------------------*/
 
-export function getCookie(name, debug_mode = false) {
+// Set to true to enable local development mode,
+// which will simulate the server-side API calls.
+const developerMode = false;
+const userAgent = "SmarterChat/1.0";
+const applicationJson = "application/json";
+
+function getCookie(cookie, debugMode = false) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === name + "=") {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        if (debug_mode) {
-          console.log("getCookie(): found ", cookieValue, "for cookie", name);
+      const thisCookie = cookies[i].trim();
+      if (thisCookie.substring(0, cookie.name.length + 1) === cookie.name + "=") {
+        cookieValue = decodeURIComponent(thisCookie.substring(cookie.name.length + 1));
+        if (debugMode) {
+          console.log("getCookie(): found ", cookieValue, "for cookie", cookie.name);
         }
         break;
       }
     }
   }
-  if (debug_mode && !cookieValue) {
+  if (debugMode && !cookieValue) {
     console.warn("getCookie(): no value found for", name);
   }
   return cookieValue;
 }
 
-export function setSessionCookie(
-  session_key,
-  debug_mode = false,
-  sessionCookieName,
-  sessionCookieExpiration,
+function setCookie(
+  cookie,
+  debugMode = false,
 ) {
   const currentPath = window.location.pathname;
-  if (session_key) {
+  if (cookie.value) {
     const expirationDate = new Date();
-    expirationDate.setTime(expirationDate.getTime() + sessionCookieExpiration);
+    expirationDate.setTime(expirationDate.getTime() + cookie.expiration);
     const expires = expirationDate.toUTCString();
-    const cookieData = `${sessionCookieName}=${session_key}; path=${currentPath}; SameSite=Lax; expires=${expires}`;
+    const cookieData = `${cookie.name}=${cookie.value}; path=${currentPath}; SameSite=Lax; expires=${expires}`;
     document.cookie = cookieData;
-    if (debug_mode) {
+    if (debugMode) {
       console.log(
-        "setSessionCookie(): ",
+        "setCookie(): ",
         cookieData,
         "now: ",
         new Date().toUTCString(),
@@ -70,78 +74,68 @@ export function setSessionCookie(
     // Unset the cookie by setting its expiration date to the past
     const expirationDate = new Date(0);
     const expires = expirationDate.toUTCString();
-    const cookieData = `${sessionCookieName}=; path=${currentPath}; SameSite=Lax; expires=${expires}`;
+    const cookieData = `${cookie.name}=; path=${currentPath}; SameSite=Lax; expires=${expires}`;
     document.cookie = cookieData;
-    if (debug_mode) {
-      console.log("setSessionCookie(): Unsetting cookie", cookieData);
+    if (debugMode) {
+      console.log("setCookie(): Unsetting cookie", cookieData);
     }
   }
 }
 
-export function setDebugCookie(
-  debug_mode,
-  debugCookieExpiration,
-  debugCookieName,
-) {
-  debug_mode = debug_mode || false;
-  const expirationDate = new Date();
-  expirationDate.setTime(expirationDate.getTime() + debugCookieExpiration);
-  const expires = `expires=${expirationDate.toUTCString()}`;
-
-  document.cookie = `${debugCookieName}=${debug_mode}; path=/; SameSite=Lax; ${expires}`;
-
-  if (debug_mode) {
-    console.log("setDebugCookie(): ", debug_mode);
-  }
+function getRequestCookies(cookies) {
+  // Ensure that csrftoken is not included in the Cookie header.
+  const cookiesArray = document.cookie.split(";").filter((cookie) => {
+    const trimmedCookie = cookie.trim();
+    return !trimmedCookie.startsWith(`${cookies.csrfCookie.name}=`);
+  });
+  const selectedCookies = cookiesArray.join("; ");
+  return selectedCookies;
 }
 
 // api prompt request
-function requestBodyFactory(messages, session_key) {
-  const retval = {
-    [sessionCookieName]: session_key,
+function promptRequestBodyFactory(messages, sessionCookieName, sessionKey) {
+  const body = {
+    [sessionCookieName]: sessionKey,
     messages: messages,
   };
-  return JSON.stringify(retval);
+  return JSON.stringify(body);
 }
 
 export async function fetchPrompt(
   config,
   messages,
-  api_url,
-  openChatModal,
-  csrfCookieName,
-  sessionCookieName,
+  apiUrl,
+  openErrorModal,
+  cookies,
 ) {
   if (config.debug_mode) {
     console.log("fetchPrompt(): config: ", config);
-    console.log("fetchPrompt(): api_url: ", api_url);
+    console.log("fetchPrompt(): apiUrl: ", apiUrl);
     console.log("fetchPrompt(): messages: ", messages);
   }
 
-  // Ensure that csrftoken is not included in the Cookie header.
-  const cookiesArray = document.cookie.split(";").filter((cookie) => {
-    const trimmedCookie = cookie.trim();
-    return !trimmedCookie.startsWith(`${csrfCookieName}=`);
-  });
-  const cookies = cookiesArray.join("; ");
-  const csrftoken = getCookie(csrfCookieName);
+  const requestCookies = getRequestCookies(cookies);
+  const csrftoken = getCookie(cookies.csrfCookie.name);
+  const authToken = null; // FIX NOTE: add me.
 
-  const headers = {
-    Accept: "application/json",
-    "Content-Type": "application/json",
+  const requestHeaders = {
+    "Accept": applicationJson,
+    "Content-Type": applicationJson,
     "X-CSRFToken": csrftoken,
-    Origin: window.location.origin,
-    Cookie: cookies,
+    "Origin": window.location.origin,
+    "Cookie": requestCookies,
+    "Authorization": `Bearer ${authToken}`,
+    "User-Agent": userAgent,
   };
   const init = {
     method: "POST",
     credentials: "include",
     mode: "cors",
-    headers: headers,
-    body: requestBodyFactory(messages, config.session_key),
+    headers: requestHeaders,
+    body: promptRequestBodyFactory(messages, cookies.sessionCookie.name, config.session_key),
   };
   if (config.debug_mode) {
-    console.log("fetchPrompt() - api_url:", api_url);
+    console.log("fetchPrompt() - apiUrl:", apiUrl);
     console.log("fetchPrompt() - init:", init);
     console.log("fetchPrompt() - config:", config);
     console.log("fetchPrompt(): cookiesArray: ", cookiesArray);
@@ -150,80 +144,72 @@ export async function fetchPrompt(
   }
 
   try {
-    const response = await fetch(api_url, init);
+    const response = await fetch(apiUrl, init);
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
       const status = await response.status;
-      const response_json = await response.json(); // Convert the ReadableStream to a JSON object
-      const response_body = await response_json.data.body; // ditto
+      const responseJson = await response.json(); // Convert the ReadableStream to a JSON object
+      const responseBody = await responseJson.data.body; // ditto
 
       if (config.debug_mode) {
         console.log("fetchPrompt(): response status: ", status);
-        console.log("fetchPrompt(): response: ", response_json);
+        console.log("fetchPrompt(): response: ", responseJson);
       }
 
       if (response.ok) {
         if (config.debug_mode) {
           console.log(
-            "fetchPrompt(): response_body: ",
-            JSON.parse(response_body),
+            "fetchPrompt(): responseBody: ",
+            JSON.parse(responseBody),
           );
         }
-        return JSON.parse(response_body);
+        return JSON.parse(responseBody);
       } else {
         /*
           note:
-          - the response_body object is not available when the status is 504, because
+          - the responseBody object is not available when the status is 504, because
             these responses are generated exclusively by API Gateway.
-          - the response_body object is potentially not available when the status is 500
+          - the responseBody object is potentially not available when the status is 500
             depending on whether the 500 response was generated by the Lambda or the API Gateway
-          - the response_body object is intended to always be available when the status is 400.
+          - the responseBody object is intended to always be available when the status is 400.
             However, there potentially COULD be a case where the response itself contains message text.
         */
         console.error(
           "fetchPrompt(): error: ",
           status,
           response.statusText,
-          response_body.message,
+          responseBody.message,
         );
 
         let errTitle = "Error " + status;
         let errMessage =
           response.statusText ||
-          response_body.message ||
+          responseBody.message ||
           "The request was invalid.";
 
         console.error(errTitle, errMessage);
-        openChatModal(errTitle, errMessage);
+        openErrorModal(errTitle, errMessage);
       }
     } else {
       const errorText = await response.text();
       throw new Error(`Unexpected response format: ${errorText}`);
     }
   } catch (error) {
-    openChatModal("Error", error || "An unknown error occurred.");
+    openErrorModal("Error", error || "An unknown error occurred.");
     return;
   }
 }
 
 // api config request
-async function fetchLocalConfig(config_file) {
-  const response = await fetch("../data/" + config_file);
+async function fetchLocalConfig(configFile) {
+  const response = await fetch("../data/" + configFile);
   const sampleConfig = await response.json();
   return sampleConfig.data;
 }
 
-// Set to true to enable local development mode,
-// which will simulate the server-side API calls.
-const REACT_LOCAL_DEV_MODE = false;
-
 export async function fetchConfig(
   configUrl,
-  csrfCookieName,
-  sessionCookieName,
-  sessionCookieExpiration,
-  debugCookieName,
-  debugCookieExpiration,
+  cookies,
 ) {
   /*
   Fetch the chat configuration from the backend server. This is a POST request with the
@@ -237,61 +223,64 @@ export async function fetchConfig(
   - The session key is stored in a cookie that is specific to the path. Thus,
     each chatbot has its own session key.
   - The CSRF token is stored in a cookie and is managed by Django.
-  - debug_mode is a boolean that is also stored in a cookie, managed by Django
+  - debugMode is a boolean that is also stored in a cookie, managed by Django
     based on a Waffle switch 'reactapp_debug_mode'
   */
-  const session_key = getCookie(sessionCookieName) || "";
-  const csrftoken = getCookie(csrfCookieName);
-  const debug_mode = getCookie(debugCookieName) === "true";
+  const sessionKey = getCookie(cookies.sessionCookie) || "";
+  const csrftoken = getCookie(cookies.csrfCookie);
+  const debugMode = getCookie(cookies.debugCookie) === "true";
+  const requestCookies = getRequestCookies(cookies);
+  const authToken = null; // FIX NOTE: add me.
 
-  console.log("debug_mode:", debug_mode);
+  console.log("debugMode:", debugMode);
 
-  const headers = {
-    Accept: "*/*",
-    "Content-Type": "application/json",
+  const requestHeaders = {
+    "Accept": applicationJson,
+    "Content-Type": applicationJson,
     "X-CSRFToken": csrftoken,
-    Origin: window.location.origin,
+    "Origin": window.location.origin,
+    "Cookie": requestCookies,
+    "Authorization": `Bearer ${authToken}`,
+    "User-Agent": userAgent,
   };
-  const body = {
-    sessionCookieName: session_key,
+  const requestBody = {
+    [cookies.sessionCookie.name]: sessionKey,
   };
   const init = {
     method: "POST",
     mode: "cors",
-    headers: headers,
-    body: JSON.stringify(body),
+    headers: requestHeaders,
+    body: JSON.stringify(requestBody),
   };
 
   try {
-    if (REACT_LOCAL_DEV_MODE) {
+    if (developerMode) {
       return fetchLocalConfig("sample-config.json");
     }
     let thisURL = new URL(configUrl);
-    if (session_key) {
-      thisURL.searchParams.append(sessionCookieName, session_key);
+    if (sessionKey) {
+      thisURL.searchParams.append(cookies.sessionCookie.name, sessionKey);
     }
     let configURL = thisURL.toString();
 
-    if (debug_mode) {
+    if (debugMode) {
       console.log("fetchConfig() - init: ", init);
       console.log("fetchConfig() - configURL: ", configURL);
     }
 
     const response = await fetch(configURL, init);
-    const response_json = await response.json(); // Convert the ReadableStream to a JSON object
+    const responseJson = await response.json(); // Convert the ReadableStream to a JSON object
 
-    if (debug_mode) {
-      console.log("fetchConfig() - response_json: ", response_json);
+    if (debugMode) {
+      console.log("fetchConfig() - responseJson: ", responseJson);
     }
     if (response.ok) {
-      const newConfig = response_json.data;
-      setSessionCookie(
-        config.session_key,
+      const newConfig = responseJson.data;
+      setCookie(
+        cookies.sessionCookie,
         config.debug_mode,
-        sessionCookieName,
-        sessionCookieExpiration,
       );
-      setDebugCookie(config.debug_mode, debugCookieExpiration, debugCookieName);
+      setCookie(cookies.debugCookie, config.debug_mode);
       return newConfig;
     }
   } catch (error) {

@@ -40,9 +40,10 @@ import "./styles.css";
 import { MessageDirectionEnum, SenderRoleEnum } from "./enums.js";
 import { setSessionCookie, fetchConfig, fetchPrompt } from "./api.js";
 import {
+  cookieMetaFactory,
   messageFactory,
   chatMessages2RequestMessages,
-  chat_init,
+  chatInit,
 } from "./utils.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
 
@@ -73,7 +74,7 @@ export const ComponentLayout = styled.div`
 // The main chat component. This is the top-level component that
 // is exported and used in the index.js file. It is responsible for
 // managing the chat message thread, sending messages to the backend
-// API, and rendering the chat UI.
+// Api, and rendering the chat UI.
 function SmarterChat({
   apiUrl,
   apiKey,
@@ -84,12 +85,20 @@ function SmarterChat({
   sessionCookieName,
   sessionCookieExpiration,
 }) {
-  const [configUrl, configApiUrl] = useState(apiUrl);
+  const csrfCookie = cookieMetaFactory(csrfCookieName, null); // we read this but never set it.
+  const sessionCookie = cookieMetaFactory(sessionCookieName, sessionCookieExpiration);
+  const debugCookie = cookieMetaFactory(debugCookieName, debugCookieExpiration);
+  const cookies = {
+    csrfCookie: csrfCookie,
+    sessionCookie: sessionCookie,
+    debugCookie: debugCookie,
+  };
+
+  const [configApiUrl, setConfigApiUrl] = useState(apiUrl);
   const [showMetadata, setShowMetadata] = useState(toggleMetadata);
 
   const [config, setConfig] = useState({});
   const [placeholderText, setPlaceholderText] = useState("");
-  const [apiUrl, setApiUrl] = useState("");
   const [assistantName, setAssistantName] = useState("");
   const [infoUrl, setInfoUrl] = useState("");
   const [fileAttachButton, setFileAttachButton] = useState(false);
@@ -109,14 +118,7 @@ function SmarterChat({
   const fileInputRef = useRef(null);
 
   const refetchConfig = async () => {
-    const newConfig = await fetchConfig(
-      configUrl,
-      csrfCookieName,
-      sessionCookieName,
-      sessionCookieExpiration,
-      debugCookieName,
-      debugCookieExpiration,
-    );
+    const newConfig = await fetchConfig(configApiUrl, cookies);
 
     if (newConfig?.debug_mode) {
       console.log("fetchAndSetConfig()...");
@@ -131,7 +133,7 @@ function SmarterChat({
     try {
       const newConfig = await refetchConfig();
       setPlaceholderText(newConfig.chatbot.app_placeholder);
-      setApiUrl(newConfig.chatbot.url_chatbot);
+      setConfigApiUrl(newConfig.chatbot.url_chatbot);
       setAssistantName(newConfig.chatbot.app_assistant);
       setInfoUrl(newConfig.chatbot.app_info_url);
       setFileAttachButton(newConfig.chatbot.app_file_attachment);
@@ -141,7 +143,7 @@ function SmarterChat({
 
       // wrap up the rest of the initialization
       const newHistory = newConfig.history?.chat_history || [];
-      const newThread = chat_init(
+      const newThread = chatInit(
         newConfig.chatbot.app_welcome_message,
         newConfig.chatbot.default_system_role,
         newConfig.chatbot.app_example_prompts,
@@ -183,7 +185,7 @@ function SmarterChat({
   }, []);
 
   // Error modal state management
-  function openChatModal(title, msg) {
+  function openErrorModal(title, msg) {
     setIsModalOpen(true);
     setmodalTitle(title);
     setmodalMessage(msg);
@@ -225,10 +227,10 @@ function SmarterChat({
     fetchAndSetConfig();
   };
 
-  async function handleApiRequest(input_text, base64_encode = true) {
-    // API request handler. This function is indirectly called by UI event handlers
+  async function handleApiRequest(input_text, base64_encode = false) {
+    // Api request handler. This function is indirectly called by UI event handlers
     // inside this module. It asynchronously sends the user's input to the
-    // backend API using the fetch() function. The response from the API is
+    // backend Api using the fetch() function. The response from the Api is
     // then used to update the chat message thread and the UI via React state.
     const newMessage = messageFactory(
       {},
@@ -250,14 +252,7 @@ function SmarterChat({
             console.log("handleApiRequest() messages:", updatedMessages);
           }
           const msgs = chatMessages2RequestMessages(updatedMessages);
-          const response = await fetchPrompt(
-            config,
-            msgs,
-            apiUrl,
-            openChatModal,
-            csrfCookieName,
-            sessionCookieName,
-          );
+          const response = await fetchPrompt(config, msgs, apiUrl, openErrorModal, cookies);
 
           if (response) {
             const responseMessages = response.smarter.messages
@@ -279,8 +274,8 @@ function SmarterChat({
           }
         } catch (error) {
           setIsTyping(false);
-          console.error("API Error: ", error);
-          openChatModal("API Error", error.message);
+          console.error("Api error: ", error);
+          openErrorModal("Api error", error.message);
         }
       })();
 
@@ -307,7 +302,7 @@ function SmarterChat({
   const handleSend = (input_text) => {
     // remove any HTML tags from the input_text. Pasting text into the
     // input box (from any source) tends to result in HTML span tags being included
-    // in the input_text. This is a problem because the API doesn't know how to
+    // in the input_text. This is a problem because the Api doesn't know how to
     // handle HTML tags. So we remove them here.
     const sanitized_input_text = input_text.replace(/<[^>]+>/g, "");
 
