@@ -78,9 +78,9 @@ function setCookie(cookie) {
 }
 
 // api prompt request
-function promptRequestBodyFactory(messages, sessionCookieName, sessionKey) {
+function promptRequestBodyFactory(messages, config) {
   const body = {
-    [sessionCookieName]: sessionKey,
+    session_key: config.session_key,
     messages: messages,
   };
   return JSON.stringify(body);
@@ -132,7 +132,7 @@ export async function fetchPrompt(
     credentials: "include",
     mode: "cors",
     headers: requestHeadersFactory(cookies),
-    body: promptRequestBodyFactory(messages, cookies.sessionCookie.name, config.session_key),
+    body: promptRequestBodyFactory(messages, config),
   };
   if (config.debug_mode) {
     console.log("fetchPrompt() - apiUrl:", apiUrl);
@@ -199,7 +199,6 @@ export async function fetchPrompt(
   }
 }
 
-// api config request
 async function fetchLocalConfig(configFile) {
   const response = await fetch("../data/" + configFile);
   const sampleConfig = await response.json();
