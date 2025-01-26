@@ -29,30 +29,28 @@ import {
   AddUserButton,
 } from "@chatscope/chat-ui-kit-react";
 
-// This project
-import Console from "../console/Component.jsx";
-import { setSessionCookie } from "../../cookies.js";
-import { fetchConfig } from "../../config.js";
-import { ChatAppLayout } from "../Layout/index.js";
+// this repo
+import { ErrorModal } from "../Error/Modal.jsx";
 
 // This component
 import "./Component.css";
+import { MESSAGE_DIRECTION, SENDER_ROLE } from "./constants.js";
+import { setSessionCookie, fetchConfig, processApiRequest } from "./api.js";
 import {
   messageFactory,
   chatMessages2RequestMessages,
   chat_init,
 } from "./utils.jsx";
-import { MESSAGE_DIRECTION, SENDER_ROLE } from "./constants.js";
-import { ChatModal } from "./Modal.jsx";
-import { processApiRequest } from "./ApiRequest.js";
+import { ComponentLayout, ContainerLayout, ContentLayout } from "./Layout.jsx";
 import { ErrorBoundary } from "./errorBoundary.jsx";
 
-// The main chat app component. This is the top-level component that
+// The main chat component. This is the top-level component that
 // is exported and used in the index.js file. It is responsible for
 // managing the chat message thread, sending messages to the backend
 // API, and rendering the chat UI.
-function ChatApp({
-  url,
+function SmarterChat({
+  apiUrl,
+  apiKey,
   toggleMetadata,
   csrfCookieName,
   debugCookieName,
@@ -60,7 +58,7 @@ function ChatApp({
   sessionCookieName,
   sessionCookieExpiration,
 }) {
-  const [configUrl, configApiUrl] = useState(url);
+  const [configUrl, configApiUrl] = useState(apiUrl);
   const [showMetadata, setShowMetadata] = useState(toggleMetadata);
 
   const [config, setConfig] = useState({});
@@ -77,7 +75,6 @@ function ChatApp({
   const [info, setInfo] = useState("");
 
   // future use
-  // const [apiKey, setApiKey] = useState('');
   // const [backgroundImageUrl, setBackgroundImageUrl] = useState('');
   // const [sandboxMode, setSandboxMode] = useState(false);
 
@@ -338,7 +335,7 @@ function ChatApp({
   };
   const mainContainerStyle = {
     // backgroundImage:
-    //   "linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, .75)), url('" +
+    //   "linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, .75)), apiUrl('" +
     //   background_image_url +
     //   "')",
     // backgroundSize: "cover",
@@ -353,79 +350,83 @@ function ChatApp({
 
   // render the chat app
   return (
-    <React.Fragment>
-      <ChatAppLayout>
-        <div className="chat-app">
-          <MainContainer style={mainContainerStyle}>
-            <ErrorBoundary>
-              <ChatModal
-                isModalOpen={isModalOpen}
-                title={modalTitle}
-                message={modalMessage}
-                onCloseClick={closeChatModal}
-              />
-            </ErrorBoundary>
-            <ChatContainer style={chatContainerStyle}>
-              <ConversationHeader>
-                <ConversationHeader.Content
-                  userName={
-                    <AppTitle
-                      title={title}
-                      isValid={isValid}
-                      isDeployed={isDeployed}
-                    />
-                  }
-                  info={info}
-                />
-                <ConversationHeader.Actions>
-                  <AddUserButton
-                    onClick={handleAddUserButtonClick}
-                    title="Start a new chat"
+    <div id="smarter_chat_component_container" className="SmarterChat">
+      <ContainerLayout>
+        <ContentLayout>
+          <ComponentLayout>
+            <div className="chat-app">
+              <MainContainer style={mainContainerStyle}>
+                <ErrorBoundary>
+                  <ErrorModal
+                    isModalOpen={isModalOpen}
+                    title={modalTitle}
+                    message={modalMessage}
+                    onCloseClick={closeChatModal}
                   />
-                  {toggleMetadata && (
-                    <InfoButton
-                      onClick={handleInfoButtonClick}
-                      title="Toggle system meta data"
+                </ErrorBoundary>
+                <ChatContainer style={chatContainerStyle}>
+                  <ConversationHeader>
+                    <ConversationHeader.Content
+                      userName={
+                        <AppTitle
+                          title={title}
+                          isValid={isValid}
+                          isDeployed={isDeployed}
+                        />
+                      }
+                      info={info}
                     />
-                  )}
-                </ConversationHeader.Actions>
-              </ConversationHeader>
-              <MessageList
-                style={transparentBackgroundStyle}
-                scrollBehavior="auto"
-                typingIndicator={
-                  isTyping ? (
-                    <TypingIndicator content={assistantName + " is typing"} />
-                  ) : null
-                }
-              >
-                {messages
-                  .filter((message) => message.display)
-                  .map((message, i) => {
-                    return <SmarterMessage i={i} message={message} />;
-                  })}
-              </MessageList>
-              <MessageInput
-                placeholder={placeholderText}
-                onSend={handleSend}
-                onAttachClick={handleAttachClick}
-                attachButton={fileAttachButton}
-                fancyScroll={false}
-              />
-            </ChatContainer>
-            <input
-              type="file"
-              accept=".py"
-              title="Select a Python file"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              onChange={handleFileChange}
-            />
-          </MainContainer>
-        </div>
-      </ChatAppLayout>
-    </React.Fragment>
+                    <ConversationHeader.Actions>
+                      <AddUserButton
+                        onClick={handleAddUserButtonClick}
+                        title="Start a new chat"
+                      />
+                      {toggleMetadata && (
+                        <InfoButton
+                          onClick={handleInfoButtonClick}
+                          title="Toggle system meta data"
+                        />
+                      )}
+                    </ConversationHeader.Actions>
+                  </ConversationHeader>
+                  <MessageList
+                    style={transparentBackgroundStyle}
+                    scrollBehavior="auto"
+                    typingIndicator={
+                      isTyping ? (
+                        <TypingIndicator content={assistantName + " is typing"} />
+                      ) : null
+                    }
+                  >
+                    {messages
+                      .filter((message) => message.display)
+                      .map((message, i) => {
+                        return <SmarterMessage i={i} message={message} />;
+                      })}
+                  </MessageList>
+                  <MessageInput
+                    placeholder={placeholderText}
+                    onSend={handleSend}
+                    onAttachClick={handleAttachClick}
+                    attachButton={fileAttachButton}
+                    fancyScroll={false}
+                  />
+                </ChatContainer>
+                <input
+                  type="file"
+                  accept=".py"
+                  title="Select a Python file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                />
+              </MainContainer>
+            </div>
+          </ComponentLayout>
+        </ContentLayout>
+      </ContainerLayout>
+    </div>
   );
 }
 
-export default ChatApp;
+export default SmarterChat;

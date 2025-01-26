@@ -1,9 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import SmarterChat from "./SmarterChat.jsx";
+import SmarterChat from "./components/SmarterChat/Component";
 import "./index.css";
 
-const url = "https://platform.smarter.sh/chatbots/example/config/";
+const apiUrl = "https://platform.smarter.sh/chatbots/example/config/";
+const apiKey = null;
 const toggleMetadata = false;
 
 const DEFAULT_COOKIE_EXPIRATION = 1000 * 60 * 60 * 24 * 1; // 1 day
@@ -16,7 +17,8 @@ const sessionCookieExpiration = DEFAULT_COOKIE_EXPIRATION;
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <SmarterChat
-      url={url}
+      apiUrl={apiUrl}
+      apiKey={apiKey}
       toggleMetadata={toggleMetadata}
       csrfCookieName={csrfCookieName}
       debugCookieName={debugCookieName}

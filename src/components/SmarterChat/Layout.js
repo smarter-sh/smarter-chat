@@ -15,7 +15,7 @@ export const ContentLayout = styled.div`
   padding: 0;
 `;
 
-export const ChatAppLayout = styled.div`
+export const ComponentLayout = styled.div`
   flex-basis: 33.33%;
   margin: 0;
   padding: 5px;
@@ -24,14 +24,3 @@ export const ChatAppLayout = styled.div`
   }
 `;
 
-export const ConsoleLayout = styled.div`
-  flex-basis: 66.67%;
-  padding: 5px;
-  margin: 0;
-  box-sizing: border-box;
-  // visible on only on large screens
-  @media (max-width: 992px) {
-    display: none;
-    flex-basis: 0%;
-  }
-`;

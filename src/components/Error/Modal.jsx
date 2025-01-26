@@ -7,7 +7,7 @@ import { faExclamation } from "@fortawesome/free-solid-svg-icons";
 
 import "./Modal.css";
 
-export function ChatModal(props) {
+export function ErrorModal(props) {
   const ModalStyle = {
     overlay: {
       backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -48,7 +48,7 @@ export function ChatModal(props) {
   );
 }
 
-ChatModal.propTypes = {
+ErrorModal.propTypes = {
   isModalOpen: PropTypes.bool.isRequired,
   onCloseClick: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
