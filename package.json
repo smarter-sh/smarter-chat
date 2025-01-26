@@ -1,0 +1,86 @@
+{
+  "name": "@smarter/chat",
+  "version": "0.0.1",
+  "description": "chatbot React.js component for the https://smarter.sh no-code, plugin based AI platform",
+  "homepage": "https://smarter.sh",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "type": "module",
+  "keywords": [
+    "react",
+    "component",
+    "chatbot",
+    "ai",
+    "smarter"
+  ],
+  "author": "Lawrence McDaniel <lpm0073@gmail.com>, (https://lawrencemcdaniel.com/)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smarter-sh/smarter-chat"
+  },
+  "bugs": {
+    "url": "https://github.com/smarter-sh/smarter-chat/issues"
+  },
+  "contributors": [
+    "Lawrence McDaniel <lpm0073@gmail.com> (https://lawrencemcdaniel.com/)"
+  ],
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/lpm0073"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite --mode dev",
+    "build": "vite build",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview --port 8080",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "i": "^0.3.7",
+    "npm": "^11.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-helmet": "^6.1.0",
+    "react-icons": "^5.4.0",
+    "react-modal": "^3.16.3",
+    "styled-components": "^6.1.14",
+    "@chatscope/chat-ui-kit-react": "^2.0.3"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.1",
+    "@semantic-release/release-notes-generator": "^14.0.3",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.21.0",
+    "@typescript-eslint/parser": "^8.21.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react-swc": "^3.7.2",
+    "eslint": "^9.19.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-n": "^17.15.1",
+    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.18",
+    "prettier": "^3.4.2",
+    "standard": "^17.1.2",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.11"
+  },
+  "peerDependencies": {
+    "@chatscope/chat-ui-kit-react": "^2.0.3"
+  }
+}

@@ -1,0 +1,18 @@
+# -----------------------------------
+# Smarter.sh Environment Variables
+#
+# Python (used in dev for pre-commit):
+# We need to explicitly set the PYTHONPATH
+# for Pylint so that it can find the smarter module
+# in your local file system when running pylint, flake8, or Cornflakes
+# from inside of VS Code. This is unrelated to actually
+# running the Django app from Docker, which sets the
+# PYTHONPATH in the Dockerfile.
+# -----------------------------------
+
+################################################################
+# For local development
+################################################################
+ENVIRONMENT=local
+PYTHONPATH=./venv:./smarter
+API_URL=http://api.smarter.sh/v1/chatbots/smarter/example/
