@@ -25,10 +25,8 @@
 // Set to true to enable local development mode,
 // which will simulate the server-side API calls.
 const developerMode = false;
-const userAgent = "SmarterChat/1.0";
-const applicationJson = "application/json";
 
-function getCookie(cookie, debugMode = false) {
+function getCookie(cookie, defaultValue = null) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
@@ -36,23 +34,20 @@ function getCookie(cookie, debugMode = false) {
       const thisCookie = cookies[i].trim();
       if (thisCookie.substring(0, cookie.name.length + 1) === cookie.name + "=") {
         cookieValue = decodeURIComponent(thisCookie.substring(cookie.name.length + 1));
-        if (debugMode) {
+        if (developerMode) {
           console.log("getCookie(): found ", cookieValue, "for cookie", cookie.name);
         }
         break;
       }
     }
   }
-  if (debugMode && !cookieValue) {
-    console.warn("getCookie(): no value found for", name);
+  if (developerMode && !cookieValue) {
+    console.warn("getCookie(): no value found for", cookie.name);
   }
-  return cookieValue;
+  return cookieValue || defaultValue;
 }
 
-function setCookie(
-  cookie,
-  debugMode = false,
-) {
+function setCookie(cookie) {
   const currentPath = window.location.pathname;
   if (cookie.value) {
     const expirationDate = new Date();
@@ -60,7 +55,7 @@ function setCookie(
     const expires = expirationDate.toUTCString();
     const cookieData = `${cookie.name}=${cookie.value}; path=${currentPath}; SameSite=Lax; expires=${expires}`;
     document.cookie = cookieData;
-    if (debugMode) {
+    if (developerMode) {
       console.log(
         "setCookie(): ",
         cookieData,
@@ -76,20 +71,10 @@ function setCookie(
     const expires = expirationDate.toUTCString();
     const cookieData = `${cookie.name}=; path=${currentPath}; SameSite=Lax; expires=${expires}`;
     document.cookie = cookieData;
-    if (debugMode) {
+    if (developerMode) {
       console.log("setCookie(): Unsetting cookie", cookieData);
     }
   }
-}
-
-function getRequestCookies(cookies) {
-  // Ensure that csrftoken is not included in the Cookie header.
-  const cookiesArray = document.cookie.split(";").filter((cookie) => {
-    const trimmedCookie = cookie.trim();
-    return !trimmedCookie.startsWith(`${cookies.csrfCookie.name}=`);
-  });
-  const selectedCookies = cookiesArray.join("; ");
-  return selectedCookies;
 }
 
 // api prompt request
@@ -99,6 +84,34 @@ function promptRequestBodyFactory(messages, sessionCookieName, sessionKey) {
     messages: messages,
   };
   return JSON.stringify(body);
+}
+
+function requestHeadersFactory(cookies) {
+  function getRequestCookies(cookies) {
+    // Ensure that csrftoken is not included in the Cookie header.
+    const cookiesArray = document.cookie.split(";").filter((cookie) => {
+      const trimmedCookie = cookie.trim();
+      return !trimmedCookie.startsWith(`${cookies.csrfCookie.name}=`);
+    });
+    const selectedCookies = cookiesArray.join("; ");
+    return selectedCookies;
+  }
+
+  const userAgent = "SmarterChat/1.0";
+  const applicationJson = "application/json";
+  const requestCookies = getRequestCookies(cookies);
+  const csrftoken = getCookie(cookies.csrfCookie.name, "");
+  const authToken = null; // FIX NOTE: add me.
+
+  return {
+    "Accept": applicationJson,
+    "Content-Type": applicationJson,
+    "X-CSRFToken": csrftoken,
+    "Origin": window.location.origin,
+    "Cookie": requestCookies,
+    "Authorization": `Bearer ${authToken}`,
+    "User-Agent": userAgent,
+  };
 }
 
 export async function fetchPrompt(
@@ -114,24 +127,11 @@ export async function fetchPrompt(
     console.log("fetchPrompt(): messages: ", messages);
   }
 
-  const requestCookies = getRequestCookies(cookies);
-  const csrftoken = getCookie(cookies.csrfCookie.name);
-  const authToken = null; // FIX NOTE: add me.
-
-  const requestHeaders = {
-    "Accept": applicationJson,
-    "Content-Type": applicationJson,
-    "X-CSRFToken": csrftoken,
-    "Origin": window.location.origin,
-    "Cookie": requestCookies,
-    "Authorization": `Bearer ${authToken}`,
-    "User-Agent": userAgent,
-  };
   const init = {
     method: "POST",
     credentials: "include",
     mode: "cors",
-    headers: requestHeaders,
+    headers: requestHeadersFactory(cookies),
     body: promptRequestBodyFactory(messages, cookies.sessionCookie.name, config.session_key),
   };
   if (config.debug_mode) {
@@ -140,7 +140,6 @@ export async function fetchPrompt(
     console.log("fetchPrompt() - config:", config);
     console.log("fetchPrompt(): cookiesArray: ", cookiesArray);
     console.log("fetchPrompt(): cookies: ", cookies);
-    console.log("fetchPrompt(): csrftoken: ", csrftoken);
   }
 
   try {
@@ -226,30 +225,15 @@ export async function fetchConfig(
   - debugMode is a boolean that is also stored in a cookie, managed by Django
     based on a Waffle switch 'reactapp_debug_mode'
   */
-  const sessionKey = getCookie(cookies.sessionCookie) || "";
-  const csrftoken = getCookie(cookies.csrfCookie);
+  const sessionKey = getCookie(cookies.sessionCookie, "");
   const debugMode = getCookie(cookies.debugCookie) === "true";
-  const requestCookies = getRequestCookies(cookies);
-  const authToken = null; // FIX NOTE: add me.
-
-  console.log("debugMode:", debugMode);
-
-  const requestHeaders = {
-    "Accept": applicationJson,
-    "Content-Type": applicationJson,
-    "X-CSRFToken": csrftoken,
-    "Origin": window.location.origin,
-    "Cookie": requestCookies,
-    "Authorization": `Bearer ${authToken}`,
-    "User-Agent": userAgent,
-  };
   const requestBody = {
     [cookies.sessionCookie.name]: sessionKey,
   };
   const init = {
     method: "POST",
     mode: "cors",
-    headers: requestHeaders,
+    headers: requestHeadersFactory(cookies),
     body: JSON.stringify(requestBody),
   };
 
@@ -276,11 +260,8 @@ export async function fetchConfig(
     }
     if (response.ok) {
       const newConfig = responseJson.data;
-      setCookie(
-        cookies.sessionCookie,
-        config.debug_mode,
-      );
-      setCookie(cookies.debugCookie, config.debug_mode);
+      setCookie(cookies.sessionCookie);
+      setCookie(cookies.debugCookie);
       return newConfig;
     }
   } catch (error) {
