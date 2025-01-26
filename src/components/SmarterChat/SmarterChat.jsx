@@ -8,6 +8,9 @@
 // React stuff
 import React, { useRef, useState, useEffect } from "react";
 
+// see: https://www.npmjs.com/package/styled-components
+import styled from "styled-components";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheckCircle,
@@ -30,19 +33,42 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 
 // this repo
-import { ErrorModal } from "../Error/Modal.jsx";
+import { ErrorModal } from "../ErrorModal/ErrorModal.jsx";
 
 // This component
-import "./Component.css";
-import { MESSAGE_DIRECTION, SENDER_ROLE } from "./constants.js";
-import { setSessionCookie, fetchConfig, processApiRequest } from "./api.js";
+import "./styles.css";
+import { MessageDirectionEnum, SenderRoleEnum } from "./enums.js";
+import { setSessionCookie, fetchConfig, fetchPrompt } from "./api.js";
 import {
   messageFactory,
   chatMessages2RequestMessages,
   chat_init,
 } from "./utils.jsx";
-import { ComponentLayout, ContainerLayout, ContentLayout } from "./Layout.jsx";
-import { ErrorBoundary } from "./errorBoundary.jsx";
+import { ErrorBoundary } from "./ErrorBoundary.jsx";
+
+export const ContainerLayout = styled.div`
+  height: 89vh;
+  display: flex;
+  flex-direction: row;
+`;
+
+export const ContentLayout = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  margin: 0;
+  padding: 0;
+`;
+
+export const ComponentLayout = styled.div`
+  flex-basis: 33.33%;
+  margin: 0;
+  padding: 5px;
+  @media (max-width: 992px) {
+    flex-basis: 100%;
+  }
+`;
+
 
 // The main chat component. This is the top-level component that
 // is exported and used in the index.js file. It is responsible for
@@ -207,8 +233,8 @@ function SmarterChat({
     const newMessage = messageFactory(
       {},
       input_text,
-      MESSAGE_DIRECTION.OUTGOING,
-      SENDER_ROLE.USER,
+      MessageDirectionEnum.OUTGOING,
+      SenderRoleEnum.USER,
     );
     if (base64_encode) {
       console.error("base64 encoding not implemented yet.");
@@ -224,7 +250,7 @@ function SmarterChat({
             console.log("handleApiRequest() messages:", updatedMessages);
           }
           const msgs = chatMessages2RequestMessages(updatedMessages);
-          const response = await processApiRequest(
+          const response = await fetchPrompt(
             config,
             msgs,
             apiUrl,
@@ -240,7 +266,7 @@ function SmarterChat({
                 return messageFactory(
                   message,
                   message.content,
-                  MESSAGE_DIRECTION.INCOMING,
+                  MessageDirectionEnum.INCOMING,
                   message.role,
                 );
               });

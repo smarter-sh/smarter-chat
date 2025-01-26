@@ -1,7 +1,8 @@
+// a tiny app for development and testing
 import React from "react";
 import ReactDOM from "react-dom/client";
 import SmarterChat from "./components/SmarterChat/Component";
-import "./index.css";
+import "./styles.css";
 
 const apiUrl = "https://platform.smarter.sh/chatbots/example/config/";
 const apiKey = null;

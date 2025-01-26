@@ -21,8 +21,6 @@
     v0.1.0 - v0.4.0:  ./test/events/openai.response.v0.4.0.json
     v0.5.0:       ./test/events/langchain.response.v0.5.0.json
 -----------------------------------------------------------------------------*/
-import { REACT_LOCAL_DEV_MODE } from "./constants.js";
-
 
 export function getCookie(name, debug_mode = false) {
   let cookieValue = null;
@@ -106,7 +104,7 @@ function requestBodyFactory(messages, session_key) {
   return JSON.stringify(retval);
 }
 
-export async function processApiRequest(
+export async function fetchPrompt(
   config,
   messages,
   api_url,
@@ -115,9 +113,9 @@ export async function processApiRequest(
   sessionCookieName,
 ) {
   if (config.debug_mode) {
-    console.log("processApiRequest(): config: ", config);
-    console.log("processApiRequest(): api_url: ", api_url);
-    console.log("processApiRequest(): messages: ", messages);
+    console.log("fetchPrompt(): config: ", config);
+    console.log("fetchPrompt(): api_url: ", api_url);
+    console.log("fetchPrompt(): messages: ", messages);
   }
 
   // Ensure that csrftoken is not included in the Cookie header.
@@ -143,12 +141,12 @@ export async function processApiRequest(
     body: requestBodyFactory(messages, config.session_key),
   };
   if (config.debug_mode) {
-    console.log("processApiRequest() - api_url:", api_url);
-    console.log("processApiRequest() - init:", init);
-    console.log("processApiRequest() - config:", config);
-    console.log("processApiRequest(): cookiesArray: ", cookiesArray);
-    console.log("processApiRequest(): cookies: ", cookies);
-    console.log("processApiRequest(): csrftoken: ", csrftoken);
+    console.log("fetchPrompt() - api_url:", api_url);
+    console.log("fetchPrompt() - init:", init);
+    console.log("fetchPrompt() - config:", config);
+    console.log("fetchPrompt(): cookiesArray: ", cookiesArray);
+    console.log("fetchPrompt(): cookies: ", cookies);
+    console.log("fetchPrompt(): csrftoken: ", csrftoken);
   }
 
   try {
@@ -160,14 +158,14 @@ export async function processApiRequest(
       const response_body = await response_json.data.body; // ditto
 
       if (config.debug_mode) {
-        console.log("processApiRequest(): response status: ", status);
-        console.log("processApiRequest(): response: ", response_json);
+        console.log("fetchPrompt(): response status: ", status);
+        console.log("fetchPrompt(): response: ", response_json);
       }
 
       if (response.ok) {
         if (config.debug_mode) {
           console.log(
-            "processApiRequest(): response_body: ",
+            "fetchPrompt(): response_body: ",
             JSON.parse(response_body),
           );
         }
@@ -183,7 +181,7 @@ export async function processApiRequest(
             However, there potentially COULD be a case where the response itself contains message text.
         */
         console.error(
-          "processApiRequest(): error: ",
+          "fetchPrompt(): error: ",
           status,
           response.statusText,
           response_body.message,
@@ -214,6 +212,10 @@ async function fetchLocalConfig(config_file) {
   const sampleConfig = await response.json();
   return sampleConfig.data;
 }
+
+// Set to true to enable local development mode,
+// which will simulate the server-side API calls.
+const REACT_LOCAL_DEV_MODE = false;
 
 export async function fetchConfig(
   configUrl,

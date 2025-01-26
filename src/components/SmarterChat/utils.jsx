@@ -1,8 +1,8 @@
 import {
-  MESSAGE_DIRECTION,
-  SENDER_ROLE,
-  VALID_MESSAGE_ROLES,
-} from "./constants.js";
+  MessageDirectionEnum,
+  SenderRoleEnum,
+  ValidMessageRolesEnum,
+} from "./enums.js";
 
 export function chat_restore_from_backend(chat_history, last_response) {
   /*
@@ -11,39 +11,39 @@ export function chat_restore_from_backend(chat_history, last_response) {
   try {
     const messages = (chat_history ? chat_history : [])
       .map((chat) => {
-        if (chat.role === SENDER_ROLE.USER) {
+        if (chat.role === SenderRoleEnum.USER) {
           return messageFactory(
             chat,
             chat.content,
-            MESSAGE_DIRECTION.OUTGOING,
+            MessageDirectionEnum.OUTGOING,
             chat.role,
           );
-        } else if (chat.role === SENDER_ROLE.SYSTEM) {
+        } else if (chat.role === SenderRoleEnum.SYSTEM) {
           return messageFactory(
             chat,
             chat.content,
-            MESSAGE_DIRECTION.INCOMING,
+            MessageDirectionEnum.INCOMING,
             chat.role,
           );
-        } else if (chat.role === SENDER_ROLE.ASSISTANT) {
+        } else if (chat.role === SenderRoleEnum.ASSISTANT) {
           return messageFactory(
             chat,
             chat.content,
-            MESSAGE_DIRECTION.INCOMING,
+            MessageDirectionEnum.INCOMING,
             chat.role,
           );
-        } else if (chat.role === SENDER_ROLE.SMARTER) {
+        } else if (chat.role === SenderRoleEnum.SMARTER) {
           return messageFactory(
             chat,
             chat.content,
-            MESSAGE_DIRECTION.INCOMING,
+            MessageDirectionEnum.INCOMING,
             chat.role,
           );
-        } else if (chat.role === SENDER_ROLE.TOOL) {
+        } else if (chat.role === SenderRoleEnum.TOOL) {
           return messageFactory(
             chat,
             chat.content,
-            MESSAGE_DIRECTION.INCOMING,
+            MessageDirectionEnum.INCOMING,
             chat.role,
           );
         }
@@ -63,8 +63,8 @@ export function chat_restore_from_backend(chat_history, last_response) {
         messageFactory(
           last_message,
           last_message_content,
-          MESSAGE_DIRECTION.INCOMING,
-          SENDER_ROLE.ASSISTANT,
+          MessageDirectionEnum.INCOMING,
+          SenderRoleEnum.ASSISTANT,
         ),
       );
     }
@@ -106,16 +106,16 @@ export function chat_intro(welcome_message, system_role, example_prompts) {
     messageFactory(
       {},
       system_role,
-      MESSAGE_DIRECTION.INCOMING,
-      SENDER_ROLE.SYSTEM,
+      MessageDirectionEnum.INCOMING,
+      SenderRoleEnum.SYSTEM,
     ),
   ];
   messages.push(
     messageFactory(
       {},
       welcome_message,
-      MESSAGE_DIRECTION.INCOMING,
-      SENDER_ROLE.ASSISTANT,
+      MessageDirectionEnum.INCOMING,
+      SenderRoleEnum.ASSISTANT,
     ),
   );
 
@@ -125,8 +125,8 @@ export function chat_intro(welcome_message, system_role, example_prompts) {
       messageFactory(
         {},
         examples,
-        MESSAGE_DIRECTION.INCOMING,
-        SENDER_ROLE.ASSISTANT,
+        MessageDirectionEnum.INCOMING,
+        SenderRoleEnum.ASSISTANT,
       ),
     );
   }
@@ -194,7 +194,7 @@ export function chatMessages2RequestMessages(messages) {
   return (
     messages
       // filter out smarter messages
-      .filter((message) => VALID_MESSAGE_ROLES.includes(message.sender))
+      .filter((message) => ValidMessageRolesEnum.includes(message.sender))
       .map((message, index) => {
         return requestMessageFactory(message);
       })
