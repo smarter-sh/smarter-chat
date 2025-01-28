@@ -70,7 +70,6 @@ export const ComponentLayout = styled.div`
   }
 `;
 
-
 // The main chat component. This is the top-level component that
 // is exported and used in the index.js file. It is responsible for
 // managing the chat message thread, sending messages to the backend
@@ -86,7 +85,10 @@ function SmarterChat({
   sessionCookieExpiration,
 }) {
   const csrfCookie = cookieMetaFactory(csrfCookieName, null); // we read this but never set it.
-  const sessionCookie = cookieMetaFactory(sessionCookieName, sessionCookieExpiration);
+  const sessionCookie = cookieMetaFactory(
+    sessionCookieName,
+    sessionCookieExpiration,
+  );
   const debugCookie = cookieMetaFactory(debugCookieName, debugCookieExpiration);
   const cookies = {
     csrfCookie: csrfCookie,
@@ -153,7 +155,9 @@ function SmarterChat({
       );
       setMessages(newThread);
 
-      const newTitle = `${newConfig.chatbot.app_name} v${newConfig.chatbot.version || "1.0.0"}`;
+      const newTitle = `${newConfig.chatbot.app_name} v${
+        newConfig.chatbot.version || "1.0.0"
+      }`;
       setTitle(newTitle);
       let newInfo = `${newConfig.chatbot.provider} ${newConfig.chatbot.default_model}`;
       if (newConfig.plugins.meta_data.total_plugins > 0) {
@@ -252,7 +256,7 @@ function SmarterChat({
             console.log("handleApiRequest() messages:", updatedMessages);
           }
           const msgs = chatMessages2RequestMessages(updatedMessages);
-          const response = await fetchPrompt(config, msgs, apiUrl, openErrorModal, cookies);
+          const response = await fetchPrompt(config, msgs, cookies);
 
           if (response) {
             const responseMessages = response.smarter.messages
@@ -415,7 +419,9 @@ function SmarterChat({
                     scrollBehavior="auto"
                     typingIndicator={
                       isTyping ? (
-                        <TypingIndicator content={assistantName + " is typing"} />
+                        <TypingIndicator
+                          content={assistantName + " is typing"}
+                        />
                       ) : null
                     }
                   >

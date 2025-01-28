@@ -4,7 +4,6 @@ import {
   ValidMessageRolesEnum,
 } from "./enums.js";
 
-
 export function cookieMetaFactory(cookieName, cookieExpiration) {
   /*
   Create a cookie object.
@@ -105,7 +104,7 @@ const examplePrompts = (prompts) => {
         })
         .join("")
     );
-}
+};
 
 export function chatIntro(welcome_message, system_role, example_prompts) {
   /*

@@ -6,24 +6,24 @@ export default new ESLint({
       "eslint:recommended",
       "plugin:react/recommended",
       "plugin:@typescript-eslint/recommended",
-      "standard"
+      "standard",
     ],
     parser: "@typescript-eslint/parser",
     parserOptions: {
       ecmaVersion: 2020,
       sourceType: "module",
       ecmaFeatures: {
-        jsx: true
-      }
+        jsx: true,
+      },
     },
     settings: {
       react: {
-        version: "detect"
-      }
+        version: "detect",
+      },
     },
     rules: {
       // Add your custom rules here
-    }
+    },
   },
-  ignorePatterns: ["node_modules/**", "dist/**"]
+  ignorePatterns: ["node_modules/**", "dist/**"],
 });

@@ -32,10 +32,20 @@ function getCookie(cookie, defaultValue = null) {
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
       const thisCookie = cookies[i].trim();
-      if (thisCookie.substring(0, cookie.name.length + 1) === cookie.name + "=") {
-        cookieValue = decodeURIComponent(thisCookie.substring(cookie.name.length + 1));
+      if (
+        thisCookie.substring(0, cookie.name.length + 1) ===
+        cookie.name + "="
+      ) {
+        cookieValue = decodeURIComponent(
+          thisCookie.substring(cookie.name.length + 1),
+        );
         if (developerMode) {
-          console.log("getCookie(): found ", cookieValue, "for cookie", cookie.name);
+          console.log(
+            "getCookie(): found ",
+            cookieValue,
+            "for cookie",
+            cookie.name,
+          );
         }
         break;
       }
@@ -47,13 +57,13 @@ function getCookie(cookie, defaultValue = null) {
   return cookieValue || defaultValue;
 }
 
-function setCookie(cookie) {
+function setCookie(cookie, value) {
   const currentPath = window.location.pathname;
-  if (cookie.value) {
+  if (value) {
     const expirationDate = new Date();
     expirationDate.setTime(expirationDate.getTime() + cookie.expiration);
     const expires = expirationDate.toUTCString();
-    const cookieData = `${cookie.name}=${cookie.value}; path=${currentPath}; SameSite=Lax; expires=${expires}`;
+    const cookieData = `${cookie.name}=${value}; path=${currentPath}; SameSite=Lax; expires=${expires}`;
     document.cookie = cookieData;
     if (developerMode) {
       console.log(
@@ -77,7 +87,6 @@ function setCookie(cookie) {
   }
 }
 
-// api prompt request
 function promptRequestBodyFactory(messages, config) {
   const body = {
     session_key: config.session_key,
@@ -104,65 +113,58 @@ function requestHeadersFactory(cookies) {
   const authToken = null; // FIX NOTE: add me.
 
   return {
-    "Accept": applicationJson,
+    Accept: applicationJson,
     "Content-Type": applicationJson,
     "X-CSRFToken": csrftoken,
-    "Origin": window.location.origin,
-    "Cookie": requestCookies,
-    "Authorization": `Bearer ${authToken}`,
+    Origin: window.location.origin,
+    Cookie: requestCookies,
+    Authorization: `Bearer ${authToken}`,
     "User-Agent": userAgent,
   };
 }
 
-export async function fetchPrompt(
-  config,
-  messages,
-  apiUrl,
-  openErrorModal,
-  cookies,
-) {
-  if (config.debug_mode) {
-    console.log("fetchPrompt(): config: ", config);
-    console.log("fetchPrompt(): apiUrl: ", apiUrl);
-    console.log("fetchPrompt(): messages: ", messages);
-  }
-
-  const init = {
+function requestInitFactory(headers, body) {
+  return {
     method: "POST",
     credentials: "include",
     mode: "cors",
-    headers: requestHeadersFactory(cookies),
-    body: promptRequestBodyFactory(messages, config),
+    headers: headers,
+    body: body,
   };
-  if (config.debug_mode) {
-    console.log("fetchPrompt() - apiUrl:", apiUrl);
-    console.log("fetchPrompt() - init:", init);
-    console.log("fetchPrompt() - config:", config);
-    console.log("fetchPrompt(): cookiesArray: ", cookiesArray);
-    console.log("fetchPrompt(): cookies: ", cookies);
+}
+
+function urlFactory(apiUrl, endpoint, sessionKey) {
+  if (!apiUrl.endsWith("/")) {
+    apiUrl += "/";
   }
+  endpoint = endpoint || "";
+  let apiConfigUrl = new URL(endpoint, apiUrl);
+  if (sessionKey) {
+    apiConfigUrl.searchParams.append("session_key", sessionKey);
+  }
+  const url = apiConfigUrl.toString();
+  return url;
+}
 
+async function getJsonResponse(url, init) {
+  const debugMode = getCookie(cookies.debugCookie) === "true";
   try {
-    const response = await fetch(apiUrl, init);
+    const response = await fetch(url, init);
     const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
+    if (contentType && contentType.includes(applicationJson)) {
       const status = await response.status;
-      const responseJson = await response.json(); // Convert the ReadableStream to a JSON object
-      const responseBody = await responseJson.data.body; // ditto
 
-      if (config.debug_mode) {
-        console.log("fetchPrompt(): response status: ", status);
-        console.log("fetchPrompt(): response: ", responseJson);
+      if (debugMode || developerMode) {
+        console.log("getJsonResponse(): response url: ", url);
+        console.log("getJsonResponse(): response init: ", init);
+        console.log("getJsonResponse(): response status: ", status);
+        console.log("getJsonResponse(): response: ", responseJson);
       }
 
       if (response.ok) {
-        if (config.debug_mode) {
-          console.log(
-            "fetchPrompt(): responseBody: ",
-            JSON.parse(responseBody),
-          );
-        }
-        return JSON.parse(responseBody);
+        const responseJson = await response.json(); // Convert the ReadableStream to a JSON object
+        const responseJsonData = await responseJson.data; // ditto
+        return responseJsonData;
       } else {
         /*
           note:
@@ -174,29 +176,35 @@ export async function fetchPrompt(
             However, there potentially COULD be a case where the response itself contains message text.
         */
         console.error(
-          "fetchPrompt(): error: ",
+          "getJsonResponse(): error: ",
           status,
           response.statusText,
-          responseBody.message,
         );
-
-        let errTitle = "Error " + status;
-        let errMessage =
-          response.statusText ||
-          responseBody.message ||
-          "The request was invalid.";
-
-        console.error(errTitle, errMessage);
-        openErrorModal(errTitle, errMessage);
+        return response;
       }
     } else {
       const errorText = await response.text();
-      throw new Error(`Unexpected response format: ${errorText}`);
+      throw new Error(
+        `getJsonResponse() Unexpected response format: ${errorText}`,
+      );
     }
   } catch (error) {
-    openErrorModal("Error", error || "An unknown error occurred.");
-    return;
+    return error;
   }
+}
+
+export async function fetchPrompt(config, messages, cookies) {
+  const apiUrl = config.api_url;
+  const url = urlFactory(apiUrl, null, sessionKey);
+  const headers = requestHeadersFactory(cookies);
+  const body = promptRequestBodyFactory(messages, config);
+  const init = requestInitFactory(headers, body);
+  const responseJson = await getJsonResponse(url, init);
+  if (responseJson && responseJson.body) {
+    const responseBody = await JSON.parse(responseJson.body);
+    return responseBody;
+  }
+  return null;
 }
 
 async function fetchLocalConfig(configFile) {
@@ -205,10 +213,7 @@ async function fetchLocalConfig(configFile) {
   return sampleConfig.data;
 }
 
-export async function fetchConfig(
-  configUrl,
-  cookies,
-) {
+export async function fetchConfig(apiUrl, cookies) {
   /*
   Fetch the chat configuration from the backend server. This is a POST request with the
   session key as the payload. The server will return the configuration
@@ -224,47 +229,19 @@ export async function fetchConfig(
   - debugMode is a boolean that is also stored in a cookie, managed by Django
     based on a Waffle switch 'reactapp_debug_mode'
   */
-  const sessionKey = getCookie(cookies.sessionCookie, "");
-  const debugMode = getCookie(cookies.debugCookie) === "true";
-  const requestBody = {
-    [cookies.sessionCookie.name]: sessionKey,
-  };
-  const init = {
-    method: "POST",
-    mode: "cors",
-    headers: requestHeadersFactory(cookies),
-    body: JSON.stringify(requestBody),
-  };
-
-  try {
-    if (developerMode) {
-      return fetchLocalConfig("sample-config.json");
-    }
-    let thisURL = new URL(configUrl);
-    if (sessionKey) {
-      thisURL.searchParams.append(cookies.sessionCookie.name, sessionKey);
-    }
-    let configURL = thisURL.toString();
-
-    if (debugMode) {
-      console.log("fetchConfig() - init: ", init);
-      console.log("fetchConfig() - configURL: ", configURL);
-    }
-
-    const response = await fetch(configURL, init);
-    const responseJson = await response.json(); // Convert the ReadableStream to a JSON object
-
-    if (debugMode) {
-      console.log("fetchConfig() - responseJson: ", responseJson);
-    }
-    if (response.ok) {
-      const newConfig = responseJson.data;
-      setCookie(cookies.sessionCookie);
-      setCookie(cookies.debugCookie);
-      return newConfig;
-    }
-  } catch (error) {
-    console.error("fetchConfig() error", error);
-    return fetchLocalConfig("error-config.json");
+  if (developerMode) {
+    return fetchLocalConfig("sample-config.json");
   }
+  const sessionKey = getCookie(cookies.sessionCookie, "");
+  const headers = requestHeadersFactory(cookies);
+  const body = JSON.stringify({ session_key: sessionKey });
+  const init = requestInitFactory(headers, body);
+  const url = urlFactory(apiUrl, "config/", sessionKey);
+  const newConfig = await getJsonResponse(url, init);
+  if (newConfig) {
+    setCookie(cookies.sessionCookie, newConfig.session_key);
+    setCookie(cookies.debugCookie, newConfig.debug_mode);
+    return newConfig;
+  }
+  return null;
 }

@@ -1,6 +1,16 @@
 SHELL := /bin/bash
 include .env
+export PATH := /usr/local/bin:$(PATH)
 export
+
+ifeq ($(OS),Windows_NT)
+    PYTHON := python.exe
+    ACTIVATE_VENV := venv\Scripts\activate
+else
+    PYTHON := python3.12
+    ACTIVATE_VENV := source venv/bin/activate
+endif
+PIP := $(PYTHON) -m pip
 
 ifneq ("$(wildcard .env)","")
 else
@@ -12,39 +22,6 @@ endif
 # Default target executed when no arguments are given to make.
 all: help
 
-# initialize local development environment.
-# takes around 5 minutes to complete
-init:
-	make tear-down			# start w a clean environment
-	make pre-commit-init	# install and configure pre-commit
-
-clean:
-	make clean
-
-# ---------------------------------------------------------
-# Code management
-# ---------------------------------------------------------
-
-lint:
-	make lint
-
-analyze:
-	cloc . --exclude-ext=svg,json,zip --fullpath --not-match-d=smarter/smarter/static/assets/ --vcs=git
-
-pre-commit-init:
-	pre-commit install
-	pre-commit autoupdate
-	pre-commit run --all-files
-
-pre-commit-run:
-	pre-commit run --all-files
-
-release:
-	git commit -m "fix: force a new release" --allow-empty && git push
-
-# ---------------------------------------------------------
-# React app
-# ---------------------------------------------------------
 clean:
 	rm -rf node_modules
 	rm -rf dist
@@ -53,6 +30,15 @@ init:
 	make clean
 	npm install
 	cd npm install && npm init @eslint/config
+
+analyze:
+	cloc . --exclude-ext=svg,json,zip --fullpath --not-match-d=smarter/smarter/static/assets/ --vcs=git
+
+pre-commit:
+	pre-commit run --all-files
+
+release:
+	git commit -m "fix: force a new release" --allow-empty && git push
 
 lint:
 	npm run lint
@@ -72,6 +58,31 @@ build:
 	npm run build
 
 
+# ---------------------------------------------------------
+# Python
+# ---------------------------------------------------------
+check-python:
+	@command -v $(PYTHON) >/dev/null 2>&1 || { echo >&2 "This project requires $(PYTHON) but it's not installed.  Aborting."; exit 1; }
+
+python-init:
+	mkdir -p .pypi_cache && \
+	make check-python
+	make python-clean && \
+	$(PYTHON) -m venv venv && \
+	$(ACTIVATE_VENV) && \
+	PIP_CACHE_DIR=.pypi_cache $(PIP) install --upgrade pip && \
+	PIP_CACHE_DIR=.pypi_cache $(PIP) install -r requirements/local.txt
+	source venv/bin/activate
+	pre-commit install
+	pre-commit autoupdate
+
+python-lint:
+	make check-python
+	make pre-commit-run
+
+python-clean:
+	rm -rf venv
+	find ./ -name __pycache__ -type d -exec rm -rf {} +
 
 ######################
 # HELP

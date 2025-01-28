@@ -22,9 +22,7 @@
       "app_name": "Error",
       "app_assistant": "Error",
       "app_welcome_message": "Error",
-      "app_example_prompts": [
-        "Error loading config"
-      ],
+      "app_example_prompts": ["Error loading config"],
       "app_placeholder": "Error loading config...",
       "app_info_url": "https://smarter.sh",
       "app_background_image_url": null,

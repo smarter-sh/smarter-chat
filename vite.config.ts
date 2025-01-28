@@ -1,6 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -11,10 +10,10 @@ export default defineConfig(({ mode }) => {
     },
   };
 
-  if (mode === 'dev') {
+  if (mode === "dev") {
     return {
       ...commonConfig,
-      base: '/',
+      base: "/",
       server: {
         port: 3000,
         open: true,
@@ -23,7 +22,7 @@ export default defineConfig(({ mode }) => {
   } else {
     return {
       ...commonConfig,
-      base: '/static/',
+      base: "/static/",
     };
   }
-})
+});

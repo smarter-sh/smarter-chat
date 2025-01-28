@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 import SmarterChat from "./components/SmarterChat/Component";
 import "./styles.css";
 
-const apiUrl = "https://platform.smarter.sh/chatbots/example/config/";
+const apiUrl = "https://example.3141-5926-5359.alpha.api.smarter.sh";
 const apiKey = null;
 const toggleMetadata = false;
 
@@ -27,5 +27,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       sessionCookieName={sessionCookieName}
       sessionCookieExpiration={sessionCookieExpiration}
     />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

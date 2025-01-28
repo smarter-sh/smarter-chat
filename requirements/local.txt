@@ -1,0 +1,11 @@
+
+# Code linters, formatters, and security scanners
+# ------------
+watchdog==4.0.1
+pre-commit==4.0.1
+mypy==1.14.1
+pylint==3.3.1
+pylint-django==2.6.1
+bandit==1.8.0
+tox==4.23.2
+codespell==2.3.0
