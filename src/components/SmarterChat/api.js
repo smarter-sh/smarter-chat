@@ -25,6 +25,8 @@
 // Set to true to enable local development mode,
 // which will simulate the server-side API calls.
 const developerMode = false;
+const userAgent = "SmarterChat/1.0";
+const applicationJson = "application/json";
 
 function getCookie(cookie, defaultValue = null) {
   let cookieValue = null;
@@ -57,7 +59,7 @@ function getCookie(cookie, defaultValue = null) {
   return cookieValue || defaultValue;
 }
 
-function setCookie(cookie, value) {
+export function setCookie(cookie, value) {
   const currentPath = window.location.pathname;
   if (value) {
     const expirationDate = new Date();
@@ -96,6 +98,7 @@ function promptRequestBodyFactory(messages, config) {
 }
 
 function requestHeadersFactory(cookies) {
+  console.log("requestHeadersFactory(): cookies", cookies);
   function getRequestCookies(cookies) {
     // Ensure that csrftoken is not included in the Cookie header.
     const cookiesArray = document.cookie.split(";").filter((cookie) => {
@@ -106,10 +109,8 @@ function requestHeadersFactory(cookies) {
     return selectedCookies;
   }
 
-  const userAgent = "SmarterChat/1.0";
-  const applicationJson = "application/json";
   const requestCookies = getRequestCookies(cookies);
-  const csrftoken = getCookie(cookies.csrfCookie.name, "");
+  const csrftoken = getCookie(cookies.csrfCookie, "");
   const authToken = null; // FIX NOTE: add me.
 
   return {
@@ -146,7 +147,7 @@ function urlFactory(apiUrl, endpoint, sessionKey) {
   return url;
 }
 
-async function getJsonResponse(url, init) {
+async function getJsonResponse(url, init, cookies) {
   const debugMode = getCookie(cookies.debugCookie) === "true";
   try {
     const response = await fetch(url, init);
@@ -158,12 +159,14 @@ async function getJsonResponse(url, init) {
         console.log("getJsonResponse(): response url: ", url);
         console.log("getJsonResponse(): response init: ", init);
         console.log("getJsonResponse(): response status: ", status);
-        console.log("getJsonResponse(): response: ", responseJson);
       }
 
       if (response.ok) {
         const responseJson = await response.json(); // Convert the ReadableStream to a JSON object
         const responseJsonData = await responseJson.data; // ditto
+        if (debugMode || developerMode) {
+          console.log("getJsonResponse(): response: ", responseJson);
+        }
         return responseJsonData;
       } else {
         /*
@@ -199,7 +202,7 @@ export async function fetchPrompt(config, messages, cookies) {
   const headers = requestHeadersFactory(cookies);
   const body = promptRequestBodyFactory(messages, config);
   const init = requestInitFactory(headers, body);
-  const responseJson = await getJsonResponse(url, init);
+  const responseJson = await getJsonResponse(url, init, cookies);
   if (responseJson && responseJson.body) {
     const responseBody = await JSON.parse(responseJson.body);
     return responseBody;
@@ -237,7 +240,7 @@ export async function fetchConfig(apiUrl, cookies) {
   const body = JSON.stringify({ session_key: sessionKey });
   const init = requestInitFactory(headers, body);
   const url = urlFactory(apiUrl, "config/", sessionKey);
-  const newConfig = await getJsonResponse(url, init);
+  const newConfig = await getJsonResponse(url, init, cookies);
   if (newConfig) {
     setCookie(cookies.sessionCookie, newConfig.session_key);
     setCookie(cookies.debugCookie, newConfig.debug_mode);

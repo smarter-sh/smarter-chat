@@ -1,10 +1,11 @@
 // a tiny app for development and testing
 import React from "react";
 import ReactDOM from "react-dom/client";
-import SmarterChat from "./components/SmarterChat/Component";
+import SmarterChat from "./components/SmarterChat/SmarterChat";
 import "./styles.css";
 
-const apiUrl = "https://example.3141-5926-5359.alpha.api.smarter.sh";
+//const apiUrl = "https://example.3141-5926-5359.alpha.api.smarter.sh";
+const apiUrl = "http://example.3141-5926-5359.api.localhost:8000";
 const apiKey = null;
 const toggleMetadata = false;
 

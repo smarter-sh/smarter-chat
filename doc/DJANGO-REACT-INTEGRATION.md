@@ -284,6 +284,7 @@ MIDDLEWARE += [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:3000",
 ]
 
 # for any React-based implementations of plugin technologies

@@ -38,7 +38,7 @@ import { ErrorModal } from "../ErrorModal/ErrorModal.jsx";
 // This component
 import "./styles.css";
 import { MessageDirectionEnum, SenderRoleEnum } from "./enums.js";
-import { setSessionCookie, fetchConfig, fetchPrompt } from "./api.js";
+import { setCookie, fetchConfig, fetchPrompt } from "./api.js";
 import {
   cookieMetaFactory,
   messageFactory,
@@ -134,6 +134,9 @@ function SmarterChat({
   const fetchAndSetConfig = async () => {
     try {
       const newConfig = await refetchConfig();
+
+      console.log("fetchAndSetConfig() config:", newConfig);
+
       setPlaceholderText(newConfig.chatbot.app_placeholder);
       setConfigApiUrl(newConfig.chatbot.url_chatbot);
       setAssistantName(newConfig.chatbot.app_assistant);
@@ -227,7 +230,7 @@ function SmarterChat({
   };
 
   const handleAddUserButtonClick = () => {
-    setSessionCookie("", debugMode, sessionCookieName, sessionCookieExpiration);
+    setCookie(cookies.sessionCookie, "");
     fetchAndSetConfig();
   };
 
@@ -320,6 +323,9 @@ function SmarterChat({
   // Creates a fancier title for the chat app which includes
   // fontawesome icons for validation and deployment status.
   function AppTitle({ title, isValid, isDeployed }) {
+    console.log("AppTitle() title:", title);
+    console.log("AppTitle() isValid:", isValid);
+    console.log("AppTitle() isDeployed:", isDeployed);
     return (
       <div>
         {title}&nbsp;

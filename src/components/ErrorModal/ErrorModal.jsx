@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamation } from "@fortawesome/free-solid-svg-icons";
 
-import "./Modal.css";
+import "./ErrorModal.css";
 
 export function ErrorModal(props) {
   const ModalStyle = {
