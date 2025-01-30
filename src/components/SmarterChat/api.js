@@ -197,7 +197,9 @@ async function getJsonResponse(url, init, cookies) {
 }
 
 export async function fetchPrompt(config, messages, cookies) {
-  const apiUrl = config.api_url;
+  console.log("fetchPrompt(): config", config);
+  const apiUrl = config.meta_data.url;
+  const sessionKey = getCookie(cookies.sessionCookie, "");
   const url = urlFactory(apiUrl, null, sessionKey);
   const headers = requestHeadersFactory(cookies);
   const body = promptRequestBodyFactory(messages, config);
