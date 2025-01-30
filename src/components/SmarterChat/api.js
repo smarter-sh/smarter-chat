@@ -150,17 +150,20 @@ function urlFactory(apiUrl, endpoint, sessionKey) {
 async function getJsonResponse(url, init, cookies) {
   const debugMode = getCookie(cookies.debugCookie) === "true";
   try {
+    if (debugMode || developerMode) {
+      console.log(
+        "getJsonResponse(): url: ",
+        url,
+        ", init: ",
+        init,
+        ", cookies: ",
+        cookies,
+      );
+    }
     const response = await fetch(url, init);
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes(applicationJson)) {
       const status = await response.status;
-
-      if (debugMode || developerMode) {
-        console.log("getJsonResponse(): response url: ", url);
-        console.log("getJsonResponse(): response init: ", init);
-        console.log("getJsonResponse(): response status: ", status);
-      }
-
       if (response.ok) {
         const responseJson = await response.json(); // Convert the ReadableStream to a JSON object
         const responseJsonData = await responseJson.data; // ditto

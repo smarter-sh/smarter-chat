@@ -323,9 +323,6 @@ function SmarterChat({
   // Creates a fancier title for the chat app which includes
   // fontawesome icons for validation and deployment status.
   function AppTitle({ title, isValid, isDeployed }) {
-    console.log("AppTitle() title:", title);
-    console.log("AppTitle() isValid:", isValid);
-    console.log("AppTitle() isDeployed:", isDeployed);
     return (
       <div>
         {title}&nbsp;
