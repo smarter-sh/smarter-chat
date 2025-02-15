@@ -18,7 +18,9 @@ const debugCookieExpiration = DEFAULT_COOKIE_EXPIRATION;
 const sessionCookieName = "session_key";
 const sessionCookieExpiration = DEFAULT_COOKIE_EXPIRATION;
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+ReactDOM.createRoot(
+  document.getElementById("smarter-sh-v1-ui-chat-root"),
+).render(
   <React.StrictMode>
     <SmarterChat
       apiUrl={apiUrl}
