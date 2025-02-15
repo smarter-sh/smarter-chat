@@ -2,7 +2,7 @@
 # Makefile for the React.js app
 # ---------------------------------------------------------
 
-# Set the environment variable based on the git branch name
+# Set environment variables based on the git branch name
 # aws resources were created by Terraform in the smarter-infrastructure repository
 # https://github.com/smarter-sh/smarter-infrastructure
 BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
@@ -49,8 +49,6 @@ else
 endif
 
 .PHONY: help clean npm-check analyze pre-commit lint update python-check python-init init run build release
-
-# Default target executed when no arguments are given to make.
 all: help
 
 # ---------------------------------------------------------

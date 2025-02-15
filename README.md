@@ -6,20 +6,22 @@
 
 # SmarterChat React.js component
 
-Implements the interactive chatbot found in the Smarter web console [developer sandbox](https://platform.smarter.sh/chatbots/example/). It integrates natively with Smarter Saas and on-premise installations. You can optionally enable the meta data output behavior found in the Smarter sandbox.
+This project contains the source code for the interactive chatbot found in the Smarter web console [developer sandbox](https://platform.smarter.sh/chatbots/example/). It integrates natively with Smarter Saas and on-premise installations. You can optionally enable the meta data output behavior found in the Smarter sandbox.
+
+This project is also suitable for all front-end cross-platform projects. For example, use this code base to create a react.js run-time for use inside of Wordpress plugins, salesforce.com apps, .net components and Sharepoint add-ins.
 
 This app interacts with two endpoints from the [smarter.sh/v1](https://platform.smarter.sh/docs/api/) api:
 
 ## Usage
 
 ```console
-npm install @smarter/chat
+npm install @smarter/ui-chat
 ```
 
 ```jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { SmarterChat } from "@smarter/chat";
+import { SmarterChat } from "@smarter/ui-chat";
 
 // Api url endpoint for your chatbot.
 const apiUrl = "https://platform.smarter.sh/chatbots/example/config/";
@@ -103,17 +105,33 @@ example http response:
 
 ### Getting Started
 
-Use the Makefile that is included. It does several things that will save you lots of time, namely, it:
+Use the Makefile that is included. Type `make` for a full menu of commands. It does several things that will save you lots of time, namely, it:
 
 - sets up your Node environment for you
 - initializes pre-commit, which you need to run prior to creating pull requests
 - provides helpful automations for build-deploy to AWS Cloudfront
 
+Setup your environment for first time use:
+
 ```console
-make help
 make init
+```
+
+Run the dev server locally
+
+```console
 make run
+```
+
+Build the react.js project
+
+```console
 make build
+```
+
+Deploy the reacdt.js project
+
+```console
 make release
 ```
 
