@@ -6,27 +6,26 @@
 # aws resources were created by Terraform in the smarter-infrastructure repository
 # https://github.com/smarter-sh/smarter-infrastructure
 BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
+TARGET_FOLDER := ui-chat
 ifeq ($(BRANCH_NAME),main)
     ENVIRONMENT := prod
-    TARGET := s3://platform.smarter.sh/ui-chat/
+    BUCKET := platform.smarter.sh
     DISTRIBUTION_ID := E1AQ8TNR0TZNRT
     URL := https://cdn.platform.smarter.sh/ui-chat/
 else ifeq ($(BRANCH_NAME),alpha)
     ENVIRONMENT := alpha
-    TARGET := s3://alpha.platform.smarter.sh/ui-chat/
-    DISTRIBUTION_ID := E3JWACRWT53O2W
+    BUCKET := alpha.platform.smarter.sh
     URL := https://cdn.alpha.platform.smarter.sh/ui-chat/
 else ifeq ($(BRANCH_NAME),beta)
     ENVIRONMENT := beta
-    TARGET := s3://beta.platform.smarter.sh/ui-chat/
-    DISTRIBUTION_ID := E35HUO4KP86MSQ
+    BUCKET := beta.platform.smarter.sh
     URL := https://cdn.beta.platform.smarter.sh/ui-chat/
 else
     ENVIRONMENT := $(BRANCH_NAME)
-    TARGET := not-deployable
-    DISTRIBUTION_ID := ''
+    BUCKET := no-bucket
     URL := ''
 endif
+TARGET := s3://$(BUCKET)/$(TARGET_FOLDER)
 
 # Detect the operating system and set the shell accordingly
 SHELL := /bin/bash
@@ -118,40 +117,41 @@ build:
 	npm run build
 
 release:
-	#---------------------------------------------------------
-	# usage:      deploy prouduction build of ui-chat.smarter.sh
-	#             react.js app to AWS S3 bucket.
-	#
-	#			  Hosts the React.js app on AWS S3 and Cloudfront.
-	#			  - alpha: https://cdn.alpha.platform.smarter.sh/ui-chat/
-	#			  - beta: https://cdn.beta.platform.smarter.sh/ui-chat/
-	#			  - prod: https://cdn.platform.smarter.sh/ui-chat/
-	#
-	#             https://gist.github.com/kellyrmilligan/e242d3dc743105fe91a83cc933ee1314
-	#
-	#             1. Build the React application
-	#             2. Upload to AWS S3
-	#             3. Invalidate all items in the AWS Cloudfront CDN.
-	#---------------------------------------------------------
-	export AWS_PROFILE=lawrence
+    #---------------------------------------------------------
+    # usage:      deploy prouduction build of ui-chat.smarter.sh
+    #             react.js app to AWS S3 bucket.
+    #
+    #             https://gist.github.com/kellyrmilligan/e242d3dc743105fe91a83cc933ee1314
+    #
+    #             1. Build the React application
+    #             2. Upload to AWS S3
+    #             3. Invalidate all items in the AWS Cloudfront CDN.
+    #---------------------------------------------------------
+	@echo 'AWS_PROFILE=$(AWS_PROFILE)'
 	make build
 
-	# ------------------------
-	# add all built files to the S3 bucket.
-	# ------------------------
+    # ------------------------
+    # Ensure the S3 bucket and folder exist
+    # ------------------------
+	aws s3 ls $(BUCKET) || { echo "aws s3 bucket $(BUCKET) does not exist. Aborting."; exit 1; }
+    aws s3 ls $(TARGET) || aws s3 put-object --bucket $(BUCKET) --key $(TARGET_FOLDER)
+
+    # ------------------------
+    # add all built files to the S3 bucket.
+    # ------------------------
 	aws s3 sync ./build/ $(TARGET) \
 				--acl public-read \
 				--delete --cache-control max-age=31536000,public \
 				--expires '31 Dec 2050 00:00:01 GMT'
 
-	# ------------------------
-	# remove the cache-control header created above with a "no-cache" header so that browsers never cache these files
-	# ------------------------
+    # ------------------------
+    # remove the cache-control header created above with a "no-cache" header so that browsers never cache these files
+    # ------------------------
 	aws s3 cp $(TARGET)/service-worker.js $(TARGET)/service-worker.js --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type application/javascript --acl public-read
 	aws s3 cp $(TARGET)/index.html $(TARGET)/index.html --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --acl public-read
 	aws s3 cp $(TARGET)/manifest.json $(TARGET)/manifest.json --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/json --acl public-read
 
-	# invalidate the Cloudfront cache
+    # invalidate the Cloudfront cache
 	aws cloudfront create-invalidation --distribution-id E2364TSMHRWAWL --paths "/*" "/index.html" "/sitemap.xml" "/manifest.json" "/service-worker.js"
 
 ######################
@@ -161,6 +161,7 @@ release:
 help:
 	@echo '===================================================================='
 	@echo 'smarter-chat customizable react.js app for the Smarter Platform'
+	@echo 'AWS_PROFILE=$(AWS_PROFILE)'
 	@echo 'environment: $(ENVIRONMENT)'
 	@echo 'aws s3 build target: $(TARGET)'
 	@echo 'aws cloudfront distribution-id: $(DISTRIBUTION_ID)'
