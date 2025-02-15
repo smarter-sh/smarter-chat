@@ -103,9 +103,18 @@ example http response:
 
 ### Getting Started
 
+Use the Makefile that is included. It does several things that will save you lots of time, namely, it:
+
+- sets up your Node environment for you
+- initializes pre-commit, which you need to run prior to creating pull requests
+- provides helpful automations for build-deploy to AWS Cloudfront
+
 ```console
+make help
 make init
 make run
+make build
+make release
 ```
 
 ### Architecture

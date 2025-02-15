@@ -11,15 +11,15 @@ ifeq ($(BRANCH_NAME),main)
     ENVIRONMENT := prod
     BUCKET := platform.smarter.sh
     DISTRIBUTION_ID := E1AQ8TNR0TZNRT
-    URL := https://cdn.platform.smarter.sh/ui-chat/
+    URL := https://cdn.platform.smarter.sh/$(TARGET_FOLDER)/
 else ifeq ($(BRANCH_NAME),alpha)
     ENVIRONMENT := alpha
     BUCKET := alpha.platform.smarter.sh
-    URL := https://cdn.alpha.platform.smarter.sh/ui-chat/
+    URL := https://cdn.alpha.platform.smarter.sh/$(TARGET_FOLDER)/
 else ifeq ($(BRANCH_NAME),beta)
     ENVIRONMENT := beta
     BUCKET := beta.platform.smarter.sh
-    URL := https://cdn.beta.platform.smarter.sh/ui-chat/
+    URL := https://cdn.beta.platform.smarter.sh/$(TARGET_FOLDER)/
 else
     ENVIRONMENT := $(BRANCH_NAME)
     BUCKET := no-bucket
@@ -118,14 +118,14 @@ build:
 
 release:
     #---------------------------------------------------------
-    # usage:      deploy prouduction build of ui-chat.smarter.sh
-    #             react.js app to AWS S3 bucket.
+    # usage: deploy prouduction build of chat UI for Smarter Platform
+    #        react.js app to AWS S3 bucket.
     #
-    #             https://gist.github.com/kellyrmilligan/e242d3dc743105fe91a83cc933ee1314
+    # https://gist.github.com/kellyrmilligan/e242d3dc743105fe91a83cc933ee1314
     #
-    #             1. Build the React application
-    #             2. Upload to AWS S3
-    #             3. Invalidate all items in the AWS Cloudfront CDN.
+    # 1. Build the React application
+    # 2. Upload to AWS S3
+    # 3. Invalidate all items in the AWS Cloudfront CDN.
     #---------------------------------------------------------
 	@echo 'AWS_PROFILE=$(AWS_PROFILE)'
 	make build
@@ -152,7 +152,7 @@ release:
 	aws s3 cp $(TARGET)/manifest.json $(TARGET)/manifest.json --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/json --acl public-read
 
     # invalidate the Cloudfront cache
-	aws cloudfront create-invalidation --distribution-id E2364TSMHRWAWL --paths "/*" "/index.html" "/sitemap.xml" "/manifest.json" "/service-worker.js"
+	aws cloudfront create-invalidation --distribution-id $(DISTRIBUTION_ID) --paths "/*" "/service-worker.js" "/index.html" "/manifest.json"
 
 ######################
 # HELP
