@@ -18,22 +18,30 @@ const debugCookieExpiration = DEFAULT_COOKIE_EXPIRATION;
 const sessionCookieName = "session_key";
 const sessionCookieExpiration = DEFAULT_COOKIE_EXPIRATION;
 
-ReactDOM.createRoot(
-  document.getElementById("smarter-sh-v1-ui-chat-root"),
-).render(
-  <React.StrictMode>
-    <SmarterChat
-      apiUrl={apiUrl}
-      apiKey={apiKey}
-      toggleMetadata={toggleMetadata}
-      csrfCookieName={csrfCookieName}
-      debugCookieName={debugCookieName}
-      debugCookieExpiration={debugCookieExpiration}
-      sessionCookieName={sessionCookieName}
-      sessionCookieExpiration={sessionCookieExpiration}
-    />
-  </React.StrictMode>,
-);
+document.addEventListener("DOMContentLoaded", () => {
+  const rootElement = document.getElementById("smarter-sh-v1-ui-chat-root");
+  if (rootElement) {
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(
+      <React.StrictMode>
+        <SmarterChat
+          apiUrl={apiUrl}
+          apiKey={apiKey}
+          toggleMetadata={toggleMetadata}
+          csrfCookieName={csrfCookieName}
+          debugCookieName={debugCookieName}
+          debugCookieExpiration={debugCookieExpiration}
+          sessionCookieName={sessionCookieName}
+          sessionCookieExpiration={sessionCookieExpiration}
+        />
+      </React.StrictMode>,
+    );
+  } else {
+    console.error(
+      "Root element not found. Begin your trouble shooting journey here: https://github.com/smarter-sh/smarter-chat/blob/main/src/main.jsx",
+    );
+  }
+});
 
 // Register the service worker
-serviceWorkerRegistration.register();
+//serviceWorkerRegistration.register();
