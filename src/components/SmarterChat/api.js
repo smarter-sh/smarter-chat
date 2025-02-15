@@ -227,7 +227,8 @@ export async function fetchConfig(apiUrl, cookies) {
   session key as the payload. The server will return the configuration
   as a JSON object.
 
-  See class ChatConfigView(View, AccountMixin) in smarter/smarter/apps/chatapp/views.py.
+  See class ChatConfigView(View, AccountMixin) in
+  https://github.com/smarter-sh/smarter/blob/main/smarter/smarter/apps/chatapp/views.py
   Things to note:
   - The session key is used to identify the user, the chatbot,
     and the chat history.

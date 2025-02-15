@@ -25,7 +25,7 @@ else
     BUCKET := no-bucket
     URL := ''
 endif
-TARGET := s3://$(BUCKET)/$(TARGET_FOLDER)
+S3_TARGET := s3://$(BUCKET)/$(TARGET_FOLDER)
 
 # Detect the operating system and set the shell accordingly
 SHELL := /bin/bash
@@ -114,6 +114,35 @@ run:
 build:
 	npm run build
 
+aws-verify-bucket:
+    # ------------------------
+    # Ensure the S3 bucket and folder exist
+    # ------------------------
+	@echo 'Checking if the S3 bucket $(BUCKET) exists...'
+	aws s3 ls $(BUCKET) || { echo "aws s3 bucket $(BUCKET) does not exist. Aborting."; exit 1; }
+	@echo 'Checking if the S3 bucket folder $(S3_TARGET) exists...'
+	aws s3 ls $(S3_TARGET) || aws s3 put-object --bucket $(BUCKET) --key $(TARGET_FOLDER)/
+
+aws-sync-s3:
+    # ------------------------
+    # add all built files to the S3 bucket.
+    # ------------------------
+	aws s3 sync ./build/ $(S3_TARGET) \
+				--acl public-read \
+				--delete --cache-control max-age=31536000,public \
+				--expires '31 Dec 2050 00:00:01 GMT'
+
+aws-bust-cache:
+    # ------------------------
+    # remove the cache-control header created above with a "no-cache" header so that browsers never cache these files
+    # ------------------------
+	aws s3 cp $(S3_TARGET)/service-worker.js $(S3_TARGET)/service-worker.js --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type application/javascript --acl public-read
+	aws s3 cp $(S3_TARGET)/index.html $(S3_TARGET)/index.html --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --acl public-read
+	aws s3 cp $(S3_TARGET)/manifest.json $(S3_TARGET)/manifest.json --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/json --acl public-read
+
+    # invalidate the Cloudfront cache
+	aws cloudfront create-invalidation --distribution-id $(DISTRIBUTION_ID) --paths "/*" "/service-worker.js" "/index.html" "/manifest.json"
+
 release:
     #---------------------------------------------------------
     # usage: deploy prouduction build of chat UI for Smarter Platform
@@ -127,30 +156,10 @@ release:
     #---------------------------------------------------------
 	@echo 'AWS_PROFILE=$(AWS_PROFILE)'
 	make build
+	make aws-verify-bucket
+	make aws-sync-s3
+	make aws-bust-cache
 
-    # ------------------------
-    # Ensure the S3 bucket and folder exist
-    # ------------------------
-	aws s3 ls $(BUCKET) || { echo "aws s3 bucket $(BUCKET) does not exist. Aborting."; exit 1; }
-    aws s3 ls $(TARGET) || aws s3 put-object --bucket $(BUCKET) --key $(TARGET_FOLDER)
-
-    # ------------------------
-    # add all built files to the S3 bucket.
-    # ------------------------
-	aws s3 sync ./build/ $(TARGET) \
-				--acl public-read \
-				--delete --cache-control max-age=31536000,public \
-				--expires '31 Dec 2050 00:00:01 GMT'
-
-    # ------------------------
-    # remove the cache-control header created above with a "no-cache" header so that browsers never cache these files
-    # ------------------------
-	aws s3 cp $(TARGET)/service-worker.js $(TARGET)/service-worker.js --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type application/javascript --acl public-read
-	aws s3 cp $(TARGET)/index.html $(TARGET)/index.html --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --acl public-read
-	aws s3 cp $(TARGET)/manifest.json $(TARGET)/manifest.json --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/json --acl public-read
-
-    # invalidate the Cloudfront cache
-	aws cloudfront create-invalidation --distribution-id $(DISTRIBUTION_ID) --paths "/*" "/service-worker.js" "/index.html" "/manifest.json"
 
 ######################
 # HELP
@@ -161,7 +170,7 @@ help:
 	@echo 'smarter-chat customizable react.js app for the Smarter Platform'
 	@echo 'AWS_PROFILE=$(AWS_PROFILE)'
 	@echo 'environment: $(ENVIRONMENT)'
-	@echo 'aws s3 build target: $(TARGET)'
+	@echo 'aws s3 build target: $(S3_TARGET)'
 	@echo 'aws cloudfront distribution-id: $(DISTRIBUTION_ID)'
 	@echo 'url: $(URL)'
 	@echo '===================================================================='
@@ -178,4 +187,6 @@ help:
 	@echo 'python-check     - Ensure that Python is installed'
 	@echo 'python-init      - Create Python virtual environment and install dependencies'
 	@echo 'pre-commit       - runs all pre-commit hooks on all files'
+	@echo 'aws-verify-bucket- Ensure the S3 bucket and folder exist'
+	@echo 'aws-sync-s3	    - Add all built files to the S3 bucket'
 	@echo '--------------------------------------------------------------------'

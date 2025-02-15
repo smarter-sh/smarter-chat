@@ -14,12 +14,7 @@ module.exports = {
     [
       "@semantic-release/git",
       {
-        assets: [
-          "CHANGELOG.md",
-          "smarter/smarter/apps/chatapp/reactapp/package.json",
-          "smarter/smarter/apps/chatapp/reactapp/package-lock.json",
-          "smarter/requirements/**/*",
-        ],
+        assets: ["CHANGELOG.md", "package.json", "package-lock.json"],
         message:
           "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
       },

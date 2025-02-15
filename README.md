@@ -129,7 +129,7 @@ Build the react.js project
 make build
 ```
 
-Deploy the reacdt.js project
+Deploy the react.js project
 
 ```console
 make release

@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: true,
     },
+    root: "src",
   };
 
   if (mode === "dev") {

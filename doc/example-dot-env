@@ -14,5 +14,5 @@
 # For local development
 ################################################################
 ENVIRONMENT=local
-PYTHONPATH=./venv:./smarter
+PYTHONPATH=./venv
 API_URL=http://api.smarter.sh/v1/chatbots/smarter/example/
