@@ -1,1 +1,1 @@
-ENVIRONMENT = "alpha";
+export const ENVIRONMENT = "alpha";

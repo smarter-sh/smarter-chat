@@ -1,6 +1,7 @@
 # ---------------------------------------------------------
 # Makefile for the React.js app
 # ---------------------------------------------------------
+@echo 'AWS_PROFILE=$(AWS_PROFILE)'
 
 # Set environment variables based on the git branch name
 # aws resources were created by Terraform in the smarter-infrastructure repository
@@ -34,9 +35,11 @@ export PATH := /usr/local/bin:$(PATH)
 export
 
 ifeq ($(OS),Windows_NT)
+    AWS_CLI := aws
     PYTHON := python.exe
     ACTIVATE_VENV := venv\Scripts\activate
 else
+    AWS_CLI := /opt/homebrew/bin/aws
     PYTHON := python3.12
     ACTIVATE_VENV := source venv/bin/activate
 endif
@@ -48,7 +51,7 @@ else
     $(shell cp ./doc/example-dot-env .env)
 endif
 
-.PHONY: help clean npm-check analyze pre-commit lint update python-check python-init init run build release
+.PHONY: help clean npm-check analyze pre-commit lint update python-check python-init init run build release aws-verify-bucket aws-sync-s3 aws-bust-cache
 all: help
 
 # ---------------------------------------------------------
@@ -112,6 +115,7 @@ run:
 	npm run dev
 
 build:
+	@echo 'Building the React app...'
 	npm run build
 
 aws-verify-bucket:
@@ -119,15 +123,16 @@ aws-verify-bucket:
     # Ensure the S3 bucket and folder exist
     # ------------------------
 	@echo 'Checking if the S3 bucket $(BUCKET) exists...'
-	aws s3 ls $(BUCKET) || { echo "aws s3 bucket $(BUCKET) does not exist. Aborting."; exit 1; }
+	$(AWS_CLI) s3 ls $(BUCKET) || { echo "aws s3 bucket $(BUCKET) does not exist. Aborting."; exit 1; }
 	@echo 'Checking if the S3 bucket folder $(S3_TARGET) exists...'
-	aws s3 ls $(S3_TARGET) || aws s3 put-object --bucket $(BUCKET) --key $(TARGET_FOLDER)/
+	$(AWS_CLI) s3 ls $(S3_TARGET) || $(AWS_CLI) s3 put-object --bucket $(BUCKET) --key $(TARGET_FOLDER)/
 
 aws-sync-s3:
     # ------------------------
     # add all built files to the S3 bucket.
     # ------------------------
-	aws s3 sync ./build/ $(S3_TARGET) \
+	@echo 'Syncing the build folder to the S3 bucket...'
+	$(AWS_CLI) s3 sync ./build/ $(S3_TARGET) \
 				--acl public-read \
 				--delete --cache-control max-age=31536000,public \
 				--expires '31 Dec 2050 00:00:01 GMT'
@@ -136,12 +141,12 @@ aws-bust-cache:
     # ------------------------
     # remove the cache-control header created above with a "no-cache" header so that browsers never cache these files
     # ------------------------
-	aws s3 cp $(S3_TARGET)/service-worker.js $(S3_TARGET)/service-worker.js --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type application/javascript --acl public-read
-	aws s3 cp $(S3_TARGET)/index.html $(S3_TARGET)/index.html --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --acl public-read
-	aws s3 cp $(S3_TARGET)/manifest.json $(S3_TARGET)/manifest.json --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/json --acl public-read
+	@echo 'Creating cache invalidations for service-worker.js, index.html, and manifest.json files...'
+	$(AWS_CLI) s3 cp $(S3_TARGET)/index.html $(S3_TARGET)/index.html --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --acl public-read
+	$(AWS_CLI) s3 cp $(S3_TARGET)/manifest.json $(S3_TARGET)/manifest.json --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/json --acl public-read
 
     # invalidate the Cloudfront cache
-	aws cloudfront create-invalidation --distribution-id $(DISTRIBUTION_ID) --paths "/*" "/service-worker.js" "/index.html" "/manifest.json"
+	$(AWS_CLI) cloudfront create-invalidation --distribution-id $(DISTRIBUTION_ID) --paths "/*" "/index.html" "/manifest.json"
 
 release:
     #---------------------------------------------------------
@@ -154,7 +159,6 @@ release:
     # 2. Upload to AWS S3
     # 3. Invalidate all items in the AWS Cloudfront CDN.
     #---------------------------------------------------------
-	@echo 'AWS_PROFILE=$(AWS_PROFILE)'
 	make build
 	make aws-verify-bucket
 	make aws-sync-s3

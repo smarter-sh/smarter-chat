@@ -3,6 +3,7 @@
 .env
 package-lock.json
 node_modules
+build
 dist
 dist-ssr
 *.local

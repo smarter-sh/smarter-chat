@@ -9,7 +9,6 @@
 // example imageUrl: https://cdn.lawrencemcdaniel.com/wp-content/uploads/2021/02/12213439/swagger_logo.png
 //
 import { precacheAndRoute } from "workbox-precaching";
-import { wpGetFeaturedImage } from "./wpGetFeaturedImage";
 
 export const prefetch = (url) => {
   //console.log("prefetching: ", url);
@@ -38,7 +37,7 @@ export const prefetch = (url) => {
 
       arr.forEach((post) => {
         // see https://developers.google.com/web/tools/workbox/modules/workbox-precaching#explanation_of_the_precache_list
-        const imageUrl = wpGetFeaturedImage(post);
+        const imageUrl = "https://cdn.example.com/my-image.png";
 
         if (imageUrl) {
           const precacheDict = {

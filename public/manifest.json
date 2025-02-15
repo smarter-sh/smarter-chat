@@ -1,0 +1,33 @@
+{
+  "short_name": "ui-smarter",
+  "name": "ui-smarter Chat - react.js chat UI for the Smarter Platform",
+  "icons": [
+    {
+      "src": "favicon-192x192.png",
+      "sizes": "192x192 128x128 64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo-orange-transparent.png",
+      "type": "image/png",
+      "sizes": "640x320"
+    },
+    {
+      "src": "logo-white-transparent.png",
+      "type": "image/png",
+      "sizes": "640x320"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "description": "Chat UI for Smarter Platform.",
+  "screenshots": [
+    {
+      "src": "/assets/images/screenshot1.png",
+      "type": "image/png",
+      "sizes": "726x518"
+    }
+  ]
+}
