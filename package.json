@@ -49,13 +49,15 @@
     "dotenv": "^16.4.7",
     "i": "^0.3.7",
     "npm": "^11.0.0",
+    "path": "^0.12.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
     "react-icons": "^5.4.0",
     "react-modal": "^3.16.3",
     "styled-components": "^6.1.15",
-    "vite-plugin-comlink": "^5.1.0"
+    "vite-plugin-comlink": "^5.1.0",
+    "vite-plugin-html": "^3.2.2"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",

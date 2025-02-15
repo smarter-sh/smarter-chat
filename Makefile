@@ -61,7 +61,7 @@ clean:
 	rm -rf .pypi_cache
 	rm -rf venv
 	rm -rf node_modules
-	rm -rf dist
+	rm -rf build
 
 npm-check:
 	@command -v npm >/dev/null 2>&1 || { echo >&2 "This project requires npm but it's not installed.  Aborting."; exit 1; }
@@ -116,6 +116,7 @@ run:
 
 build:
 	@echo 'Building the React app...'
+	rm -rf build
 	npm run build
 
 aws-verify-bucket:

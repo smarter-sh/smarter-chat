@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: true,
       outDir: "../build",
+      assetsDir: "assets",
       rollupOptions: {
         input: {
           main: resolve(__dirname, "src/index.html"),
@@ -41,7 +42,7 @@ export default defineConfig(({ mode }) => {
   } else {
     return {
       ...commonConfig,
-      base: "/static/",
+      base: "/",
     };
   }
 });
