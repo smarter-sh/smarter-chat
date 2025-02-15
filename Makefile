@@ -3,6 +3,8 @@
 # ---------------------------------------------------------
 
 # Set the environment variable based on the git branch name
+# aws resources were created by Terraform in the smarter-infrastructure repository
+# https://github.com/smarter-sh/smarter-infrastructure
 BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
 ifeq ($(BRANCH_NAME),main)
     ENVIRONMENT := prod
@@ -20,10 +22,10 @@ else ifeq ($(BRANCH_NAME),beta)
     DISTRIBUTION_ID := E35HUO4KP86MSQ
     URL := https://cdn.beta.platform.smarter.sh/ui-chat/
 else
-    ENVIRONMENT := local
-    TARGET := local
-    DISTRIBUTION_ID := local
-    URL := local
+    ENVIRONMENT := $(BRANCH_NAME)
+    TARGET := not-deployable
+    DISTRIBUTION_ID := ''
+    URL := ''
 endif
 
 # Detect the operating system and set the shell accordingly
@@ -158,9 +160,9 @@ release:
 
 help:
 	@echo '===================================================================='
-	@echo 'smarter-chat'
+	@echo 'smarter-chat customizable react.js app for the Smarter Platform'
 	@echo 'environment: $(ENVIRONMENT)'
-	@echo 'target: $(TARGET)'
+	@echo 'aws s3 build target: $(TARGET)'
 	@echo 'aws cloudfront distribution-id: $(DISTRIBUTION_ID)'
 	@echo 'url: $(URL)'
 	@echo '===================================================================='
