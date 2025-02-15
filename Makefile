@@ -1,3 +1,32 @@
+# ---------------------------------------------------------
+# Makefile for the React.js app
+# ---------------------------------------------------------
+
+# Set the environment variable based on the git branch name
+BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
+ifeq ($(BRANCH_NAME),main)
+    ENVIRONMENT := prod
+    TARGET := s3://platform.smarter.sh/ui-chat/
+    DISTRIBUTION_ID := E1AQ8TNR0TZNRT
+    URL := https://cdn.platform.smarter.sh/ui-chat/
+else ifeq ($(BRANCH_NAME),alpha)
+    ENVIRONMENT := alpha
+    TARGET := s3://alpha.platform.smarter.sh/ui-chat/
+    DISTRIBUTION_ID := E3JWACRWT53O2W
+    URL := https://cdn.alpha.platform.smarter.sh/ui-chat/
+else ifeq ($(BRANCH_NAME),beta)
+    ENVIRONMENT := beta
+    TARGET := s3://beta.platform.smarter.sh/ui-chat/
+    DISTRIBUTION_ID := E35HUO4KP86MSQ
+    URL := https://cdn.beta.platform.smarter.sh/ui-chat/
+else
+    ENVIRONMENT := local
+    TARGET := local
+    DISTRIBUTION_ID := local
+    URL := local
+endif
+
+# Detect the operating system and set the shell accordingly
 SHELL := /bin/bash
 include .env
 export PATH := /usr/local/bin:$(PATH)
@@ -12,6 +41,7 @@ else
 endif
 PIP := $(PYTHON) -m pip
 
+# Ensure that the .env file exists
 ifneq ("$(wildcard .env)","")
 else
     $(shell cp ./doc/example-dot-env .env)
@@ -86,14 +116,53 @@ build:
 	npm run build
 
 release:
-	git commit -m "fix: force a new release" --allow-empty && git push
+	#---------------------------------------------------------
+	# usage:      deploy prouduction build of ui-chat.smarter.sh
+	#             react.js app to AWS S3 bucket.
+	#
+	#			  Hosts the React.js app on AWS S3 and Cloudfront.
+	#			  - alpha: https://cdn.alpha.platform.smarter.sh/ui-chat/
+	#			  - beta: https://cdn.beta.platform.smarter.sh/ui-chat/
+	#			  - prod: https://cdn.platform.smarter.sh/ui-chat/
+	#
+	#             https://gist.github.com/kellyrmilligan/e242d3dc743105fe91a83cc933ee1314
+	#
+	#             1. Build the React application
+	#             2. Upload to AWS S3
+	#             3. Invalidate all items in the AWS Cloudfront CDN.
+	#---------------------------------------------------------
+	export AWS_PROFILE=lawrence
+	make build
 
+	# ------------------------
+	# add all built files to the S3 bucket.
+	# ------------------------
+	aws s3 sync ./build/ $(TARGET) \
+				--acl public-read \
+				--delete --cache-control max-age=31536000,public \
+				--expires '31 Dec 2050 00:00:01 GMT'
+
+	# ------------------------
+	# remove the cache-control header created above with a "no-cache" header so that browsers never cache these files
+	# ------------------------
+	aws s3 cp $(TARGET)/service-worker.js $(TARGET)/service-worker.js --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type application/javascript --acl public-read
+	aws s3 cp $(TARGET)/index.html $(TARGET)/index.html --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --acl public-read
+	aws s3 cp $(TARGET)/manifest.json $(TARGET)/manifest.json --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/json --acl public-read
+
+	# invalidate the Cloudfront cache
+	aws cloudfront create-invalidation --distribution-id E2364TSMHRWAWL --paths "/*" "/index.html" "/sitemap.xml" "/manifest.json" "/service-worker.js"
 
 ######################
 # HELP
 ######################
 
 help:
+	@echo '===================================================================='
+	@echo 'smarter-chat'
+	@echo 'environment: $(ENVIRONMENT)'
+	@echo 'target: $(TARGET)'
+	@echo 'aws cloudfront distribution-id: $(DISTRIBUTION_ID)'
+	@echo 'url: $(URL)'
 	@echo '===================================================================='
 	@echo 'init             - Run npm install for React app'
 	@echo 'build            - Build the React app for production'
@@ -108,4 +177,4 @@ help:
 	@echo 'python-check     - Ensure that Python is installed'
 	@echo 'python-init      - Create Python virtual environment and install dependencies'
 	@echo 'pre-commit       - runs all pre-commit hooks on all files'
-	@echo '===================================================================='
+	@echo '--------------------------------------------------------------------'
