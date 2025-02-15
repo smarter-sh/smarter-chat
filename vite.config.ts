@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
   } else {
     return {
       ...commonConfig,
-      base: "/",
+      base: "https://cdn.platform.smarter.sh/ui-chat/",
     };
   }
 });

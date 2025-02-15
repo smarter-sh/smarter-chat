@@ -2,8 +2,14 @@
 <script type="module" src="main.jsx"></script>
 <script>
   if (window.top === window.self) {
+    document.title = "Smarter Chat Component";
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.href = "favicon.ico";
+    link.type = "image/x-icon";
+    document.head.appendChild(link);
     // The page is being loaded directly in the browser
     document.body.innerHTML =
-      '<p>This page is not intended to be loaded directly. Please use the application interface. See: <a href="https://platform.smarter.sh/docs/" target="_blank">https://platform.smarter.sh/docs/</a></p>';
+      '<div style="text-align: center;"><h1>Smarter react.js Chat Component</h1><h2>https://github.com/smarter-sh/smarter-chat</h2><p>This page is not intended to be loaded directly. Please use the application interface. See: <a href="https://platform.smarter.sh/docs/" target="_blank">https://platform.smarter.sh/docs/</a></p>';
   }
 </script>
