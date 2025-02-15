@@ -48,7 +48,7 @@ import {
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
 
 export const ContainerLayout = styled.div`
-  height: 89vh;
+  height: 100%;
   display: flex;
   flex-direction: row;
 `;
@@ -59,12 +59,14 @@ export const ContentLayout = styled.div`
   flex-direction: row;
   margin: 0;
   padding: 0;
+  height: 100%;
 `;
 
 export const ComponentLayout = styled.div`
-  flex-basis: 33.33%;
+  flex-basis: 100%;
   margin: 0;
   padding: 5px;
+  height: 100%;
   @media (max-width: 992px) {
     flex-basis: 100%;
   }
