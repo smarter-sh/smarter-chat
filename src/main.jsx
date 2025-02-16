@@ -1,5 +1,3 @@
-console.log("main.jsx file is loaded");
-
 import React from "react";
 import ReactDOM from "react-dom/client";
 import SmarterChat from "./components/SmarterChat/SmarterChat";
@@ -21,7 +19,6 @@ const sessionCookieExpiration = DEFAULT_COOKIE_EXPIRATION;
 const rootElement = document.getElementById("smarter-sh-v1-ui-chat-root");
 if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
-  console.log("Root element found. Rendering Smarter Chat...");
   root.render(
     <React.StrictMode>
       <SmarterChat
