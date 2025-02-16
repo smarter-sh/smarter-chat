@@ -1,4 +1,4 @@
-<script>
+<script class="smarter-chat internal">
   document.addEventListener("DOMContentLoaded", function () {
     if (window.top === window.self) {
       document.title = "Smarter Chat Component";
@@ -9,15 +9,12 @@
       document.head.appendChild(link);
       document.body.innerHTML = `
     <div style="text-align: center;">
-      <h1>Smarter react.js Chat Component</h1>
-      <h2>https://github.com/smarter-sh/smarter-chat</h2>
-      <p>This page is not intended to be loaded directly. Please review the developer documentation for proper usage. See: <a href="https://platform.smarter.sh/docs/developers/" target="_blank">https://platform.smarter.sh/docs/developers/</a></p>
-      <div id="smarter-sh-v1-ui-chat-root">
+      <h1 style="margin-top: 25px; margin-bottom: 25px;">Smarter react.js Chat Component</h1>
+      <p>This page is not intended to be loaded directly. Please review the developer documentation for proper usage. See: <a href="https://github.com/smarter-sh/smarter-chat/" target="_blank">https://github.com/smarter-sh/smarter-chat/</a></p>
+      <img style="margin: 25px; padding: 25px;" src="https://cdn.platform.smarter.sh/images/querium-logo-orange-transparent.png" alt="Smarter Chat Illustration" style="max-width: 100%; height: auto;">
     </div>
     `;
-    } else {
-      document.body.innerHTML = `<div id="smarter-sh-v1-ui-chat-root"></div>`;
     }
   });
 </script>
-<script type="module" src="main.jsx"></script>
+<script class="smarter-chat external" type="module" src="main.jsx"></script>
