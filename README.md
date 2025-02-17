@@ -151,7 +151,7 @@ example http response:
 - `make init`: Setup your environment for first time use. sets up your Node environment for you. initializes pre-commit, which you need to run prior to creating pull requests.
 - `make run`: Run the dev server locally
 - `make build`: Build the react.js project. saves vite.js output to `./build` in the root of this project.
-- `make release`: Deploy the react.js project. Publishes the contents of the `./build` folder to an AWS S3 bucket served by the host defined by the value of `CDN_HOST_BASE_URL` located in shared/constant.js. For example, the react app for the Smarter workbench is initialized and served from these endpoints: a. [index.html](https://cdn.platform.smarter.sh/ui-chat/index.html): the react app build artifacts, and b. [app-loader.js](https://cdn.platform.smarter.sh/ui-chat/app-loader.js): a script to insert the react app build artifacts into the DOM.
+- `make release`: Deploy the react.js project. **REQUIRES awscli + keypair with sufficient permissions**. Publishes the contents of the `./build` folder to an AWS S3 bucket served by the host defined by the value of `CDN_HOST_BASE_URL` located in shared/constant.js. For example, the react app for the Smarter workbench is initialized and served from these endpoints: a. [index.html](https://cdn.platform.smarter.sh/ui-chat/index.html): the react app build artifacts, and b. [app-loader.js](https://cdn.platform.smarter.sh/ui-chat/app-loader.js): a script to insert the react app build artifacts into the DOM.
 
 ### Hello world app
 
