@@ -50,6 +50,9 @@ async function injectReactApp(url) {
     const text = await response.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(text, "text/html");
+    if (!doc || !doc.documentElement) {
+      throw new Error("Could not parse Smarter Chat app build artifacts:", text);
+    }
     const elements = doc.head.childNodes; // all react build artifacts are placed in the <head> the DOM
 
     if (DEBUG_MODE === true) {
