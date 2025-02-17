@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => {
         input: {
           main: resolve(__dirname, "src/index.html"),
           serviceWorker: resolve(__dirname, "src/service-worker.js"),
+          helloWorld: resolve(__dirname, "src/hello-world.html"),
         },
         external: [
           "workbox-core",
@@ -27,7 +28,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     root: "src",
-    publicDir: resolve(__dirname, "public"),
+    publicDir: resolve(__dirname, "src/public"),
   };
 
   if (mode === "dev") {
