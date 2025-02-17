@@ -65,10 +65,9 @@ where:
 
 - `smarter-chatbot-api-url`: a Smarter chatbot api url
 - `smarter-toggle-metadata`: true if additional chat meta data should appear in the chat thread
-
-`app-loader.js` is a helper script that inserts the current latest react app build assets into the DOM. For the avoidance of any doubt, you
-could also just add the literal css and js file links to the DOM yourself. However, react app build assets are hashed, meaning that if you take
-this approach then you will need to edit your existing web page to resync the new hashed files each time you republish this react app.
+- `app-loader.js` is a helper script that inserts the current latest react app build assets into the DOM. For the avoidance of any doubt, you
+  could also just add the literal css and js file links to the DOM yourself. However, react app build assets are hashed, meaning that if you take
+  this approach then you will need to edit your existing web page to resync the new hashed files each time you republish this react app.
 
 ## Developers
 
