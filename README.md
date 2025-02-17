@@ -145,37 +145,10 @@ Use the Makefile that is included. Type `make` for a full menu of commands. It d
 - initializes pre-commit, which you need to run prior to creating pull requests
 - provides helpful automations for build-deploy to AWS Cloudfront
 
-Setup your environment for first time use:
-
-```console
-make init
-```
-
-Run the dev server locally
-
-```console
-make run
-```
-
-Build the react.js project
-
-```console
-make build
-```
-
-saves vite.js output to `./build` in the root of this project.
-
-Deploy the react.js project
-
-```console
-make release
-```
-
-Publishes the contents of the `./build` folder to an AWS S3 bucket served by the host defined by the value of `CDN_HOST_BASE_URL` located in shared/constant.js.
-For example, the react app for the Smarter workbench is initialized and served from these endpoints:
-
-- [index.html](https://cdn.platform.smarter.sh/ui-chat/index.html): the react app build artifacts.
-- [app-loader.js](https://cdn.platform.smarter.sh/ui-chat/app-loader.js): a script to insert the react app build artifacts into the DOM.
+- `make init`: Setup your environment for first time use:
+- `make run`: Run the dev server locally
+- `make build`: Build the react.js project. saves vite.js output to `./build` in the root of this project.
+- `make release`: Deploy the react.js project. Publishes the contents of the `./build` folder to an AWS S3 bucket served by the host defined by the value of `CDN_HOST_BASE_URL` located in shared/constant.js. For example, the react app for the Smarter workbench is initialized and served from these endpoints: a. [index.html](https://cdn.platform.smarter.sh/ui-chat/index.html): the react app build artifacts, and b. [app-loader.js](https://cdn.platform.smarter.sh/ui-chat/app-loader.js): a script to insert the react app build artifacts into the DOM.
 
 #### Hello world app
 
