@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import SmarterChat from "./components/SmarterChat/SmarterChat";
-import { CHATBOT_API_URL } from "./shared/constants";
+import { CHATBOT_API_URL, REACT_ROOT_ELEMENT_ID } from "./shared/constants";
 import "./styles.css";
 
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
@@ -15,7 +15,7 @@ const debugCookieExpiration = DEFAULT_COOKIE_EXPIRATION;
 const sessionCookieName = "session_key";
 const sessionCookieExpiration = DEFAULT_COOKIE_EXPIRATION;
 
-const rootElement = document.getElementById("smarter-sh-v1-ui-chat-root");
+const rootElement = document.getElementById(REACT_ROOT_ELEMENT_ID);
 if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
   const apiUrl = rootElement.getAttribute("smarter-chatbot-api-url") || CHATBOT_API_URL;

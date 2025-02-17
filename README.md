@@ -40,7 +40,7 @@ Implementation example:
 
 ```js
 // THIS REPO:
-// 1. set the value of `import { CDN_HOST_BASE_URL } from './src/shared/constants'`
+// 1. set this value in './src/shared/constants'
 export const CDN_HOST_BASE_URL = "https://example.com/";
 ```
 
