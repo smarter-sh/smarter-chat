@@ -59,24 +59,22 @@ Note the following requirements:
 where:
 
 - id: the unique html element id that the react app looks for during app initialization. see: dispatch().context in https://github.com/smarter-sh/smarter/blob/main/smarter/smarter/apps/chatapp/views.py. This string is derived from "smarter.sh/v1/ui-chat/root"
-- smarter-chatbot-api-url: a Smarter chatbot api url: `https://<name>.<account_number>.example.com`
+- smarter-chatbot-api-url: a Smarter chatbot api url
 - smarter-toggle-metadata: true if additional chat meta data should appear in the chat thread
-
-example ui-chat/index.html:
-
-```html
-<script type="module" crossorigin src="https://cdn.platform.smarter.sh/ui-chat/assets/main-BdQGq5eL.js"></script>
-<link rel="stylesheet" crossorigin href="https://cdn.platform.smarter.sh/ui-chat/assets/main-BqQx6IPH.css" />
-```
 
 ### Build Output
 
 The Makefile `make build` and `make release` generate these three public urls based on the value of `CDN_HOST_BASE_URL` located in shared/constant.js.
-For example, for the Smarter workbench we set this value to `CDN_HOST_BASE_URL === 'https://cdn.platform.smarter.sh/ui-chat/'`, yielding the following three public urls which you can (and should) inspect:
+For example, the react app for the Smarter workbench is initialized and served from these endpoints:
 
 - [https://cdn.platform.smarter.sh/ui-chat/index.html](https://cdn.platform.smarter.sh/ui-chat/index.html): the react app build artifacts.
 - [https://cdn.platform.smarter.sh/ui-chat/app-loader.js](https://cdn.platform.smarter.sh/ui-chat/app-loader.js): a script to insert the react app build artifacts into the DOM.
-- [https://cdn.platform.smarter.sh/ui-chat/hello-world.html](https://cdn.platform.smarter.sh/ui-chat/hello-world.html): An example integration using the Smarter sales agent chatbot api.
+
+### Hello world app
+
+The Makefile also automatically generates a simple '[hello-world.html](https://cdn.platform.smarter.sh/ui-chat/hello-world.html)' app that demonstrates this use case.
+
+- : An example integration using the Smarter sales agent chatbot api.
 
 ## Smarter Api chat endpoints used by this react app
 
