@@ -10,8 +10,6 @@ This project contains the source code for the interactive chatbot found in the S
 
 This project is also suitable for all front-end cross-platform projects. For example, use this code base to create a react.js run-time for use inside of Wordpress plugins, salesforce.com apps, .net components and Sharepoint add-ins.
 
-**To do: Split this repo into the npm-published react component, and the developer cookiecutter scaffolding for integrating this component into your project.**
-
 ## Use case #1 - build a react app
 
 ```console
@@ -23,7 +21,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { SmarterChat } from "@smarter/ui-chat";
 
-const rootElement = document.getElementById("smarter-sh-v1-ui-chat-root");
+const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement);
 root.render(<SmarterChat apiUrl={"https://smarter.3141-5926-5359.api.smarter.sh/"} toggleMetadata={false} />);
 ```
@@ -31,6 +29,8 @@ root.render(<SmarterChat apiUrl={"https://smarter.3141-5926-5359.api.smarter.sh/
 ![Basic Usage](./doc/img/readme-usage4.png)
 
 ## Use case #2 - integrate to an existing web application
+
+**To do: Move this to a cookiecutter scaffolding 'Quickstart' template.**
 
 Fork, configure, build and release a reactapp that you serve from an http host. This is the use case that the
 Smarter developer workbench follows, passing an authenticated chatbot api url that works
@@ -45,7 +45,7 @@ Note the following requirements:
 ```html
 <!-- react.js app entry point.  -->
 <div
-  id="smarter-sh-v1-ui-chat-root"
+  id="root"
   smarter-chatbot-api-url="https://platform.smarter.sh/chatbots/smarter/"
   smarter-toggle-metadata="false"
 ></div>
@@ -72,11 +72,11 @@ example ui-chat/index.html:
 ### Build Output
 
 The Makefile `make build` and `make release` generate these three public urls based on the value of `CDN_HOST_BASE_URL` located in shared/constant.js.
-If `CDN_HOST_BASE_URL === 'https://cdn.platform.smarter.sh/ui-chat/'` then these three url endpoints will be:
+For example, for the Smarter workbench we set this value to `CDN_HOST_BASE_URL === 'https://cdn.platform.smarter.sh/ui-chat/'`, yielding the following three public urls which you can (and should) inspect:
 
-- `https://cdn.platform.smarter.sh/ui-chat/index.html`: the react app build artifacts.
-- `https://cdn.platform.smarter.sh/ui-chat/app-loader.js`: a script to insert the react app build artifacts into the DOM.
-- `https://cdn.platform.smarter.sh/ui-chat/hello-world.html`: An example integration using the Smarter sales agent chatbot api.
+- [https://cdn.platform.smarter.sh/ui-chat/index.html](https://cdn.platform.smarter.sh/ui-chat/index.html): the react app build artifacts.
+- [https://cdn.platform.smarter.sh/ui-chat/app-loader.js](https://cdn.platform.smarter.sh/ui-chat/app-loader.js): a script to insert the react app build artifacts into the DOM.
+- [https://cdn.platform.smarter.sh/ui-chat/hello-world.html](https://cdn.platform.smarter.sh/ui-chat/hello-world.html): An example integration using the Smarter sales agent chatbot api.
 
 ## Smarter Api chat endpoints used by this react app
 
