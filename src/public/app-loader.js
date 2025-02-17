@@ -1,17 +1,6 @@
 //   example url='https://cdn.platform.smarter.sh/ui-chat/app-loader.js'
 
-import { DEBUG } from "./config.js";
-
-/*
-creates a new URL object from the current script's src attribute.
-example returns: https://cdn.platform.smarter.sh/ui-chat/index.html
-*/
-function deriveIndexUrl() {
-  const loaderUrl = document.currentScript.src;
-  const url = new URL(loaderUrl);
-  url.pathname = url.pathname.replace(/\/[^\/]*$/, "/index.html");
-  return url.toString();
-}
+import { deriveCdnUrl, DEBUG_MODE } from "../shared/constants";
 
 /*
   This script is responsible for injecting the Smarter Chat app into the DOM
@@ -28,7 +17,7 @@ function deriveIndexUrl() {
 
 */
 async function injectReactApp(url) {
-  const url = deriveIndexUrl();
+  const url = deriveCdnUrl((filename = "index.html"));
 
   try {
     const response = await fetch(url);
@@ -37,7 +26,7 @@ async function injectReactApp(url) {
     const doc = parser.parseFromString(text, "text/html");
     const elements = doc.head.childNodes;
 
-    if (DEBUG === true) {
+    if (DEBUG_MODE === true) {
       console.log("received 200 response from the server:", url);
       console.log("html text:", text);
       console.log("html doc:", doc);
@@ -49,7 +38,7 @@ async function injectReactApp(url) {
         if (!element.classList.contains("internal")) {
           if (element.tagName === "LINK") {
             document.head.insertAdjacentElement("beforeend", element);
-            if (DEBUG === true) {
+            if (DEBUG_MODE === true) {
               console.log("injected chat app element into the head.", element);
             }
           }
@@ -59,7 +48,7 @@ async function injectReactApp(url) {
             script.async = element.async;
             script.defer = element.defer;
             document.body.appendChild(script);
-            if (DEBUG === true) {
+            if (DEBUG_MODE === true) {
               console.log("injected and executed chat app script.", script);
             }
           }

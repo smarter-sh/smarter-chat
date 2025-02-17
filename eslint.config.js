@@ -2,12 +2,7 @@ import { ESLint } from "eslint";
 
 export default new ESLint({
   baseConfig: {
-    extends: [
-      "eslint:recommended",
-      "plugin:react/recommended",
-      "plugin:@typescript-eslint/recommended",
-      "standard",
-    ],
+    extends: ["eslint:recommended", "plugin:react/recommended", "plugin:@typescript-eslint/recommended", "standard"],
     parser: "@typescript-eslint/parser",
     parserOptions: {
       ecmaVersion: 2020,

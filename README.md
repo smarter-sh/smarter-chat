@@ -29,26 +29,37 @@ import { SmarterChat } from "@smarter/ui-chat";
 // Api url endpoint for your chatbot.
 const apiUrl = "https://platform.smarter.sh/chatbots/example/config/";
 
-// Optional: if your chatbot requires an api key.
-const apiKey = "YOUR-32-CHARACTER-API-KEY";
-
 // whether to include back end meta data in chat thread.
 // set to true if your use case is instructional in nature
 // (ie. you're teaching a generative AI course)
 const toggleMetadata = false;
 
-ReactDOM.createRoot(document.getElementById("root")).render(<SmarterChat apiUrl={apiUrl} apiKey={apiKey} toggleMetadata={toggleMetadata} />);
+const rootElement = document.getElementById("smarter-sh-v1-ui-chat-root");
+const root = ReactDOM.createRoot(rootElement);
+root.render(<SmarterChat apiUrl={apiUrl} toggleMetadata={toggleMetadata} />);
 ```
 
 ![Basic Usage](./doc/img/readme-usage4.png)
 
-## Application Integration
+## Build
 
-Add the following to your web page.
+Generates the following public urls:
+
+- `https://cdn.platform.smarter.sh/ui-chat/index.html`: the react app build artifacts.
+- `https://cdn.platform.smarter.sh/ui-chat/app-loader.js`: a script to insert the react app build artifacts into the DOM.
+- `https://cdn.platform.smarter.sh/ui-chat/hello-world.html`: An example integration using the Smarter sales agent as the chatbot api.
+
+## Integrating your web application to the Smarter Api
+
+Following is how the Smarter developer workbench integrates to the Smarter Api.
 
 ```html
 <!-- react.js app entry point.  -->
-<div id="smarter-sh-v1-ui-chat-root" smarter-chatbot-api-url="https://smarter.3141-5926-5359.smarter.sh" smarter-toggle-metadata="false"></div>
+<div
+  id="smarter-sh-v1-ui-chat-root"
+  smarter-chatbot-api-url="https://smarter.3141-5926-5359.smarter.sh"
+  smarter-toggle-metadata="false"
+></div>
 <!--
     retrieves and injects the contents of https://cdn.platform.smarter.sh/ui-chat/index.html
     js/css artifacts of the react.js build into the DOM.
@@ -58,7 +69,7 @@ Add the following to your web page.
 
 where:
 
-- id: the unique html element id that the react app looks for during app initialization. see: dispatch().context in https://github.com/smarter-sh/smarter/blob/main/smarter/smarter/apps/chatapp/views.py
+- id: the unique html element id that the react app looks for during app initialization. see: dispatch().context in https://github.com/smarter-sh/smarter/blob/main/smarter/smarter/apps/chatapp/views.py. This string is derived from "smarter.sh/v1/ui-chat/root"
 - smarter-chatbot-api-url: a Smarter chatbot api url: `https://<name>.<account_number>.example.com`
 - smarter-toggle-metadata: true if additional chat meta data should appear in the chat thread
 

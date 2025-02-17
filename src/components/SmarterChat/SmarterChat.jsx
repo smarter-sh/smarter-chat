@@ -16,7 +16,17 @@ import { faCheckCircle, faTimesCircle, faRocket } from "@fortawesome/free-solid-
 
 // Chat UI stuff
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import { MainContainer, ChatContainer, MessageList, Message, MessageInput, TypingIndicator, ConversationHeader, InfoButton, AddUserButton } from "@chatscope/chat-ui-kit-react";
+import {
+  MainContainer,
+  ChatContainer,
+  MessageList,
+  Message,
+  MessageInput,
+  TypingIndicator,
+  ConversationHeader,
+  InfoButton,
+  AddUserButton,
+} from "@chatscope/chat-ui-kit-react";
 
 // this repo
 import { ErrorModal } from "../ErrorModal/ErrorModal.jsx";
@@ -27,7 +37,7 @@ import { MessageDirectionEnum, SenderRoleEnum } from "./enums.js";
 import { setCookie, fetchConfig, fetchPrompt } from "./api.js";
 import { cookieMetaFactory, messageFactory, chatMessages2RequestMessages, chatInit } from "./utils.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
-import { DEBUG } from "../../shared/constants.js";
+import { DEBUG_MODE } from "../../shared/constants.js";
 
 export const ContainerLayout = styled.div`
   height: 100%;
@@ -58,7 +68,16 @@ export const ComponentLayout = styled.div`
 // is exported and used in the index.js file. It is responsible for
 // managing the chat message thread, sending messages to the backend
 // Api, and rendering the chat UI.
-function SmarterChat({ apiUrl, apiKey, toggleMetadata, csrfCookieName, debugCookieName, debugCookieExpiration, sessionCookieName, sessionCookieExpiration }) {
+function SmarterChat({
+  apiUrl,
+  apiKey,
+  toggleMetadata,
+  csrfCookieName,
+  debugCookieName,
+  debugCookieExpiration,
+  sessionCookieName,
+  sessionCookieExpiration,
+}) {
   const csrfCookie = cookieMetaFactory(csrfCookieName, null); // we read this but never set it.
   const sessionCookie = cookieMetaFactory(sessionCookieName, sessionCookieExpiration);
   const debugCookie = cookieMetaFactory(debugCookieName, debugCookieExpiration);
@@ -78,7 +97,7 @@ function SmarterChat({ apiUrl, apiKey, toggleMetadata, csrfCookieName, debugCook
   const [fileAttachButton, setFileAttachButton] = useState(false);
   const [isValid, setIsValid] = useState(false);
   const [isDeployed, setIsDeployed] = useState(false);
-  const [debugMode, setDebugMode] = useState(DEBUG);
+  const [debugMode, setDebugMode] = useState(DEBUG_MODE);
   const [messages, setMessages] = useState([]);
   const [title, setTitle] = useState("");
   const [info, setInfo] = useState("");
@@ -283,7 +302,11 @@ function SmarterChat({ apiUrl, apiKey, toggleMetadata, csrfCookieName, debugCook
     return (
       <div>
         {title}&nbsp;
-        {isValid ? <FontAwesomeIcon icon={faCheckCircle} style={{ color: "green" }} /> : <FontAwesomeIcon icon={faTimesCircle} style={{ color: "red" }} />}
+        {isValid ? (
+          <FontAwesomeIcon icon={faCheckCircle} style={{ color: "green" }} />
+        ) : (
+          <FontAwesomeIcon icon={faTimesCircle} style={{ color: "red" }} />
+        )}
         {isDeployed ? (
           <>
             &nbsp;
@@ -338,26 +361,51 @@ function SmarterChat({ apiUrl, apiKey, toggleMetadata, csrfCookieName, debugCook
             <div className="chat-app">
               <MainContainer style={mainContainerStyle}>
                 <ErrorBoundary>
-                  <ErrorModal isModalOpen={isModalOpen} title={modalTitle} message={modalMessage} onCloseClick={closeChatModal} />
+                  <ErrorModal
+                    isModalOpen={isModalOpen}
+                    title={modalTitle}
+                    message={modalMessage}
+                    onCloseClick={closeChatModal}
+                  />
                 </ErrorBoundary>
                 <ChatContainer style={chatContainerStyle}>
                   <ConversationHeader>
-                    <ConversationHeader.Content userName={<AppTitle title={title} isValid={isValid} isDeployed={isDeployed} />} info={info} />
+                    <ConversationHeader.Content
+                      userName={<AppTitle title={title} isValid={isValid} isDeployed={isDeployed} />}
+                      info={info}
+                    />
                     <ConversationHeader.Actions>
                       <AddUserButton onClick={handleAddUserButtonClick} title="Start a new chat" />
                       {toggleMetadata && <InfoButton onClick={handleInfoButtonClick} title="Toggle system meta data" />}
                     </ConversationHeader.Actions>
                   </ConversationHeader>
-                  <MessageList style={transparentBackgroundStyle} scrollBehavior="auto" typingIndicator={isTyping ? <TypingIndicator content={assistantName + " is typing"} /> : null}>
+                  <MessageList
+                    style={transparentBackgroundStyle}
+                    scrollBehavior="auto"
+                    typingIndicator={isTyping ? <TypingIndicator content={assistantName + " is typing"} /> : null}
+                  >
                     {messages
                       .filter((message) => message.display)
                       .map((message, i) => {
                         return <SmarterMessage i={i} message={message} />;
                       })}
                   </MessageList>
-                  <MessageInput placeholder={placeholderText} onSend={handleSend} onAttachClick={handleAttachClick} attachButton={fileAttachButton} fancyScroll={false} />
+                  <MessageInput
+                    placeholder={placeholderText}
+                    onSend={handleSend}
+                    onAttachClick={handleAttachClick}
+                    attachButton={fileAttachButton}
+                    fancyScroll={false}
+                  />
                 </ChatContainer>
-                <input type="file" accept=".py" title="Select a Python file" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
+                <input
+                  type="file"
+                  accept=".py"
+                  title="Select a Python file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                />
               </MainContainer>
             </div>
           </ComponentLayout>

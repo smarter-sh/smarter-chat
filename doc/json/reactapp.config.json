@@ -252,23 +252,12 @@
               "updated_at": "2024-04-25T13:04:50.866829Z",
               "is_test": false
             },
-            "tags": [
-              "candy",
-              "treats",
-              "chocolate",
-              "Gobstoppers",
-              "Willy Wonka"
-            ],
+            "tags": ["candy", "treats", "chocolate", "Gobstoppers", "Willy Wonka"],
             "id": 1
           },
           "selector": {
             "directive": "search_terms",
-            "search_terms": [
-              "Gobstopper",
-              "Gobstoppers",
-              "Gobbstopper",
-              "Gobbstoppers"
-            ],
+            "search_terms": ["Gobstopper", "Gobstoppers", "Gobbstopper", "Gobbstoppers"],
             "id": 1
           },
           "prompt": {

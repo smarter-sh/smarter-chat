@@ -3,15 +3,14 @@
 //
 // Enhancements to the default behavior of serviceWorkerRegistration.js
 // that is installed by `create-react-app my-app --template cra-template-pwa-typescript`
-import { DEBUG } from "./shared/constants";
+import { DEBUG_MODE } from "./shared/constants";
 
 const AUTOMATIC_UPDATE_CHECK_INTERVAL = 15; // expressed in minutes
 
 // periodically poll for updates to the service worker
 function checkUpdates(registration) {
   if (registration && registration.update) {
-    if (DEBUG)
-      console.log("service worker automatically checking for updates.");
+    if (DEBUG_MODE) console.log("service worker automatically checking for updates.");
     registration.update();
     setTimeout(
       function () {
@@ -21,10 +20,7 @@ function checkUpdates(registration) {
       1000 * 60 * AUTOMATIC_UPDATE_CHECK_INTERVAL,
     );
   } else {
-    console.log(
-      "Warning: checkUpdates() ran but registration has no update() function: ",
-      registration,
-    );
+    console.log("Warning: checkUpdates() ran but registration has no update() function: ", registration);
   }
 }
 
@@ -40,7 +36,7 @@ Note: the possible service worker states are:
 "redundant"  - discarded. Either failed install, or it's been replaced by a newer version
  ==========================================================================*/
 export function serviceWorkerRegistrationEnhancements(config, registration) {
-  if (DEBUG) console.log("service worker is registered");
+  if (DEBUG_MODE) console.log("service worker is registered");
 
   // initiate periodic update checks.
   checkUpdates(registration);
@@ -51,9 +47,9 @@ export function serviceWorkerRegistrationEnhancements(config, registration) {
 
   // tests to determine which of these worker state objects were
   // actually set prior to this thread being executed.
-  if (newInstalling && DEBUG) console.log("newInstalling created");
-  if (newWaiting && DEBUG) console.log("newWaiting created");
-  if (activeWorker && DEBUG) console.log("activeWorker found");
+  if (newInstalling && DEBUG_MODE) console.log("newInstalling created");
+  if (newWaiting && DEBUG_MODE) console.log("newWaiting created");
+  if (activeWorker && DEBUG_MODE) console.log("activeWorker found");
 
   // add a listener for an `updatefound` event on the
   // newly-registered service worker.
@@ -62,7 +58,7 @@ export function serviceWorkerRegistrationEnhancements(config, registration) {
     // when the `updatefound` event fires.
     const newWorker = registration.installing;
 
-    if (DEBUG) {
+    if (DEBUG_MODE) {
       console.log("updatefound event listener fired.");
       console.log("newWorker state is: ", newWorker.state);
     }
@@ -72,9 +68,9 @@ export function serviceWorkerRegistrationEnhancements(config, registration) {
     // `activated`, and if we catch this then we'll look for
     // and execute the `onActivated` event handler.
     newWorker.addEventListener("statechange", () => {
-      if (DEBUG) console.log("newWorker.state changed to: ", newWorker.state);
+      if (DEBUG_MODE) console.log("newWorker.state changed to: ", newWorker.state);
       if (newWorker.state === "activated" && config && config.onActivated) {
-        if (DEBUG) console.log("invoking the onActivated callback.");
+        if (DEBUG_MODE) console.log("invoking the onActivated callback.");
         config.onActivated(registration);
       }
     });

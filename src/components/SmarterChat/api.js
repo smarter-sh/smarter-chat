@@ -34,20 +34,10 @@ function getCookie(cookie, defaultValue = null) {
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
       const thisCookie = cookies[i].trim();
-      if (
-        thisCookie.substring(0, cookie.name.length + 1) ===
-        cookie.name + "="
-      ) {
-        cookieValue = decodeURIComponent(
-          thisCookie.substring(cookie.name.length + 1),
-        );
+      if (thisCookie.substring(0, cookie.name.length + 1) === cookie.name + "=") {
+        cookieValue = decodeURIComponent(thisCookie.substring(cookie.name.length + 1));
         if (developerMode) {
-          console.log(
-            "getCookie(): found ",
-            cookieValue,
-            "for cookie",
-            cookie.name,
-          );
+          console.log("getCookie(): found ", cookieValue, "for cookie", cookie.name);
         }
         break;
       }
@@ -151,14 +141,7 @@ async function getJsonResponse(url, init, cookies) {
   const debugMode = getCookie(cookies.debugCookie) === "true";
   try {
     if (debugMode || developerMode) {
-      console.log(
-        "getJsonResponse(): url: ",
-        url,
-        ", init: ",
-        init,
-        ", cookies: ",
-        cookies,
-      );
+      console.log("getJsonResponse(): url: ", url, ", init: ", init, ", cookies: ", cookies);
     }
     const response = await fetch(url, init);
     const contentType = response.headers.get("content-type");
@@ -181,18 +164,12 @@ async function getJsonResponse(url, init, cookies) {
           - the responseBody object is intended to always be available when the status is 400.
             However, there potentially COULD be a case where the response itself contains message text.
         */
-        console.error(
-          "getJsonResponse(): error: ",
-          status,
-          response.statusText,
-        );
+        console.error("getJsonResponse(): error: ", status, response.statusText);
         return response;
       }
     } else {
       const errorText = await response.text();
-      throw new Error(
-        `getJsonResponse() Unexpected response format: ${errorText}`,
-      );
+      throw new Error(`getJsonResponse() Unexpected response format: ${errorText}`);
     }
   } catch (error) {
     return error;

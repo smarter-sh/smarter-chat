@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import SmarterChat from "./components/SmarterChat/SmarterChat";
-import { URL_API } from "./shared/constants";
+import { CHATBOT_API_URL } from "./shared/constants";
 import "./styles.css";
 
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
@@ -18,7 +18,7 @@ const sessionCookieExpiration = DEFAULT_COOKIE_EXPIRATION;
 const rootElement = document.getElementById("smarter-sh-v1-ui-chat-root");
 if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
-  const apiUrl = rootElement.getAttribute("smarter-chatbot-api-url") || URL_API;
+  const apiUrl = rootElement.getAttribute("smarter-chatbot-api-url") || CHATBOT_API_URL;
   const toggleMetadata = rootElement.getAttribute("smarter-toggle-metadata") === "true";
 
   root.render(
@@ -36,7 +36,9 @@ if (rootElement) {
     </React.StrictMode>,
   );
 } else {
-  console.error("Root element not found. Begin your trouble shooting journey here: https://github.com/smarter-sh/smarter-chat/blob/main/src/main.jsx");
+  console.error(
+    "Root element not found. Begin your trouble shooting journey here: https://github.com/smarter-sh/smarter-chat/blob/main/src/main.jsx",
+  );
 }
 
 // Register the service worker

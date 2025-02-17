@@ -19,12 +19,12 @@ import { CacheFirst } from "workbox-strategies";
 import { registerRoute } from "workbox-routing";
 import { StaleWhileRevalidate } from "workbox-strategies";
 //-----------------------------------------------
-import { DEBUG } from "./shared/constants";
+import { DEBUG_MODE } from "./shared/constants";
 import { prefetch } from "./shared/prefetch";
 import {
-  URL_CDN, // AWS Cloudfront distribution: https://cdn.platform.smarter.sh
-  URL_API, // REST api: https://example.1234-5678-9012.platform.smarter.sh
-  URL_SITE, // This site: https://example.com
+  CDN_HOST_BASE_URL, // AWS Cloudfront distribution: https://cdn.platform.smarter.sh
+  CHATBOT_API_URL, // REST api: https://example.1234-5678-9012.platform.smarter.sh
+  SMARTER_PLATFORM_BASE_URL, // This site: https://example.com
 } from "./shared/constants";
 import { ENVIRONMENT } from "./shared/environment";
 
@@ -52,11 +52,7 @@ async function getCacheVersion(environment = "prod") {
     const packageJson = await response.json();
     return packageJson.version;
   } catch (error) {
-    console.error(
-      "service-worker.js Failed to fetch package.json:",
-      error.message,
-      error,
-    );
+    console.error("service-worker.js Failed to fetch package.json:", error.message, error);
     throw error;
   }
 }
@@ -64,7 +60,7 @@ async function getCacheVersion(environment = "prod") {
 (async () => {
   const CACHE_VERSION = await getCacheVersion(ENVIRONMENT);
 
-  if (DEBUG) console.log("service-worker.js - CACHE_VERSION: ", CACHE_VERSION);
+  if (DEBUG_MODE) console.log("service-worker.js - CACHE_VERSION: ", CACHE_VERSION);
 
   // ----------------------------------------
   // create-react-app generated Workbox code
@@ -118,8 +114,7 @@ async function getCacheVersion(environment = "prod") {
   // registration.waiting.postMessage({type: 'SKIP_WAITING'})
   self.addEventListener("message", (event) => {
     if (event.data && event.data.type === "SKIP_WAITING") {
-      if (DEBUG)
-        console.log("service-worker.js - SKIP_WAITING message received.");
+      if (DEBUG_MODE) console.log("service-worker.js - SKIP_WAITING message received.");
       self.skipWaiting();
     }
   });
@@ -151,7 +146,7 @@ async function getCacheVersion(environment = "prod") {
   // no max, no expiration.
   // docs: https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-strategies.StaleWhileRevalidate
   registerRoute(
-    ({ url }) => url.origin === URL_SITE + "/manifest.json",
+    ({ url }) => url.origin === SMARTER_PLATFORM_BASE_URL + "/manifest.json",
     new StaleWhileRevalidate({
       cacheName: versioned_cached("manifest"),
       plugins: [new ExpirationPlugin({})],
@@ -164,7 +159,7 @@ async function getCacheVersion(environment = "prod") {
   // no max, no expiration.
   // docs: https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-strategies.StaleWhileRevalidate
   registerRoute(
-    ({ url }) => url.origin === URL_API,
+    ({ url }) => url.origin === CHATBOT_API_URL,
     new StaleWhileRevalidate({
       cacheName: versioned_cached("api-responses"),
       plugins: [new ExpirationPlugin({})],
@@ -186,13 +181,10 @@ async function getCacheVersion(environment = "prod") {
   // A cache first strategy is useful for assets that have been revisioned,
   // such as URLs like /styles/example.a8f5f1.css, since they can be cached for long periods of time.
   registerRoute(
-    ({ url }) => url.origin === URL_CDN,
+    ({ url }) => url.origin === CDN_HOST_BASE_URL,
     new CacheFirst({
       cacheName: versioned_cached("cdn-responses"),
-      plugins: [
-        new CacheableResponsePlugin({ statuses: [0, 200] }),
-        new ExpirationPlugin({ maxEntries: 500 }),
-      ],
+      plugins: [new CacheableResponsePlugin({ statuses: [0, 200] }), new ExpirationPlugin({ maxEntries: 500 })],
     }),
   );
 
@@ -210,9 +202,7 @@ async function getCacheVersion(environment = "prod") {
   // Cache Google Fonts with a stale-while-revalidate strategy, with
   // a maximum number of entries.
   registerRoute(
-    ({ url }) =>
-      url.origin === "https://fonts.googleapis.com" ||
-      url.origin === "https://fonts.gstatic.com",
+    ({ url }) => url.origin === "https://fonts.googleapis.com" || url.origin === "https://fonts.gstatic.com",
     new StaleWhileRevalidate({
       cacheName: versioned_cached("google-fonts"),
       plugins: [new ExpirationPlugin({ maxEntries: 20 })],

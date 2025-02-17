@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react-swc";
 import { resolve } from "path";
 import { comlink } from "vite-plugin-comlink";
 
+import { CDN_HOST_BASE_URL } from "./src/shared/constants";
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const commonConfig = {
@@ -43,7 +45,7 @@ export default defineConfig(({ mode }) => {
   } else {
     return {
       ...commonConfig,
-      base: "https://cdn.platform.smarter.sh/ui-chat/",
+      base: CDN_HOST_BASE_URL,
     };
   }
 });

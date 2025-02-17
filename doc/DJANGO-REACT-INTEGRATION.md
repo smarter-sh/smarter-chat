@@ -262,9 +262,7 @@ in turn, the template will render a DOM element like the following. Thus, **BE A
 The DOM element can be consumed by JS/React like this:
 
 ```javascript
-export const REACT_CONFIG = JSON.parse(
-  document.getElementById("react-config").textContent,
-);
+export const REACT_CONFIG = JSON.parse(document.getElementById("react-config").textContent);
 ```
 
 ## CORS Configuration
