@@ -10,6 +10,8 @@ This project contains the source code for the interactive chatbot found in the S
 
 This project is also suitable for all front-end cross-platform projects. For example, use this code base to create a react.js run-time for use inside of Wordpress plugins, salesforce.com apps, .net components and Sharepoint add-ins.
 
+![Basic Usage](./doc/img/readme-usage4.png)
+
 ## Use case #1 - build a react app
 
 ```console
@@ -25,8 +27,6 @@ const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement);
 root.render(<SmarterChat apiUrl={"https://smarter.3141-5926-5359.api.smarter.sh/"} toggleMetadata={false} />);
 ```
-
-![Basic Usage](./doc/img/readme-usage4.png)
 
 ## Use case #2 - integrate to an existing web application
 
