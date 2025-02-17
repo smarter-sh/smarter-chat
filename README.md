@@ -39,13 +39,13 @@ with any chatbot associated with your Smarter account, regardless of whether it 
 Implementation example:
 
 ```js
-// IN THIS REPO:
+// THIS REPO:
 // 1. set the value of `import { CDN_HOST_BASE_URL } from './src/shared/constants'`
 export const CDN_HOST_BASE_URL = "https://example.com/";
 ```
 
 ```html
-<!-- IN YOUR EXISTING WEB PAGE: -->
+<!-- YOUR EXISTING WEB PAGE: -->
 <!-- 2. add a react 'root' element to your DOM that react can locate and initialize itself.  -->
 <div
   id="root"
