@@ -24,7 +24,7 @@ async function injectReactApp(url) {
     const text = await response.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(text, "text/html");
-    const elements = doc.head.childNodes;
+    const elements = doc.head.childNodes; // all react build artifacts are placed in the <head> the DOM
 
     if (DEBUG_MODE === true) {
       console.log("received 200 response from the server:", url);
@@ -35,14 +35,22 @@ async function injectReactApp(url) {
 
     elements.forEach((element) => {
       if (element.nodeType === Node.ELEMENT_NODE) {
+        // filter out superfluous elements that are part of
+        // the react build.
         if (!element.classList.contains("internal")) {
+          // add links to the bottom of <head> of the DOM
           if (element.tagName === "LINK") {
             document.head.insertAdjacentElement("beforeend", element);
             if (DEBUG_MODE === true) {
               console.log("injected chat app element into the head.", element);
             }
           }
+          // add scripts to the bottom of <body> of the DOM
           if (element.tagName === "SCRIPT") {
+            // create a new script element and append it to the body
+            // of the host website. This will execute the chat app js,
+            // like a diffy duck, the chat app will render itself into
+            // the DOM of the host website.
             const script = document.createElement("script");
             script.src = element.src;
             script.async = element.async;
