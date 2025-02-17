@@ -59,18 +59,6 @@ where:
 - smarter-chatbot-api-url: a Smarter chatbot api url
 - smarter-toggle-metadata: true if additional chat meta data should appear in the chat thread
 
-### Build Output
-
-The Makefile `make build` and `make release` generate these three public urls based on the value of `CDN_HOST_BASE_URL` located in shared/constant.js.
-For example, the react app for the Smarter workbench is initialized and served from these endpoints:
-
-- [index.html](https://cdn.platform.smarter.sh/ui-chat/index.html): the react app build artifacts.
-- [app-loader.js](https://cdn.platform.smarter.sh/ui-chat/app-loader.js): a script to insert the react app build artifacts into the DOM.
-
-### Hello world app
-
-The Makefile also automatically generates a simple '[hello-world.html](https://cdn.platform.smarter.sh/ui-chat/hello-world.html)' app that demonstrates this use case.
-
 ## Smarter Api chat endpoints used by this react app
 
 This app interacts with two endpoints from the [smarter.sh/v1](https://platform.smarter.sh/docs/api/) chatbot api:
@@ -177,54 +165,29 @@ Build the react.js project
 make build
 ```
 
+saves vite.js output to `./build` in the root of this project.
+
 Deploy the react.js project
 
 ```console
 make release
 ```
 
+Publishes the contents of the `./build` folder to an AWS S3 bucket served by the host defined by the value of `CDN_HOST_BASE_URL` located in shared/constant.js.
+For example, the react app for the Smarter workbench is initialized and served from these endpoints:
+
+- [index.html](https://cdn.platform.smarter.sh/ui-chat/index.html): the react app build artifacts.
+- [app-loader.js](https://cdn.platform.smarter.sh/ui-chat/app-loader.js): a script to insert the react app build artifacts into the DOM.
+
+#### Hello world app
+
+The Makefile also automatically generates a simple '[hello-world.html](https://cdn.platform.smarter.sh/ui-chat/hello-world.html)' app that demonstrates this use case.
+
 ### Architecture
 
 - [Vite](https://vitejs.dev/)
 - [React](https://react.dev/)
 - [Chat UI Kit React](https://www.npmjs.com/package/@chatscope/chat-ui-kit-react)
-
-### Vite Scripts for React
-
-In the project directory, you can run:
-
-#### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-#### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-#### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-#### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
 ## Contributing
 
