@@ -1,24 +1,28 @@
 const DEBUG_MODE = true;
-/*
-  example url='https://cdn.platform.smarter.sh/ui-chat/app-loader.js'
+/* ----------------------------------------------------------------------------
+  SmarterChat app Loader.
+
+  see:
+  - https://cdn.platform.smarter.sh/ui-chat/app-loader.js
+  - https://cdn.platform.smarter.sh/ui-chat/index.html
 
   This script is responsible for injecting the Smarter Chat app into the DOM
   of the host website. The chat app is served from AWS Cloudfront.
+  Fetches /ui-chat/index.html (the react build artifact), parses the html text,
+  and injects the css and js link elements into the head/body of the host website.
 
-  /ui-chat/index.html contains the build artifacts of the Smarter Chat app.
-  example:
+  Also adds the class 'smarter-chat' to the injected elements, solely for
+  tracking what this script has injected into the DOM.
 
-    <script type="module" crossorigin src="https://cdn.platform.smarter.sh/ui-chat/assets/main-BdQGq5eL.js"></script>
-    <link rel="stylesheet" crossorigin href="https://cdn.platform.smarter.sh/ui-chat/assets/main-BqQx6IPH.css">
+  example index.html:
 
-  This script fetches /ui-chat/index.html, parses the html text, and injects
-  the css and js link elements into the head/body of the host website.
+    <script class="smarter-chat" type="module" crossorigin src="https://cdn.platform.smarter.sh/ui-chat/assets/main-BdQGq5eL.js"></script>
+    <link class="smarter-chat" rel="stylesheet" crossorigin href="https://cdn.platform.smarter.sh/ui-chat/assets/main-BqQx6IPH.css">
 
-*/
-/*
-creates a new URL object from the current script's src attribute.
-example: https://cdn.platform.smarter.sh/ui-chat/index.html
-*/
+ * --------------------------------------------------------------------------- */
+
+// creates a new URL object from the current script's src attribute.
+// example: https://cdn.platform.smarter.sh/ui-chat/index.html
 export function deriveCdnUrl(filename) {
   const loaderUrl = document.currentScript.src;
   const url = new URL(loaderUrl);
@@ -26,9 +30,7 @@ export function deriveCdnUrl(filename) {
   return url.toString();
 }
 
-/*
-  adds the class 'smarter-chat' to the element.
-*/
+// adds the class 'smarter-chat' to the element.
 function addSmarterChatClass(element) {
   if (element && element.classList) {
     element.classList.add("smarter-chat");
@@ -36,6 +38,7 @@ function addSmarterChatClass(element) {
   return element;
 }
 
+// inject the react app into the DOM
 async function injectReactApp(url) {
   const url = deriveCdnUrl((filename = "index.html"));
 
