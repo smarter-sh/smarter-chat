@@ -3,7 +3,6 @@
 Table of contents:
 
 - [Developer Setup Guide](./CONTRIBUTING.md)
-- [Django-React Integration](./DJANGO-REACT-INTEGRATION.md)
 - [Example .env](./example-dot-env)
 - [Code Management Best Practices](./GOOD_CODING_PRACTICE.md)
 - [OpenAI JSON Examples](./OPENAI_JSON_EXAMPLES.md)

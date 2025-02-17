@@ -6,7 +6,7 @@
 
 # SmarterChat React.js component
 
-This project contains the source code for the interactive chatbot found in the Smarter web console [developer workbench](https://platform.smarter.sh/chatbots/example/). It integrates natively with Smarter Saas and on-premise installations. You can optionally enable the meta data output behavior found in the Smarter sandbox.
+This project contains the source code for the interactive chatbot found in the Smarter web console [developer workbench](https://platform.smarter.sh/chatbots/example/). It integrates natively with Smarter Saas and on-premise installations. You can optionally enable the meta data output behavior found in the Smarter sandbox. See [Smarter Technical Overview](./doc/README.md)
 
 This project is also suitable for all front-end cross-platform projects. For example, use this code base to create a react.js run-time for use inside of Wordpress plugins, salesforce.com apps, .net components and Sharepoint add-ins.
 
@@ -72,6 +72,7 @@ SmarterChat is created with [React](https://react.dev/) leveraging [@chatscope/c
 
 ### Backend integration
 
+See [Smarter Chatbot Api Overview](./doc/CHATBOT_API.md)
 This app interacts with two endpoints from the [smarter.sh/v1](https://platform.smarter.sh/docs/api/) chatbot api:
 
 - GET `/config/`: retrieves a json dict, structured in 4 major sections, with all information required by the react app.
