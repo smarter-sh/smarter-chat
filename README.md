@@ -56,6 +56,11 @@ export const CDN_HOST_BASE_URL = "https://example.com/";
 <script src="https://example.com/app-loader.js"></script>
 ```
 
+```console
+# build and deploy your solution
+make release
+```
+
 where:
 
 - id: the unique html element id that the react app looks for during app initialization. see: dispatch().context in https://github.com/smarter-sh/smarter/blob/main/smarter/smarter/apps/chatapp/views.py. This string is derived from "smarter.sh/v1/ui-chat/root"
