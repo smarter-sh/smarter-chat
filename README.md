@@ -67,8 +67,8 @@ where:
 The Makefile `make build` and `make release` generate these three public urls based on the value of `CDN_HOST_BASE_URL` located in shared/constant.js.
 For example, the react app for the Smarter workbench is initialized and served from these endpoints:
 
-- [https://cdn.platform.smarter.sh/ui-chat/index.html](view-source:https://cdn.platform.smarter.sh/ui-chat/index.html): the react app build artifacts.
-- [https://cdn.platform.smarter.sh/ui-chat/app-loader.js](view-source:https://cdn.platform.smarter.sh/ui-chat/app-loader.js): a script to insert the react app build artifacts into the DOM.
+- [index.html](https://cdn.platform.smarter.sh/ui-chat/index.html): the react app build artifacts.
+- [app-loader.js](https://cdn.platform.smarter.sh/ui-chat/app-loader.js): a script to insert the react app build artifacts into the DOM.
 
 ### Hello world app
 
