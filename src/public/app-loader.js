@@ -26,6 +26,9 @@ const DEBUG_MODE = true;
 export function deriveCdnUrl(filename) {
   const loaderUrl = document.currentScript.src;
   const url = new URL(loaderUrl);
+  if (!url) {
+    throw new Error("Could not derive the Smarter Chat app url from the current script's src attribute:", loaderUrl);
+  }
   url.pathname = url.pathname.replace(/\/[^\/]*$/, "/" + filename);
   return url.toString();
 }
@@ -34,6 +37,8 @@ export function deriveCdnUrl(filename) {
 function addSmarterChatClass(element) {
   if (element && element.classList) {
     element.classList.add("smarter-chat");
+  } else {
+    console.warn("Could not add class 'smarter-chat' to the element:", element);
   }
   return element;
 }
