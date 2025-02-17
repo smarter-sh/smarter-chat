@@ -44,6 +44,9 @@ async function injectReactApp(url) {
 
   try {
     const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Could not fetch Smarter Chat app build artifacts: http response ${response.status}`);
+    }
     const text = await response.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(text, "text/html");
