@@ -52,6 +52,7 @@ export const CDN_HOST_BASE_URL = "https://example.com/";
   smarter-chatbot-api-url="https://platform.smarter.sh/chatbots/smarter/"
   smarter-toggle-metadata="false"
 ></div>
+
 <!-- 3. add a script element pointing to the `app-loader.js` found in the build artifacts -->
 <script src="https://example.com/app-loader.js"></script>
 ```
