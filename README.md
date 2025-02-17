@@ -32,24 +32,25 @@ root.render(<SmarterChat apiUrl={"https://smarter.3141-5926-5359.api.smarter.sh/
 
 **To do: Move this to a cookiecutter scaffolding 'Quickstart' template.**
 
-Fork, configure, build and release a reactapp that you serve from an http host. This is the use case that the
-Smarter developer workbench follows, passing an authenticated chatbot api url that works
+Fork, configure, build and release a reactapp component that you serve from an http host, and integrate into an existing web page.
+This is the use case for the Smarter developer workbench, passing an authenticated chatbot api url that works
 with any chatbot associated with your Smarter account, regardless of whether it has been deployed.
 
-Note the following requirements:
+Implementation example:
 
-1. set the value of `import { CDN_HOST_BASE_URL } from './src/shared/constants'`
-2. add a react 'root' element to your DOM that react can locate and initialize itself.
-3. include a script element pointing to the `app-loader.js` found in the build artifacts
+```js
+// 1. set the value of `import { CDN_HOST_BASE_URL } from './src/shared/constants'`
+export const CDN_HOST_BASE_URL = "https://example.com/";
+```
 
 ```html
-<!-- react app entry point.  -->
+<!-- 2. add a react 'root' element to your DOM that react can locate and initialize itself.  -->
 <div
   id="root"
   smarter-chatbot-api-url="https://platform.smarter.sh/chatbots/smarter/"
   smarter-toggle-metadata="false"
 ></div>
-<!-- inject the js/css react build artifacts into the DOM. -->
+<!-- 3. add a script element pointing to the `app-loader.js` found in the build artifacts -->
 <script src="https://example.com/app-loader.js"></script>
 ```
 
