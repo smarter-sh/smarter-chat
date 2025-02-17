@@ -57,14 +57,14 @@ export const CDN_HOST_BASE_URL = "https://example.com/";
 ```
 
 ```console
-# build and deploy your solution
+# build and deploy your solution. Requires awscli + keypair with sufficient permissions.
 make release
 ```
 
 where:
 
-- smarter-chatbot-api-url: a Smarter chatbot api url
-- smarter-toggle-metadata: true if additional chat meta data should appear in the chat thread
+- `smarter-chatbot-api-url`: a Smarter chatbot api url
+- `smarter-toggle-metadata`: true if additional chat meta data should appear in the chat thread
 
 ## Developers
 
