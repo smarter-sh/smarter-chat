@@ -22,7 +22,7 @@ import ReactDOM from "react-dom/client";
 import { SmarterChat } from "@smarter/ui-chat";
 
 // Api url endpoint for your deployed chatbot.
-const apiUrl = "https://smarter.4386-2072-3294.api.smarter.sh/config/";
+const apiUrl = "https://smarter.3141-5926-5359.api.smarter.sh/config/";
 
 // whether to include back end meta data in chat thread.
 // set to true if your use case is instructional in nature
@@ -38,7 +38,7 @@ root.render(<SmarterChat apiUrl={apiUrl} toggleMetadata={toggleMetadata} />);
 
 ## Build Output
 
-Generates the following public urls:
+Generates these three public urls based on the value of `CDN_HOST_BASE_URL` located in shared/constant.js:
 
 - `https://cdn.platform.smarter.sh/ui-chat/index.html`: the react app build artifacts.
 - `https://cdn.platform.smarter.sh/ui-chat/app-loader.js`: a script to insert the react app build artifacts into the DOM.
@@ -46,13 +46,14 @@ Generates the following public urls:
 
 ## Integrating your web application to the Smarter Api
 
-Following is how the Smarter developer workbench integrates to the Smarter Api.
+Following is how the Smarter developer workbench integrates to the Smarter Api, using an authenticated chatbot api url that works
+with any chatbot associated with your Smarter account, regardless of whether it has been deployed.
 
 ```html
 <!-- react.js app entry point.  -->
 <div
   id="smarter-sh-v1-ui-chat-root"
-  smarter-chatbot-api-url="https://smarter.3141-5926-5359.smarter.sh"
+  smarter-chatbot-api-url="https://platform.smarter.sh/chatbots/smarter/"
   smarter-toggle-metadata="false"
 ></div>
 <!--
@@ -85,10 +86,17 @@ This app interacts with two endpoints from the [smarter.sh/v1](https://platform.
 Smarter chatbot urls use either of these two naming conventions:
 
 - public: `https://<name>.<account_number>.example.com/`
-- authenticated: `https://platform.smarter.sh/chatbots/<name>/`
+- authenticated: `https://platform.smarter.sh/chatbots/<name>/`. This react component looks for and adds the Smarter platform sessionid cookie value to request headers, if it exists.
 
-- `https://smarter.4386-2072-3294.api.smarter.sh/config/`
-- `https://smarter.4386-2072-3294.api.smarter.sh/chat/`
+Public api url example for a deployed chatbot:
+
+- `https://my-chatbot.3141-5926-5359.api.smarter.sh/config/`
+- `https://my-chatbot.3141-5926-5359.api.smarter.sh/chat/`
+
+Authenticated api url example for any chatbot in your Smarter account:
+
+- `https://platform.smarter.sh/chatbots/my-chatbot/config/`
+- `https://platform.smarter.sh/chatbots/my-chatbot/chat/`
 
 ## smarter.sh Technical Reference
 
