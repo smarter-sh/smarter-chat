@@ -10,11 +10,6 @@ This project contains the source code for the interactive chatbot found in the S
 
 This project is also suitable for all front-end cross-platform projects. For example, use this code base to create a react.js run-time for use inside of Wordpress plugins, salesforce.com apps, .net components and Sharepoint add-ins.
 
-This app interacts with two endpoints from the [smarter.sh/v1](https://platform.smarter.sh/docs/api/) api:
-
-- GET `https://<name>.<account_number>.example.com/config/`: retrieves a json dict, structured in 4 major sections, with all information required by the react app. Example - `https://smarter.4386-2072-3294.api.smarter.sh/config/`
-- POST `https://<name>.<account_number>.example.com/chat/`: send a text completion prompt to the Smarter Api. Example - `https://smarter.4386-2072-3294.api.smarter.sh/chat/`
-
 ## Usage
 
 ```console
@@ -26,8 +21,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { SmarterChat } from "@smarter/ui-chat";
 
-// Api url endpoint for your chatbot.
-const apiUrl = "https://platform.smarter.sh/chatbots/example/config/";
+// Api url endpoint for your deployed chatbot.
+const apiUrl = "https://smarter.4386-2072-3294.api.smarter.sh/config/";
 
 // whether to include back end meta data in chat thread.
 // set to true if your use case is instructional in nature
@@ -41,7 +36,7 @@ root.render(<SmarterChat apiUrl={apiUrl} toggleMetadata={toggleMetadata} />);
 
 ![Basic Usage](./doc/img/readme-usage4.png)
 
-## Build
+## Build Output
 
 Generates the following public urls:
 
@@ -79,6 +74,21 @@ example ui-chat/index.html:
 <script type="module" crossorigin src="https://cdn.platform.smarter.sh/ui-chat/assets/main-BdQGq5eL.js"></script>
 <link rel="stylesheet" crossorigin href="https://cdn.platform.smarter.sh/ui-chat/assets/main-BqQx6IPH.css" />
 ```
+
+## Smarter Api chat endpoints used by this react app
+
+This app interacts with two endpoints from the [smarter.sh/v1](https://platform.smarter.sh/docs/api/) chatbot api:
+
+- GET `/config/`: retrieves a json dict, structured in 4 major sections, with all information required by the react app.
+- POST `/chat/`: send a text completion prompt to the Smarter Api.
+
+Smarter chatbot urls use either of these two naming conventions:
+
+- public: `https://<name>.<account_number>.example.com/`
+- authenticated: `https://platform.smarter.sh/chatbots/<name>/`
+
+- `https://smarter.4386-2072-3294.api.smarter.sh/config/`
+- `https://smarter.4386-2072-3294.api.smarter.sh/chat/`
 
 ## smarter.sh Technical Reference
 
