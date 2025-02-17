@@ -1,8 +1,7 @@
-//   example url='https://cdn.platform.smarter.sh/ui-chat/app-loader.js'
-
-import { deriveCdnUrl, DEBUG_MODE } from "../shared/constants";
-
+const DEBUG_MODE = true;
 /*
+  example url='https://cdn.platform.smarter.sh/ui-chat/app-loader.js'
+
   This script is responsible for injecting the Smarter Chat app into the DOM
   of the host website. The chat app is served from AWS Cloudfront.
 
@@ -16,6 +15,27 @@ import { deriveCdnUrl, DEBUG_MODE } from "../shared/constants";
   the css and js link elements into the head/body of the host website.
 
 */
+/*
+creates a new URL object from the current script's src attribute.
+example: https://cdn.platform.smarter.sh/ui-chat/index.html
+*/
+export function deriveCdnUrl(filename) {
+  const loaderUrl = document.currentScript.src;
+  const url = new URL(loaderUrl);
+  url.pathname = url.pathname.replace(/\/[^\/]*$/, "/" + filename);
+  return url.toString();
+}
+
+/*
+  adds the class 'smarter-chat' to the element.
+*/
+function addSmarterChatClass(element) {
+  if (element && element.classList) {
+    element.classList.add("smarter-chat");
+  }
+  return element;
+}
+
 async function injectReactApp(url) {
   const url = deriveCdnUrl((filename = "index.html"));
 
@@ -38,11 +58,12 @@ async function injectReactApp(url) {
         // filter out superfluous elements that are part of
         // the react build.
         if (!element.classList.contains("internal")) {
+          const elementClassed = addSmarterChatClass(element);
           // add links to the bottom of <head> of the DOM
           if (element.tagName === "LINK") {
-            document.head.insertAdjacentElement("beforeend", element);
+            document.head.insertAdjacentElement("beforeend", elementClassed);
             if (DEBUG_MODE === true) {
-              console.log("injected chat app element into the head.", element);
+              console.log("injected chat app element into the head.", elementClassed);
             }
           }
           // add scripts to the bottom of <body> of the DOM
@@ -52,12 +73,13 @@ async function injectReactApp(url) {
             // like a diffy duck, the chat app will render itself into
             // the DOM of the host website.
             const script = document.createElement("script");
+            const scriptClassed = addSmarterChatClass(script);
             script.src = element.src;
             script.async = element.async;
             script.defer = element.defer;
-            document.body.appendChild(script);
+            document.body.appendChild(scriptClassed);
             if (DEBUG_MODE === true) {
-              console.log("injected and executed chat app script.", script);
+              console.log("injected and executed chat app script.", scriptClassed);
             }
           }
         }
