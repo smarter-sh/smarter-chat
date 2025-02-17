@@ -6,70 +6,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smarter - Hello World</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-    <style>
-      body {
-        height: 100vh;
-      }
-      .content {
-        text-align: center;
-      }
-      .logo {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 150px;
-        margin: 0;
-      }
-      .config ul {
-        width: 50%;
-        margin: 0 auto;
-        list-style-type: none;
-      }
-    </style>
+    <link rel="stylesheet" href="assets/css/hello-world.css" />
   </head>
   <body>
     <noscript>This site requires JavaScript.</noscript>
-    <div>
+    <header>
       <img
         class="logo"
         src="assets/images/logo-orange-transparent.png"
         alt="Smarter Logo"
       />
-    </div>
-    <div class="content">
-      <h1>Smarter Hello World</h1>
-      <h5>
-        <a href="https://github.com/smarter-sh/smarter-chat" target="_blank"
-          >https://github.com/smarter-sh/smarter-chat
-        </a>
-      </h5>
-      <div class="config">
-        <ul>
-          <li>
-            config:
-            <a
-              href="https://smarter.3141-5926-5359.api.smarter.sh/config"
-              target="_blank"
-              >https://smarter.3141-5926-5359.api.smarter.sh/config/</a
-            >
-          </li>
-          <li>
-            chat:
-            <a
-              href="https://smarter.3141-5926-5359.api.smarter.sh/chat"
-              target="_blank"
-              >https://smarter.3141-5926-5359.api.smarter.sh/chat/</a
-            >
-          </li>
-        </ul>
+      <div class="content">
+        <h1>Smarter Hello World</h1>
+        <p>
+          An example of how to integrate the Smarter Chat UI into your website.
+        </p>
+        <div class="config">
+          <ul>
+            <li>
+              config:
+              <a
+                href="https://smarter.4386-2072-3294.api.smarter.sh/config"
+                target="_blank"
+                >https://smarter.4386-2072-3294.api.smarter.sh/config/</a
+              >
+            </li>
+            <li>
+              chat:
+              <a
+                href="https://smarter.4386-2072-3294.api.smarter.sh/chat"
+                target="_blank"
+                >https://smarter.4386-2072-3294.api.smarter.sh/chat/</a
+              >
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
-    <div style="height: 67vh; width: 100%">
-      <div
-        style="height: 100%; margin: 50px"
-        id="smarter-sh-v1-ui-chat-root"
-      ></div>
-    </div>
+    </header>
+    <main>
+      <div style="height: 67vh; width: 100%">
+        <div style="height: 100%" id="smarter-sh-v1-ui-chat-root"></div>
+      </div>
+    </main>
+    <footer>
+      <p>
+        source code:
+        <a href="https://github.com/smarter-sh/smarter-chat" target="_blank"
+          >https://github.com/smarter-sh/smarter-chat</a
+        >
+      </p>
+    </footer>
     <script type="module" src="main.jsx"></script>
   </body>
 </html>
