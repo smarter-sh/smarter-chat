@@ -12,8 +12,8 @@ This project is also suitable for all front-end cross-platform projects. For exa
 
 This app interacts with two endpoints from the [smarter.sh/v1](https://platform.smarter.sh/docs/api/) api:
 
-- GET `https://<name>.<account_number>.example.com/config/`: retrieves a json dict, structured in 4 major sections, with all information required by the react app.
-- POST `https://<name>.<account_number>.example.com/chat/`: send a text completion prompt to the Smarter Api.
+- GET `https://<name>.<account_number>.example.com/config/`: retrieves a json dict, structured in 4 major sections, with all information required by the react app. Example - `https://smarter.4386-2072-3294.api.smarter.sh/config/`
+- POST `https://<name>.<account_number>.example.com/chat/`: send a text completion prompt to the Smarter Api. Example - `https://smarter.4386-2072-3294.api.smarter.sh/chat/`
 
 ## Usage
 
