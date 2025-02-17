@@ -43,17 +43,14 @@ Note the following requirements:
 3. include a script element pointing to the `app-loader.js` found in the build artifacts
 
 ```html
-<!-- react.js app entry point.  -->
+<!-- react app entry point.  -->
 <div
   id="root"
   smarter-chatbot-api-url="https://platform.smarter.sh/chatbots/smarter/"
   smarter-toggle-metadata="false"
 ></div>
-<!--
-    retrieves and injects the contents of https://cdn.platform.smarter.sh/ui-chat/index.html
-    js/css artifacts of the react.js build into the DOM.
-  -->
-<script async="" src="https://example.com/app-loader.js"></script>
+<!-- inject the js/css react build artifacts into the DOM. -->
+<script src="https://example.com/app-loader.js"></script>
 ```
 
 where:
