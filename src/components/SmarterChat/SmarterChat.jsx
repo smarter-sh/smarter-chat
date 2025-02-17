@@ -12,25 +12,11 @@ import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheckCircle,
-  faTimesCircle,
-  faRocket,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle, faTimesCircle, faRocket } from "@fortawesome/free-solid-svg-icons";
 
 // Chat UI stuff
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import {
-  MainContainer,
-  ChatContainer,
-  MessageList,
-  Message,
-  MessageInput,
-  TypingIndicator,
-  ConversationHeader,
-  InfoButton,
-  AddUserButton,
-} from "@chatscope/chat-ui-kit-react";
+import { MainContainer, ChatContainer, MessageList, Message, MessageInput, TypingIndicator, ConversationHeader, InfoButton, AddUserButton } from "@chatscope/chat-ui-kit-react";
 
 // this repo
 import { ErrorModal } from "../ErrorModal/ErrorModal.jsx";
@@ -39,13 +25,9 @@ import { ErrorModal } from "../ErrorModal/ErrorModal.jsx";
 import "./styles.css";
 import { MessageDirectionEnum, SenderRoleEnum } from "./enums.js";
 import { setCookie, fetchConfig, fetchPrompt } from "./api.js";
-import {
-  cookieMetaFactory,
-  messageFactory,
-  chatMessages2RequestMessages,
-  chatInit,
-} from "./utils.jsx";
+import { cookieMetaFactory, messageFactory, chatMessages2RequestMessages, chatInit } from "./utils.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
+import { DEBUG } from "../../shared/constants.js";
 
 export const ContainerLayout = styled.div`
   height: 100%;
@@ -76,21 +58,9 @@ export const ComponentLayout = styled.div`
 // is exported and used in the index.js file. It is responsible for
 // managing the chat message thread, sending messages to the backend
 // Api, and rendering the chat UI.
-function SmarterChat({
-  apiUrl,
-  apiKey,
-  toggleMetadata,
-  csrfCookieName,
-  debugCookieName,
-  debugCookieExpiration,
-  sessionCookieName,
-  sessionCookieExpiration,
-}) {
+function SmarterChat({ apiUrl, apiKey, toggleMetadata, csrfCookieName, debugCookieName, debugCookieExpiration, sessionCookieName, sessionCookieExpiration }) {
   const csrfCookie = cookieMetaFactory(csrfCookieName, null); // we read this but never set it.
-  const sessionCookie = cookieMetaFactory(
-    sessionCookieName,
-    sessionCookieExpiration,
-  );
+  const sessionCookie = cookieMetaFactory(sessionCookieName, sessionCookieExpiration);
   const debugCookie = cookieMetaFactory(debugCookieName, debugCookieExpiration);
   const cookies = {
     csrfCookie: csrfCookie,
@@ -108,7 +78,7 @@ function SmarterChat({
   const [fileAttachButton, setFileAttachButton] = useState(false);
   const [isValid, setIsValid] = useState(false);
   const [isDeployed, setIsDeployed] = useState(false);
-  const [debugMode, setDebugMode] = useState(false);
+  const [debugMode, setDebugMode] = useState(DEBUG);
   const [messages, setMessages] = useState([]);
   const [title, setTitle] = useState("");
   const [info, setInfo] = useState("");
@@ -160,9 +130,7 @@ function SmarterChat({
       );
       setMessages(newThread);
 
-      const newTitle = `${newConfig.chatbot.app_name} v${
-        newConfig.chatbot.version || "1.0.0"
-      }`;
+      const newTitle = `${newConfig.chatbot.app_name} v${newConfig.chatbot.version || "1.0.0"}`;
       setTitle(newTitle);
       let newInfo = `${newConfig.chatbot.provider} ${newConfig.chatbot.default_model}`;
       if (newConfig.plugins.meta_data.total_plugins > 0) {
@@ -241,12 +209,7 @@ function SmarterChat({
     // inside this module. It asynchronously sends the user's input to the
     // backend Api using the fetch() function. The response from the Api is
     // then used to update the chat message thread and the UI via React state.
-    const newMessage = messageFactory(
-      {},
-      input_text,
-      MessageDirectionEnum.OUTGOING,
-      SenderRoleEnum.USER,
-    );
+    const newMessage = messageFactory({}, input_text, MessageDirectionEnum.OUTGOING, SenderRoleEnum.USER);
     if (base64_encode) {
       console.error("base64 encoding not implemented yet.");
     }
@@ -267,17 +230,9 @@ function SmarterChat({
             const responseMessages = response.smarter.messages
               .filter((message) => message.content !== null)
               .map((message) => {
-                return messageFactory(
-                  message,
-                  message.content,
-                  MessageDirectionEnum.INCOMING,
-                  message.role,
-                );
+                return messageFactory(message, message.content, MessageDirectionEnum.INCOMING, message.role);
               });
-            setMessages((prevMessages) => [
-              ...prevMessages,
-              ...responseMessages,
-            ]);
+            setMessages((prevMessages) => [...prevMessages, ...responseMessages]);
             setIsTyping(false);
             refetchConfig();
           }
@@ -328,11 +283,7 @@ function SmarterChat({
     return (
       <div>
         {title}&nbsp;
-        {isValid ? (
-          <FontAwesomeIcon icon={faCheckCircle} style={{ color: "green" }} />
-        ) : (
-          <FontAwesomeIcon icon={faTimesCircle} style={{ color: "red" }} />
-        )}
+        {isValid ? <FontAwesomeIcon icon={faCheckCircle} style={{ color: "green" }} /> : <FontAwesomeIcon icon={faTimesCircle} style={{ color: "red" }} />}
         {isDeployed ? (
           <>
             &nbsp;
@@ -387,71 +338,26 @@ function SmarterChat({
             <div className="chat-app">
               <MainContainer style={mainContainerStyle}>
                 <ErrorBoundary>
-                  <ErrorModal
-                    isModalOpen={isModalOpen}
-                    title={modalTitle}
-                    message={modalMessage}
-                    onCloseClick={closeChatModal}
-                  />
+                  <ErrorModal isModalOpen={isModalOpen} title={modalTitle} message={modalMessage} onCloseClick={closeChatModal} />
                 </ErrorBoundary>
                 <ChatContainer style={chatContainerStyle}>
                   <ConversationHeader>
-                    <ConversationHeader.Content
-                      userName={
-                        <AppTitle
-                          title={title}
-                          isValid={isValid}
-                          isDeployed={isDeployed}
-                        />
-                      }
-                      info={info}
-                    />
+                    <ConversationHeader.Content userName={<AppTitle title={title} isValid={isValid} isDeployed={isDeployed} />} info={info} />
                     <ConversationHeader.Actions>
-                      <AddUserButton
-                        onClick={handleAddUserButtonClick}
-                        title="Start a new chat"
-                      />
-                      {toggleMetadata && (
-                        <InfoButton
-                          onClick={handleInfoButtonClick}
-                          title="Toggle system meta data"
-                        />
-                      )}
+                      <AddUserButton onClick={handleAddUserButtonClick} title="Start a new chat" />
+                      {toggleMetadata && <InfoButton onClick={handleInfoButtonClick} title="Toggle system meta data" />}
                     </ConversationHeader.Actions>
                   </ConversationHeader>
-                  <MessageList
-                    style={transparentBackgroundStyle}
-                    scrollBehavior="auto"
-                    typingIndicator={
-                      isTyping ? (
-                        <TypingIndicator
-                          content={assistantName + " is typing"}
-                        />
-                      ) : null
-                    }
-                  >
+                  <MessageList style={transparentBackgroundStyle} scrollBehavior="auto" typingIndicator={isTyping ? <TypingIndicator content={assistantName + " is typing"} /> : null}>
                     {messages
                       .filter((message) => message.display)
                       .map((message, i) => {
                         return <SmarterMessage i={i} message={message} />;
                       })}
                   </MessageList>
-                  <MessageInput
-                    placeholder={placeholderText}
-                    onSend={handleSend}
-                    onAttachClick={handleAttachClick}
-                    attachButton={fileAttachButton}
-                    fancyScroll={false}
-                  />
+                  <MessageInput placeholder={placeholderText} onSend={handleSend} onAttachClick={handleAttachClick} attachButton={fileAttachButton} fancyScroll={false} />
                 </ChatContainer>
-                <input
-                  type="file"
-                  accept=".py"
-                  title="Select a Python file"
-                  ref={fileInputRef}
-                  style={{ display: "none" }}
-                  onChange={handleFileChange}
-                />
+                <input type="file" accept=".py" title="Select a Python file" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
               </MainContainer>
             </div>
           </ComponentLayout>

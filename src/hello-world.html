@@ -11,33 +11,19 @@
   <body>
     <noscript>This site requires JavaScript.</noscript>
     <header>
-      <img
-        class="logo"
-        src="assets/images/logo-orange-transparent.png"
-        alt="Smarter Logo"
-      />
+      <img class="logo" src="assets/images/logo-orange-transparent.png" alt="Smarter Logo" />
       <div class="content">
         <h1>Smarter Hello World</h1>
-        <p>
-          An example of how to integrate the Smarter Chat UI into your website.
-        </p>
+        <p>An example of how to integrate the Smarter Chat UI into your website.</p>
         <div class="config">
           <ul>
             <li>
               config:
-              <a
-                href="https://smarter.4386-2072-3294.api.smarter.sh/config"
-                target="_blank"
-                >https://smarter.4386-2072-3294.api.smarter.sh/config/</a
-              >
+              <a href="https://smarter.4386-2072-3294.api.smarter.sh/config" target="_blank">https://smarter.4386-2072-3294.api.smarter.sh/config/</a>
             </li>
             <li>
               chat:
-              <a
-                href="https://smarter.4386-2072-3294.api.smarter.sh/chat"
-                target="_blank"
-                >https://smarter.4386-2072-3294.api.smarter.sh/chat/</a
-              >
+              <a href="https://smarter.4386-2072-3294.api.smarter.sh/chat" target="_blank">https://smarter.4386-2072-3294.api.smarter.sh/chat/</a>
             </li>
           </ul>
         </div>
@@ -45,17 +31,21 @@
     </header>
     <main>
       <div style="height: 67vh; width: 100%">
-        <div style="height: 100%" id="smarter-sh-v1-ui-chat-root"></div>
+        <!-- ------------------------------------------------------------- -->
+        <!--                   the react app entry point                   -->
+        <!-- ------------------------------------------------------------- -->
+        <div id="smarter-sh-v1-ui-chat-root" style="height: 100%" smarter-chatbot-api-url="https://smarter.3141-5926-5359.smarter.sh" smarter-toggle-metadata="false"></div>
       </div>
     </main>
     <footer>
       <p>
         source code:
-        <a href="https://github.com/smarter-sh/smarter-chat" target="_blank"
-          >https://github.com/smarter-sh/smarter-chat</a
-        >
+        <a href="https://github.com/smarter-sh/smarter-chat" target="_blank">https://github.com/smarter-sh/smarter-chat</a>
       </p>
     </footer>
+    <!-- ------------------------------------------------------------- -->
+    <!--                     the react app bundle                      -->
+    <!-- ------------------------------------------------------------- -->
     <script type="module" src="main.jsx"></script>
   </body>
 </html>

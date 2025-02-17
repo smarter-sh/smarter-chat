@@ -34,16 +34,38 @@ const apiKey = "YOUR-32-CHARACTER-API-KEY";
 // (ie. you're teaching a generative AI course)
 const toggleMetadata = false;
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <SmarterChat
-    apiUrl={apiUrl}
-    apiKey={apiKey}
-    toggleMetadata={toggleMetadata}
-  />,
-);
+ReactDOM.createRoot(document.getElementById("root")).render(<SmarterChat apiUrl={apiUrl} apiKey={apiKey} toggleMetadata={toggleMetadata} />);
 ```
 
 ![Basic Usage](./doc/img/readme-usage4.png)
+
+## Application Integration
+
+Add the following to your web page.
+
+```html
+<!-- react.js app entry point.  -->
+<div id="smarter-sh-v1-ui-chat-root" smarter-chatbot-api-url="https://smarter.3141-5926-5359.smarter.sh" smarter-toggle-metadata="false" smarter-debug-mode="false"></div>
+<!--
+    retrieves and injects the contents of https://cdn.platform.smarter.sh/ui-chat/index.html
+    js/css artifacts of the react.js build into the DOM.
+  -->
+<script async="" src="https://cdn.platform.smarter.sh/ui-chat/app-loader.js"></script>
+```
+
+where:
+
+- id: the unique html element id that the react app looks for during app initialization. see: dispatch().context in https://github.com/smarter-sh/smarter/blob/main/smarter/smarter/apps/chatapp/views.py
+- smarter-chatbot-api-url: a Smarter chatbot api url: `https://<name>.<account_number>.example.com`
+- smarter-toggle-metadata: true if additional chat meta data should appear in the chat thread
+- smarter-debug-mode: true if react app should print diagnostic data to the browser console.log()
+
+example ui-chat/index.html:
+
+```html
+<script type="module" crossorigin src="https://cdn.platform.smarter.sh/ui-chat/assets/main-BdQGq5eL.js"></script>
+<link rel="stylesheet" crossorigin href="https://cdn.platform.smarter.sh/ui-chat/assets/main-BqQx6IPH.css" />
+```
 
 ## smarter.sh Technical Reference
 
