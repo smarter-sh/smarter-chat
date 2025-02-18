@@ -131,7 +131,6 @@ release:
     # 3. Invalidate all items in the AWS Cloudfront CDN.
     #---------------------------------------------------------
 	make build
-	npm login
 	npm publish --access public
 
 

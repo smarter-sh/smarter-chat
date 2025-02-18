@@ -15,13 +15,13 @@ This project is also suitable for all front-end cross-platform projects. For exa
 ## Usage
 
 ```console
-npm install @smarter/ui-chat
+npm install @smarter.sh/ui-chat
 ```
 
 ```jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { SmarterChat } from "@smarter/ui-chat";
+import { SmarterChat } from "@smarter.sh/ui-chat";
 
 const DEFAULT_COOKIE_EXPIRATION = 1000 * 60 * 60 * 24 * 1; // 1 day
 const rootElement = document.getElementById("root");
