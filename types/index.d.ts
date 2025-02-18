@@ -1,3 +1,5 @@
+import { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum } from "../src/components/enums.js";
+
 declare module "@smarter.sh/ui-chat" {
   export interface SmarterChatProps {
     apiUrl: string;
@@ -10,5 +12,5 @@ declare module "@smarter.sh/ui-chat" {
     sessionCookieExpiration: number;
   }
 
-  export const SmarterChat: (props: SmarterChatProps) => JSX.Element;
+  export { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum };
 }
