@@ -2,6 +2,10 @@ import { ESLint } from "eslint";
 
 export default new ESLint({
   baseConfig: {
+    env: {
+      browser: true,
+      es2021: true,
+    },
     extends: ["eslint:recommended", "plugin:react/recommended", "plugin:@typescript-eslint/recommended", "standard"],
     parser: "@typescript-eslint/parser",
     parserOptions: {
@@ -16,9 +20,15 @@ export default new ESLint({
         version: "detect",
       },
     },
+    plugins: ["react"],
     rules: {
-      // Add your custom rules here
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": ["error"],
+      "no-undef": "off",
+      "react/prop-types": "off",
+      "react/no-unused-prop-types": "off",
     },
   },
+  ignore: true,
   ignorePatterns: ["node_modules/**", "dist/**"],
 });

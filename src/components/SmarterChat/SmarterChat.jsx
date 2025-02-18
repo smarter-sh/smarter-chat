@@ -37,7 +37,6 @@ import { MessageDirectionEnum, SenderRoleEnum } from "./enums.js";
 import { setCookie, fetchConfig, fetchPrompt } from "./api.js";
 import { cookieMetaFactory, messageFactory, chatMessages2RequestMessages, chatInit } from "./utils.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
-import { DEBUG_MODE } from "../../shared/constants.js";
 
 export const ContainerLayout = styled.div`
   height: 100%;
@@ -63,6 +62,8 @@ export const ComponentLayout = styled.div`
     flex-basis: 100%;
   }
 `;
+
+const DEBUG_MODE = false;
 
 // The main chat component. This is the top-level component that
 // is exported and used in the index.js file. It is responsible for

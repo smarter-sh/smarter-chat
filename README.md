@@ -23,52 +23,21 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { SmarterChat } from "@smarter/ui-chat";
 
+const DEFAULT_COOKIE_EXPIRATION = 1000 * 60 * 60 * 24 * 1; // 1 day
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement);
-root.render(<SmarterChat apiUrl={"https://smarter.3141-5926-5359.api.smarter.sh/"} toggleMetadata={false} />);
+root.render(
+  <SmarterChat
+    apiUrl={"https://smarter.3141-5926-5359.api.smarter.sh/"}
+    toggleMetadata={false}
+    csrfCookieName={"csrftoken"}
+    debugCookieName={"debug"}
+    debugCookieExpiration={DEFAULT_COOKIE_EXPIRATION}
+    sessionCookieName={"session_key"}
+    sessionCookieExpiration={DEFAULT_COOKIE_EXPIRATION}
+  />,
+);
 ```
-
-## Use case #2 - integrate to an existing web application
-
-**To do: Move this to a cookiecutter scaffolding 'Quickstart' template.**
-
-Fork, configure, build and release a reactapp component that you serve from an http host, and integrate into an existing web page.
-This is the use case for the Smarter developer workbench, passing an authenticated chatbot api url that works
-with any chatbot associated with your Smarter account, regardless of whether it has been deployed.
-
-Implementation example:
-
-```js
-// THIS REPO:
-// 1. set this value in './src/shared/constants'
-export const CDN_HOST_BASE_URL = "https://example.com/";
-```
-
-```html
-<!-- YOUR EXISTING WEB PAGE: -->
-<!-- 2. add a react 'root' element to your DOM that react can locate and initialize itself.  -->
-<div
-  id="root"
-  smarter-chatbot-api-url="https://platform.smarter.sh/chatbots/smarter/"
-  smarter-toggle-metadata="false"
-></div>
-
-<!-- 3. add a script element pointing to the `app-loader.js` found in the build artifacts -->
-<script src="https://example.com/app-loader.js"></script>
-```
-
-```console
-# build and deploy your solution. Requires awscli + keypair with sufficient permissions.
-make release
-```
-
-where:
-
-- `smarter-chatbot-api-url`: a Smarter chatbot api url
-- `smarter-toggle-metadata`: true if additional chat meta data should appear in the chat thread
-- `app-loader.js` is a helper script that inserts the current latest react app build assets into the DOM. For the avoidance of any doubt, you
-  could also just add the literal css and js file links to the DOM yourself. However, react app build assets are hashed, meaning that if you take
-  this approach then you will need to edit your existing web page to resync the new hashed files each time you republish this react app.
 
 ## Developers
 
