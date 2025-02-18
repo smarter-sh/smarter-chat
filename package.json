@@ -20,7 +20,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/smarter-sh/smarter-chat"
+    "url": "git+https://github.com/smarter-sh/smarter-chat.git"
   },
   "bugs": {
     "url": "https://github.com/smarter-sh/smarter-chat/issues"
