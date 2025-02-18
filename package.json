@@ -1,6 +1,6 @@
 {
   "name": "@smarter.sh/ui-chat",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "chatbot React.js component for the https://smarter.sh no-code, plugin based AI platform",
   "homepage": "https://smarter.sh",
   "main": "dist/index.js",
@@ -80,7 +80,8 @@
     "vite": "^6.1.0",
     "vite-plugin-babel": "^1.3.0",
     "vite-plugin-comlink": "^5.1.0",
-    "vite-plugin-html": "^3.2.2"
+    "vite-plugin-html": "^3.2.2",
+    "vite-tsconfig-paths": "^5.1.4"
   },
   "peerDependencies": {
     "react": "^18.2.0",

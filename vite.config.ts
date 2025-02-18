@@ -2,10 +2,11 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { resolve } from "path";
 import { comlink } from "vite-plugin-comlink";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig(({ mode }) => {
   const commonConfig = {
-    plugins: [react(), comlink()],
+    plugins: [react(), comlink(), tsconfigPaths()],
     build: {
       sourcemap: true,
       outDir: "../dist",
