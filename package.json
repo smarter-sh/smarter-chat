@@ -1,12 +1,15 @@
 {
   "name": "@smarter.sh/ui-chat",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "description": "chatbot React.js component for the https://smarter.sh no-code, plugin based AI platform",
   "homepage": "https://smarter.sh",
-  "main": "dist/index.js",
+  "main": "dist/smarter-chat-library.umd.js",
+  "module": "dist/smarter-chat-library.es.js",
+  "types": "types/index.d.ts",
   "files": [
     "dist",
-    "src"
+    "src",
+    "types"
   ],
   "type": "module",
   "keywords": [
