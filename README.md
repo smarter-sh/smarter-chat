@@ -4,7 +4,7 @@
 <img src="https://img.shields.io/badge/Smarter.sh-orange?style=flat&logo=appveyor&logoColor=white" height="32">
 </a>
 
-# SmarterChat React.js component
+# SmarterChat React.js component for smarter.sh
 
 This project contains the source code for the interactive chatbot found in the Smarter web console [developer workbench](https://platform.smarter.sh/chatbots/example/). It integrates natively with Smarter Saas and on-premise installations. You can optionally enable the meta data output behavior found in the Smarter sandbox. See [Smarter Technical Overview](./doc/README.md)
 
@@ -12,7 +12,7 @@ This project is also suitable for all front-end cross-platform projects. For exa
 
 ![Basic Usage](./doc/img/readme-usage4.png)
 
-## Use case #1 - build a react app
+## Usage
 
 ```console
 npm install @smarter/ui-chat

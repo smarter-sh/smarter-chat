@@ -61,7 +61,7 @@ clean:
 	rm -rf .pypi_cache
 	rm -rf venv
 	rm -rf node_modules
-	rm -rf build
+	rm -rf dist
 
 npm-check:
 	@command -v npm >/dev/null 2>&1 || { echo >&2 "This project requires npm but it's not installed.  Aborting."; exit 1; }
@@ -116,38 +116,8 @@ run:
 
 build:
 	@echo 'Building the React app...'
-	rm -rf build
+	rm -rf dist
 	npm run build
-
-aws-verify-bucket:
-    # ------------------------
-    # Ensure the S3 bucket and folder exist
-    # ------------------------
-	@echo 'Checking if the S3 bucket $(BUCKET) exists...'
-	$(AWS_CLI) s3 ls $(BUCKET) || { echo "aws s3 bucket $(BUCKET) does not exist. Aborting."; exit 1; }
-	@echo 'Checking if the S3 bucket folder $(S3_TARGET) exists...'
-	$(AWS_CLI) s3 ls $(S3_TARGET) || $(AWS_CLI) s3 put-object --bucket $(BUCKET) --key $(TARGET_FOLDER)/
-
-aws-sync-s3:
-    # ------------------------
-    # add all built files to the S3 bucket.
-    # ------------------------
-	@echo 'Syncing the build folder to the S3 bucket...'
-	$(AWS_CLI) s3 sync ./build/ $(S3_TARGET) \
-				--acl public-read \
-				--delete --cache-control max-age=31536000,public \
-				--expires '31 Dec 2050 00:00:01 GMT'
-
-aws-bust-cache:
-    # ------------------------
-    # remove the cache-control header created above with a "no-cache" header so that browsers never cache these files
-    # ------------------------
-	@echo 'Creating cache invalidations for service-worker.js, index.html, and manifest.json files...'
-	$(AWS_CLI) s3 cp $(S3_TARGET)/index.html $(S3_TARGET)/index.html --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --acl public-read
-	$(AWS_CLI) s3 cp $(S3_TARGET)/manifest.json $(S3_TARGET)/manifest.json --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/json --acl public-read
-
-    # invalidate the Cloudfront cache
-	$(AWS_CLI) cloudfront create-invalidation --distribution-id $(DISTRIBUTION_ID) --paths "/*" "/index.html" "/manifest.json"
 
 release:
     #---------------------------------------------------------
@@ -161,9 +131,8 @@ release:
     # 3. Invalidate all items in the AWS Cloudfront CDN.
     #---------------------------------------------------------
 	make build
-	make aws-verify-bucket
-	make aws-sync-s3
-	make aws-bust-cache
+	npm login
+	npm publish --access public
 
 
 ######################
@@ -192,6 +161,4 @@ help:
 	@echo 'python-check     - Ensure that Python is installed'
 	@echo 'python-init      - Create Python virtual environment and install dependencies'
 	@echo 'pre-commit       - runs all pre-commit hooks on all files'
-	@echo 'aws-verify-bucket- Ensure the S3 bucket and folder exist'
-	@echo 'aws-sync-s3	    - Add all built files to the S3 bucket'
 	@echo '--------------------------------------------------------------------'

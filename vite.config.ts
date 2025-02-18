@@ -9,10 +9,13 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: true,
       outDir: "../dist",
-      assetsDir: "assets",
       rollupOptions: {
-        input: {},
-        external: [],
+        external: ["react"],
+        output: {
+          globals: {
+            react: "React",
+          },
+        },
       },
     },
     root: "src",
@@ -36,15 +39,6 @@ export default defineConfig(({ mode }) => {
           entry: resolve(__dirname, "src/components/index.js"),
           name: "SmarterChatLibrary",
           fileName: (format) => `smarter-chat-library.${format}.js`,
-        },
-        rollupOptions: {
-          external: ["react", "react-dom"],
-          output: {
-            globals: {
-              react: "React",
-              "react-dom": "ReactDOM",
-            },
-          },
         },
       },
     };
