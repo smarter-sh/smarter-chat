@@ -1,4 +1,4 @@
-[![NPM](https://a11ybadges.com/badge?logo=npm)](https://github.com/smarter-sh/smarter-chat/)
+[![NPM](https://a11ybadges.com/badge?logo=npm)](https://www.npmjs.com/package/@smarter.sh/ui-chat)
 [![GitHub](https://a11ybadges.com/badge?logo=github)](https://github.com/smarter-sh/smarter-chat/)
 <a href="https://smarter.sh">
 <img src="https://img.shields.io/badge/Smarter.sh-orange?style=flat&logo=appveyor&logoColor=white" height="32">
