@@ -41,11 +41,11 @@ root.render(
 
 ## Integrate to an existing web page
 
-We integrate this react component to the [Smarter developer workbench](https://platform.smarter.sh/) using this small repo, [github.com/smarter-sh/smarter-workbench]/(https://github.com/smarter-sh/smarter-workbench). This methodology provides a layer of separation between Django and react.js, which keeps things simple. smarter-workbench substantially consists of the following three files:
+We integrate this react component to the [Smarter developer workbench](https://platform.smarter.sh/) using this small repo, [github.com/smarter-sh/smarter-workbench](https://github.com/smarter-sh/smarter-workbench). This methodology provides a layer of separation between Django and react.js, which keeps things simple. smarter-workbench substantially consists of the following three files:
 
 - [main.jsx](https://github.com/smarter-sh/smarter-workbench/blob/main/src/main.jsx): a 40-line react.js mini app for configuring this npm component with a Smarter Api url and any initialization settings we choose to include.
 - [app-loader.js](https://github.com/smarter-sh/smarter-workbench/blob/main/src/public/app-loader.js): a small js script that injects the react.js build assets into your DOM, initiating the React boot-up process.
-- [Makefile]: for automating build and release to AWS Cloudfront, where the react ui-chat app is served.
+- [Makefile](https://github.com/smarter-sh/smarter-workbench/blob/main/Makefile): for automating build and release to AWS Cloudfront, where the react ui-chat app is served.
 
 Meanwhile, Django adds a pair of DOM elements like the following example, where the app-loader.js launches itself with an "iffe", (Immediately Invoked Function Expression).
 
