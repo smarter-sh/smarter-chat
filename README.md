@@ -47,7 +47,7 @@ We integrate this react component to the [Smarter developer workbench](https://p
 - [app-loader.js](https://github.com/smarter-sh/smarter-workbench/blob/main/src/public/app-loader.js): a small js script that injects the react.js build assets into your DOM, initiating the React boot-up process.
 - [Makefile](https://github.com/smarter-sh/smarter-workbench/blob/main/Makefile): for automating build and release to AWS Cloudfront, where the react ui-chat app is served.
 
-Meanwhile, Django adds a pair of DOM elements like the following example, where the app-loader.js launches itself with an "iffe", (Immediately Invoked Function Expression).
+Meanwhile, Django adds a pair of DOM elements like the following example, where app-loader.js launches itself with an "iffe", (Immediately Invoked Function Expression).
 
 ```html
 <div
