@@ -117,6 +117,7 @@ run:
 build:
 	@echo 'Building the React app...'
 	rm -rf dist
+	npm install
 	npm run build
 
 release:

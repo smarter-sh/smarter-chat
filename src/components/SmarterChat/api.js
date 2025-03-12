@@ -186,6 +186,7 @@ export async function fetchPrompt(config, messages, cookies) {
   const init = requestInitFactory(headers, body);
   const responseJson = await getJsonResponse(url, init, cookies);
   if (responseJson && responseJson.body) {
+    console.log("fetchPrompt(): parsing responseJson.body ");
     const responseBody = await JSON.parse(responseJson.body);
     return responseBody;
   }
