@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
       sourcemap: true,
       outDir: "../dist",
       rollupOptions: {
-        external: ["react"],
+        external: ["react", "react/jsx-runtime", "react-helmet", "react-modal"],
         output: {
           globals: {
             react: "React",

@@ -117,7 +117,7 @@ run:
 build:
 	@echo 'Building the React app...'
 	rm -rf dist
-	npm install
+	npm install --legacy-peer-deps
 	npm run build
 
 release:
