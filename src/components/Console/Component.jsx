@@ -8,13 +8,17 @@
 // React stuff
 import React, { useState, useEffect } from 'react';
 import ReactJson from 'react-json-view';
+import PropTypes from 'prop-types';
 
 // This project
 import { ConsoleLayout } from "../../components/Layout/";
 
 // This component
-import "./Component.css";
+import ConfigPropTypes from '../../types/propTypes';
 import HelmetHeadStyles from "./HeadStyles"
+import "./Component.css";
+import { MenuItems } from './enums';
+
 
 function Console({ config }) {
 
@@ -23,7 +27,7 @@ function Console({ config }) {
   const [chatPluginUsageHistory, setChatPluginUsageHistory] = useState();
   const [chatbotRequestHistory, setChatbotRequestHistory] = useState();
 
-  const [selectedMenuItem, setSelectedMenuItem] = useState("chat_config");
+  const [selectedMenuItem, setSelectedMenuItem] = useState(MenuItems.CHAT_CONFIG);
 
   // simulated bash shell environment
   const [podHash, setPodHash] = useState(Math.floor(Math.random() * 0xFFFFFFFF).toString(16));
@@ -45,7 +49,7 @@ function Console({ config }) {
 
       const newConsoleText = Array.isArray(config) ? config : [config] || [{}];
       setConsoleText(newConsoleText);
-      setSelectedMenuItem("chat_config");
+      setSelectedMenuItem(MenuItems.CHAT_CONFIG);
       }
 
 
@@ -65,16 +69,16 @@ function Console({ config }) {
 
       let newData = [{}];
       switch (id) {
-        case "chat_config":
+        case MenuItems.CHAT_CONFIG:
           newData = Array.isArray(config) ? config : [config] || newData;
           break;
-        case "chat_tool_call_history":
+        case MenuItems.CHAT_TOOL_CALL_HISTORY:
           newData = chatToolCallHistory || newData;
           break;
-        case "chat_plugin_usage_history":
+        case MenuItems.CHAT_PLUGIN_USAGE_HISTORY:
           newData = chatPluginUsageHistory || newData;
           break;
-        case "chatbot_request_history":
+        case MenuItems.CHATBOT_REQUEST_HISTORY:
           newData = chatbotRequestHistory || newData;
           break;
       }
@@ -119,10 +123,10 @@ function Console({ config }) {
         data-kt-sticky-zindex={95}
       >
         <ul className="nav flex-wrap border-transparent">
-          <ConsoleNavItem label="Config" id="chat_config" />
-          <ConsoleNavItem label="Api Calls" id="chatbot_request_history" />
-          <ConsoleNavItem label="Tool Calls" id="chat_tool_call_history" />
-          <ConsoleNavItem label="Plugin Usage" id="chat_plugin_usage_history" />
+          <ConsoleNavItem label="Config" id={MenuItems.CHAT_CONFIG} />
+          <ConsoleNavItem label="Api Calls" id={MenuItems.CHATBOT_REQUEST_HISTORY} />
+          <ConsoleNavItem label="Tool Calls" id={MenuItems.CHAT_TOOL_CALL_HISTORY} />
+          <ConsoleNavItem label="Plugin Usage" id={MenuItems.CHAT_PLUGIN_USAGE_HISTORY} />
         </ul>
       </div>
     );
@@ -185,5 +189,9 @@ function Console({ config }) {
     </ConsoleLayout>
   );
 }
+
+Console.propTypes = {
+  config: ConfigPropTypes,
+};
 
 export default Console;

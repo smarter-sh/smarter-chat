@@ -1,2 +1,2 @@
-import Console from "./Component";
-export default Console;
+export { default as Console } from "./Component";
+export { MenuItems } from "./enums";

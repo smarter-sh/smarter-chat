@@ -7,6 +7,8 @@
 
 // React stuff
 import React, { useRef, useState, useEffect } from "react";
+import PropTypes from 'prop-types';
+import ConfigPropTypes from '../../types/propTypes';
 
 // see: https://www.npmjs.com/package/styled-components
 import styled from "styled-components";
@@ -30,6 +32,7 @@ import {
 
 // this repo
 import { ErrorModal } from "../ErrorModal/ErrorModal.jsx";
+import { Console} from "../Console";
 
 // This component
 import "./styles.css";
@@ -78,6 +81,7 @@ function SmarterChat({
   debugCookieExpiration,
   sessionCookieName,
   sessionCookieExpiration,
+  showConsole=true,
 }) {
   const csrfCookie = cookieMetaFactory(csrfCookieName, null); // we read this but never set it.
   const sessionCookie = cookieMetaFactory(sessionCookieName, sessionCookieExpiration);
@@ -119,6 +123,7 @@ function SmarterChat({
       console.log("fetchAndSetConfig() config:", newConfig);
     }
 
+    PropTypes.checkPropTypes(ConfigPropTypes, newConfig, 'prop', 'SmarterChat');
     setConfig(newConfig);
     return newConfig;
   };
@@ -412,6 +417,7 @@ function SmarterChat({
           </ComponentLayout>
         </ContentLayout>
       </ContainerLayout>
+      {showConsole && <Console config={config} />}
     </div>
   );
 }
