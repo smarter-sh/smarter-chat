@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
       build: {
         ...commonConfig.build,
         lib: {
-          entry: resolve(__dirname, "src/components/index.js"),
+          entry: resolve(__dirname, "src/index.js"),
           name: "SmarterChatLibrary",
           fileName: (format) => `smarter-chat-library.${format}.js`,
         },
