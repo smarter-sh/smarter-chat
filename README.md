@@ -35,6 +35,7 @@ root.render(
     debugCookieExpiration={DEFAULT_COOKIE_EXPIRATION}
     sessionCookieName={"session_key"}
     sessionCookieExpiration={DEFAULT_COOKIE_EXPIRATION}
+    showConsole={true}
   />,
 );
 ```
