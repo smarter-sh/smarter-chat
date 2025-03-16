@@ -58,11 +58,11 @@ h5 {
 
 div.cs-message__html-content a {
   text-decoration: underline !important;
-  color: #333333;
+  color: beige;
 }
 div.cs-message__html-content a:hover {
   text-decoration: underline;
-  color: midnightblue;
+  color: orange;
 }
 
 section.smarter-message .cs-message__html-content {
