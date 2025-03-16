@@ -1,3 +1,9 @@
+.SmarterChat {
+  border: 1px solid rgba(255, 87, 51, 0.75);
+  height: 100%;
+  overflow-x: auto;
+}
+
 .SmarterChat a {
   text-decoration: inherit;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -9,11 +15,6 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
-}
-
-.SmarterChat {
-  border: 1px solid rgba(255, 87, 51, 0.75);
-  height: 100%;
 }
 
 .app-title {

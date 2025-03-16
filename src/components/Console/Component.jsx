@@ -10,9 +10,6 @@ import React, { useState, useEffect } from 'react';
 import ReactJson from 'react-json-view';
 import PropTypes from 'prop-types';
 
-// This project
-import { ConsoleLayout } from "../../components/Layout/";
-
 // This component
 import ConfigPropTypes from '../../types/propTypes';
 import HelmetHeadStyles from "./HeadStyles"
@@ -161,7 +158,6 @@ function Console({ config }) {
 
 
   return (
-    <ConsoleLayout>
       <div className="console">
         <HelmetHeadStyles />
         {/*begin::Main*/}
@@ -173,7 +169,7 @@ function Console({ config }) {
               {/*begin::Content container*/}
               <div
                 id="chatapp_console_app_content_container"
-                className="app-container container-xxl"
+                className="app-container container-lg"
               >
                 <ConsoleMenu />
                 <ConsoleScreen />
@@ -186,7 +182,6 @@ function Console({ config }) {
         </div>
         {/*end:::Main*/}
       </div>
-    </ConsoleLayout>
   );
 }
 
