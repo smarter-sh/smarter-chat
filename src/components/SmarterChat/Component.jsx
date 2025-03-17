@@ -8,7 +8,7 @@
 // React stuff
 import React, { useRef, useState, useEffect } from "react";
 import PropTypes from 'prop-types';
-import ConfigPropTypes from '../../types/propTypes';
+import ConfigPropTypes from '../../types/propTypes.js';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faTimesCircle, faRocket } from "@fortawesome/free-solid-svg-icons";
@@ -29,7 +29,7 @@ import {
 
 // this repo
 import { ErrorModal } from "../ErrorModal/ErrorModal.jsx";
-import { Console} from "../Console";
+import { Console} from "../Console/index.js";
 
 // This component
 import "./styles.css";

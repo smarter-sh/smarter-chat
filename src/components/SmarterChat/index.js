@@ -1,3 +1,3 @@
-import SmarterChat from "./SmarterChat";
-export * from "./SmarterChat";
+import SmarterChat from "./Component";
+export * from "./Component";
 export default SmarterChat;
