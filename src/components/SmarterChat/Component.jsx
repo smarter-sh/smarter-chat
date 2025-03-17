@@ -362,8 +362,8 @@ function SmarterChat({
                   <ChatContainer style={chatContainerStyleOverrides}>
                     <ConversationHeader>
                       <ConversationHeader.Content
-                        userName={isReady ? <AppTitle title={title} isValid={isValid} isDeployed={isDeployed}/>: "Loading..."}
-                        info={isReady ? info: "Loading..."}
+                        userName={isReady ? <AppTitle title={title} isValid={isValid} isDeployed={isDeployed}/>: "Configuring workbench..."}
+                        info={isReady ? info: ""}
                       />
                       <ConversationHeader.Actions>
                         <AddUserButton onClick={handleAddUserButtonClick} title="Start a new chat" />
