@@ -1,12 +1,13 @@
 import { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum } from "./enums.js";
 
-export function cookieMetaFactory(cookieName, cookieExpiration) {
+export function cookieMetaFactory(cookieName, cookieExpiration, cookieDomain) {
   /*
   Create a cookie object.
    */
   return {
     name: cookieName,
     expiration: cookieExpiration,
+    domain: cookieDomain,
   };
 }
 

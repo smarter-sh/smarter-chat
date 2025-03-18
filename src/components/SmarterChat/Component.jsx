@@ -7,8 +7,8 @@
 
 // React stuff
 import React, { useRef, useState, useEffect } from "react";
-import PropTypes from 'prop-types';
-import ConfigPropTypes from '../../types/propTypes.js';
+import PropTypes from "prop-types";
+import ConfigPropTypes from "../../types/propTypes.js";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faTimesCircle, faRocket } from "@fortawesome/free-solid-svg-icons";
@@ -29,17 +29,15 @@ import {
 
 // this repo
 import { ErrorModal } from "../ErrorModal/ErrorModal.jsx";
-import { Console} from "../Console/index.js";
+import { Console } from "../Console/index.js";
 
 // This component
 import "./styles.css";
-import { ContainerLayout, ContentLayout, WorkbenchLayout, ChatAppLayout, ConsoleLayout} from "./Layout.js"
+import { ContainerLayout, ContentLayout, WorkbenchLayout, ChatAppLayout, ConsoleLayout } from "./Layout.js";
 import { MessageDirectionEnum, SenderRoleEnum } from "./enums.js";
 import { setCookie, fetchConfig, fetchPrompt } from "./api.js";
 import { cookieMetaFactory, messageFactory, chatMessages2RequestMessages, chatInit } from "./utils.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
-
-
 
 const DEBUG_MODE = false;
 
@@ -48,17 +46,18 @@ const DEBUG_MODE = false;
 // managing the chat message thread, sending messages to the backend
 // Api, and rendering the chat UI.
 function SmarterChat({
-  apiUrl,
-  apiKey,
-  toggleMetadata,
-  csrfCookieName,
-  debugCookieName,
-  debugCookieExpiration,
-  sessionCookieName,
-  sessionCookieExpiration,
-  showConsole=true,
+  apiUrl, // the URL of the Smarter chatbot API. example: https://smarter.3141-5926-5359.beta.api.smarter.sh/
+  apiKey, // NOT USED. TO DELETE.
+  toggleMetadata, // show/hide toggle button to show/hide the chat thread metadata
+  csrfCookieName, // the Django CSRF cookie.
+  debugCookieName, // the Smarter chat debug cookie. Set here.
+  debugCookieExpiration, // the Smarter chat debug cookie. Set here.
+  sessionCookieName, // the Smarter chat session cookie. Set here, where the user creates a new chat session.
+  sessionCookieExpiration, // the Smarter chat session cookie. Set here, where the user creates a new chat session.
+  authSessionCookieName, // the Django session cookie. Set when the user logs in to the Smarter web console app.
+  showConsole = true, // show the server console log component
+  cookieDomain, // the domain of the cookie. This is added to the cookie meta data, but it is not used.
 }) {
-
   const [configApiUrl, setConfigApiUrl] = useState(apiUrl);
 
   const [showMetadata, setShowMetadata] = useState(toggleMetadata);
@@ -90,15 +89,19 @@ function SmarterChat({
   const fileInputRef = useRef(null);
 
   // cookie management
-  const csrfCookie = cookieMetaFactory(csrfCookieName, null); // we read this but never set it.
-  const sessionCookie = cookieMetaFactory(sessionCookieName, sessionCookieExpiration);
-  const debugCookie = cookieMetaFactory(debugCookieName, debugCookieExpiration);
+  const csrfCookie = cookieMetaFactory(csrfCookieName, null, cookieDomain); // we read this but never set it.
+  const authTokenCookie = cookieMetaFactory(authSessionCookieName, null, cookieDomain); // we read this but never set it.
+  const sessionCookie = cookieMetaFactory(sessionCookieName, sessionCookieExpiration, cookieDomain);
+  const debugCookie = cookieMetaFactory(debugCookieName, debugCookieExpiration, cookieDomain);
   const cookies = {
-    csrfCookie: csrfCookie,
-    sessionCookie: sessionCookie,
-    debugCookie: debugCookie,
-  };
+    authTokenCookie: authTokenCookie, // the Django session cookie. Set when the user logs in to the Smarter web console app.
+    // typically this is not required for the chat app when running inside the
+    // Smarter web console workbench, since it is already authenticated.
 
+    csrfCookie: csrfCookie, // the Django CSRF cookie. This is required for requests to the Smarter web console workbench.
+    sessionCookie: sessionCookie, // the Smarter chat session cookie. Set here, where the user creates a new chat session.
+    debugCookie: debugCookie, // the Smarter chat debug cookie. Set here. Controls browser console logging.
+  };
 
   const refetchConfig = async () => {
     const newConfig = await fetchConfig(configApiUrl, cookies);
@@ -108,7 +111,7 @@ function SmarterChat({
       console.log("fetchAndSetConfig() config:", newConfig);
     }
 
-    PropTypes.checkPropTypes(ConfigPropTypes, newConfig, 'prop', 'SmarterChat');
+    PropTypes.checkPropTypes(ConfigPropTypes, newConfig, "prop", "SmarterChat");
     setConfig(newConfig);
     return newConfig;
   };
@@ -362,12 +365,20 @@ function SmarterChat({
                   <ChatContainer style={chatContainerStyleOverrides}>
                     <ConversationHeader>
                       <ConversationHeader.Content
-                        userName={isReady ? <AppTitle title={title} isValid={isValid} isDeployed={isDeployed}/>: "Configuring workbench..."}
-                        info={isReady ? info: ""}
+                        userName={
+                          isReady ? (
+                            <AppTitle title={title} isValid={isValid} isDeployed={isDeployed} />
+                          ) : (
+                            "Configuring workbench..."
+                          )
+                        }
+                        info={isReady ? info : ""}
                       />
                       <ConversationHeader.Actions>
                         <AddUserButton onClick={handleAddUserButtonClick} title="Start a new chat" />
-                        {toggleMetadata && <InfoButton onClick={handleInfoButtonClick} title="Toggle system meta data" />}
+                        {toggleMetadata && (
+                          <InfoButton onClick={handleInfoButtonClick} title="Toggle system meta data" />
+                        )}
                       </ConversationHeader.Actions>
                     </ConversationHeader>
                     <MessageList
@@ -401,9 +412,9 @@ function SmarterChat({
               </div>
             </ChatAppLayout>
             {showConsole && (
-            <ConsoleLayout>
-              <Console config={config} />
-            </ConsoleLayout>
+              <ConsoleLayout>
+                <Console config={config} />
+              </ConsoleLayout>
             )}
           </WorkbenchLayout>
         </ContentLayout>

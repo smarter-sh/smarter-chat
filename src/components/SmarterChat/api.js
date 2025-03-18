@@ -101,9 +101,9 @@ function requestHeadersFactory(cookies) {
 
   const requestCookies = getRequestCookies(cookies);
   const csrftoken = getCookie(cookies.csrfCookie, "");
-  const authToken = null; // FIX NOTE: add me.
+  const authToken = getCookie(cookies.authTokenCookie, "");
 
-  return {
+  const requestHeaders = {
     Accept: applicationJson,
     "Content-Type": applicationJson,
     "X-CSRFToken": csrftoken,
@@ -112,6 +112,8 @@ function requestHeadersFactory(cookies) {
     Authorization: `Bearer ${authToken}`,
     "User-Agent": userAgent,
   };
+  console.log("requestHeadersFactory(): requestHeaders", requestHeaders);
+  return requestHeaders;
 }
 
 function requestInitFactory(headers, body) {
