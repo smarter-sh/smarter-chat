@@ -49,14 +49,15 @@ function SmarterChat({
   apiUrl, // the URL of the Smarter chatbot API. example: https://smarter.3141-5926-5359.beta.api.smarter.sh/
   apiKey, // NOT USED. TO DELETE.
   toggleMetadata, // show/hide toggle button to show/hide the chat thread metadata
-  csrfCookieName, // the Django CSRF cookie.
+  csrfCookieName = "csrftoken", // the Django CSRF cookie.
+  csrftoken, // the Django CSRF token. Passed from the Django template in the Smarter web console workbench.
   debugCookieName, // the Smarter chat debug cookie. Set here.
   debugCookieExpiration, // the Smarter chat debug cookie. Set here.
-  sessionCookieName, // the Smarter chat session cookie. Set here, where the user creates a new chat session.
+  sessionCookieName = "session_key", // the Smarter chat session cookie. Set here, where the user creates a new chat session.
   sessionCookieExpiration, // the Smarter chat session cookie. Set here, where the user creates a new chat session.
-  authSessionCookieName, // the Django session cookie. Set when the user logs in to the Smarter web console app.
+  authSessionCookieName = "sessionid", // the Django session cookie. Set when the user logs in to the Smarter web console app.
   showConsole = true, // show the server console log component
-  cookieDomain, // the domain of the cookie. This is added to the cookie meta data, but it is not used.
+  cookieDomain, // the domain of the cookie. This is added to the cookie meta data to restrict the domain that this component will read cookie data.
 }) {
   const [configApiUrl, setConfigApiUrl] = useState(apiUrl);
 
@@ -89,10 +90,10 @@ function SmarterChat({
   const fileInputRef = useRef(null);
 
   // cookie management
-  const csrfCookie = cookieMetaFactory(csrfCookieName, null, cookieDomain); // we read this but never set it.
-  const authTokenCookie = cookieMetaFactory(authSessionCookieName, null, cookieDomain); // we read this but never set it.
-  const sessionCookie = cookieMetaFactory(sessionCookieName, sessionCookieExpiration, cookieDomain);
-  const debugCookie = cookieMetaFactory(debugCookieName, debugCookieExpiration, cookieDomain);
+  const csrfCookie = cookieMetaFactory(csrfCookieName, null, cookieDomain, csrftoken); // we read this but never set it.
+  const authTokenCookie = cookieMetaFactory(authSessionCookieName, null, cookieDomain, null); // we read this but never set it.
+  const sessionCookie = cookieMetaFactory(sessionCookieName, sessionCookieExpiration, cookieDomain, null);
+  const debugCookie = cookieMetaFactory(debugCookieName, debugCookieExpiration, cookieDomain, null);
   const cookies = {
     authTokenCookie: authTokenCookie, // the Django session cookie. Set when the user logs in to the Smarter web console app.
     // typically this is not required for the chat app when running inside the

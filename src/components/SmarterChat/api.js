@@ -29,16 +29,20 @@ const userAgent = "SmarterChat/1.0";
 const applicationJson = "application/json";
 
 function getCookie(cookie, defaultValue = null) {
+  console.log("getCookie(): cookie", cookie);
+  if (cookie.value !== null) {
+    console.log("getCookie(): ", cookie.domain, cookie.name, cookie.value);
+    return cookie.value;
+  }
   let cookieValue = null;
-  const expectedDomain = cookie.domain;
 
-  // Check if the cookie is set for the expected domain. example: alpha.platform.smarter.sh
-  if (window.location.hostname === expectedDomain && document.cookie && document.cookie !== "") {
-    const cookies = document.cookie.split(";");
+  if (window.location.hostname.endsWith(cookie.domain) && document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";").map((cookie) => cookie.trim());
     for (let i = 0; i < cookies.length; i++) {
-      const thisCookie = cookies[i].trim();
-      if (thisCookie.substring(0, cookie.name.length + 1) === cookie.name + "=") {
+      const thisCookie = cookies[i];
+      if (thisCookie.startsWith(`${cookie.name}=`)) {
         cookieValue = decodeURIComponent(thisCookie.substring(cookie.name.length + 1));
+        console.log("getCookie(): ", cookie.domain, cookie.name, cookieValue);
         break;
       }
     }
@@ -94,6 +98,8 @@ function requestHeadersFactory(cookies) {
       return !trimmedCookie.startsWith(`${cookies.csrfCookie.name}=`);
     });
     const selectedCookies = cookiesArray.join("; ");
+
+    // example return value: "_ga=GA1.1.1244182935.1742308279;  _ga_SK81M5HQYS=GS1.1.1742316653.3.1.1742320251.0.0.0"
     return selectedCookies;
   }
 
