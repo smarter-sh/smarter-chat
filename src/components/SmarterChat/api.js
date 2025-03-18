@@ -30,22 +30,20 @@ const applicationJson = "application/json";
 
 function getCookie(cookie, defaultValue = null) {
   let cookieValue = null;
-  if (document.cookie && document.cookie !== "") {
+  const expectedDomain = cookie.domain;
+
+  // Check if the cookie is set for the expected domain. example: alpha.platform.smarter.sh
+  if (window.location.hostname === expectedDomain && document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
       const thisCookie = cookies[i].trim();
       if (thisCookie.substring(0, cookie.name.length + 1) === cookie.name + "=") {
         cookieValue = decodeURIComponent(thisCookie.substring(cookie.name.length + 1));
-        if (developerMode) {
-          console.log("getCookie(): found ", cookieValue, "for cookie", cookie.name);
-        }
         break;
       }
     }
   }
-  if (developerMode && !cookieValue) {
-    console.warn("getCookie(): no value found for", cookie.name);
-  }
+
   return cookieValue || defaultValue;
 }
 
