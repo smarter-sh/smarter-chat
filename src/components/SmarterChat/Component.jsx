@@ -35,11 +35,10 @@ import { Console } from "../Console/index.js";
 import "./styles.css";
 import { ContainerLayout, ContentLayout, WorkbenchLayout, ChatAppLayout, ConsoleLayout } from "./Layout.js";
 import { MessageDirectionEnum, SenderRoleEnum } from "./enums.js";
-import { setCookie, fetchConfig, fetchPrompt } from "./api.js";
-import { cookieMetaFactory, messageFactory, chatMessages2RequestMessages, chatInit } from "./utils.jsx";
+import { fetchConfig, fetchPrompt } from "./api.js";
+import { setCookie, cookieMetaFactory } from "../shared/cookie.js";
+import { messageFactory, chatMessages2RequestMessages, chatInit } from "./utils.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
-
-const DEBUG_MODE = false;
 
 // The main chat component. This is the top-level component that
 // is exported and used in the index.js file. It is responsible for
@@ -75,7 +74,7 @@ function SmarterChat({
   const [isValid, setIsValid] = useState(false);
   const [isDeployed, setIsDeployed] = useState(false);
 
-  const [debugMode, setDebugMode] = useState(DEBUG_MODE);
+  const [debugMode, setDebugMode] = useState(false);
   const [messages, setMessages] = useState([]);
 
   // future use
@@ -106,10 +105,11 @@ function SmarterChat({
 
   const refetchConfig = async () => {
     const newConfig = await fetchConfig(configApiUrl, cookies);
+    setDebugMode(newConfig?.debug_mode);
+    setCookie(cookies.debugCookie, debugMode);
 
-    if (newConfig?.debug_mode) {
-      console.log("fetchAndSetConfig()...");
-      console.log("fetchAndSetConfig() config:", newConfig);
+    if (debugMode) {
+      console.log("refetchConfig() config:", newConfig);
     }
 
     PropTypes.checkPropTypes(ConfigPropTypes, newConfig, "prop", "SmarterChat");
@@ -121,7 +121,9 @@ function SmarterChat({
     try {
       const newConfig = await refetchConfig();
 
-      console.log("fetchAndSetConfig() config:", newConfig);
+      if (debugMode) {
+        console.log("fetchAndSetConfig() config:", newConfig);
+      }
 
       setPlaceholderText(newConfig.chatbot.app_placeholder);
       setConfigApiUrl(newConfig.chatbot.url_chatbot);
@@ -154,7 +156,7 @@ function SmarterChat({
       setIsReady(true);
       setIsTyping(false);
 
-      if (newConfig?.debug_mode) {
+      if (debugMode) {
         console.log("fetchAndSetConfig() done!");
       }
     } catch (error) {
@@ -200,9 +202,6 @@ function SmarterChat({
       }
       if (["smarter", "system", "tool"].includes(message.sender)) {
         // toggle backend messages
-        if (debugMode) {
-          //console.log("toggle message:", message);
-        }
         return { ...message, display: newValue };
       } else {
         // always show user and assistant messages

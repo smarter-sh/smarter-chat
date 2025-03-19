@@ -22,64 +22,14 @@
     v0.5.0:       ./test/events/langchain.response.v0.5.0.json
 -----------------------------------------------------------------------------*/
 
+import { getCookie, setCookie } from "../shared/cookie";
+
 // Set to true to enable local development mode,
 // which will simulate the server-side API calls.
 const developerMode = false;
+let debugMode = developerMode;
 const userAgent = "SmarterChat/1.0";
 const applicationJson = "application/json";
-
-function getCookie(cookie, defaultValue = null) {
-  console.log("getCookie(): cookie", cookie);
-  if (cookie.value !== null) {
-    console.log("getCookie(): ", cookie.domain, cookie.name, cookie.value);
-    return cookie.value;
-  }
-  let cookieValue = null;
-
-  if (window.location.hostname.endsWith(cookie.domain) && document.cookie && document.cookie !== "") {
-    const cookies = document.cookie.split(";").map((cookie) => cookie.trim());
-    for (let i = 0; i < cookies.length; i++) {
-      const thisCookie = cookies[i];
-      if (thisCookie.startsWith(`${cookie.name}=`)) {
-        cookieValue = decodeURIComponent(thisCookie.substring(cookie.name.length + 1));
-        console.log("getCookie(): ", cookie.domain, cookie.name, cookieValue);
-        break;
-      }
-    }
-  }
-
-  return cookieValue || defaultValue;
-}
-
-export function setCookie(cookie, value) {
-  const currentPath = window.location.pathname;
-  if (value) {
-    const expirationDate = new Date();
-    expirationDate.setTime(expirationDate.getTime() + cookie.expiration);
-    const expires = expirationDate.toUTCString();
-    const cookieData = `${cookie.name}=${value}; path=${currentPath}; SameSite=Lax; expires=${expires}`;
-    document.cookie = cookieData;
-    if (developerMode) {
-      console.log(
-        "setCookie(): ",
-        cookieData,
-        "now: ",
-        new Date().toUTCString(),
-        "expiration: ",
-        expirationDate.toUTCString(),
-      );
-    }
-  } else {
-    // Unset the cookie by setting its expiration date to the past
-    const expirationDate = new Date(0);
-    const expires = expirationDate.toUTCString();
-    const cookieData = `${cookie.name}=; path=${currentPath}; SameSite=Lax; expires=${expires}`;
-    document.cookie = cookieData;
-    if (developerMode) {
-      console.log("setCookie(): Unsetting cookie", cookieData);
-    }
-  }
-}
 
 function promptRequestBodyFactory(messages, config) {
   const body = {
@@ -90,7 +40,9 @@ function promptRequestBodyFactory(messages, config) {
 }
 
 function requestHeadersFactory(cookies) {
-  console.log("requestHeadersFactory(): cookies", cookies);
+  if (debugMode) {
+    console.log("requestHeadersFactory(): cookies", cookies);
+  }
   function getRequestCookies(cookies) {
     // Ensure that csrftoken is not included in the Cookie header.
     const cookiesArray = document.cookie.split(";").filter((cookie) => {
@@ -116,7 +68,9 @@ function requestHeadersFactory(cookies) {
     Authorization: `Bearer ${authToken}`,
     "User-Agent": userAgent,
   };
-  console.log("requestHeadersFactory(): requestHeaders", requestHeaders);
+  if (debugMode) {
+    console.log("requestHeadersFactory(): requestHeaders", requestHeaders);
+  }
   return requestHeaders;
 }
 
@@ -144,9 +98,8 @@ function urlFactory(apiUrl, endpoint, sessionKey) {
 }
 
 async function getJsonResponse(url, init, cookies) {
-  const debugMode = getCookie(cookies.debugCookie) === "true";
   try {
-    if (debugMode || developerMode) {
+    if (debugMode) {
       console.log("getJsonResponse(): url: ", url, ", init: ", init, ", cookies: ", cookies);
     }
     const response = await fetch(url, init);
@@ -156,7 +109,7 @@ async function getJsonResponse(url, init, cookies) {
       if (response.ok) {
         const responseJson = await response.json(); // Convert the ReadableStream to a JSON object
         const responseJsonData = await responseJson.data; // ditto
-        if (debugMode || developerMode) {
+        if (debugMode) {
           console.log("getJsonResponse(): response: ", responseJson);
         }
         return responseJsonData;
@@ -183,7 +136,11 @@ async function getJsonResponse(url, init, cookies) {
 }
 
 export async function fetchPrompt(config, messages, cookies) {
-  console.log("fetchPrompt(): config", config);
+  debugMode = config.debug_mode || developerMode;
+
+  if (debugMode) {
+    console.log("fetchPrompt(): config", config);
+  }
   const apiUrl = config.chatbot.url_chatbot;
   const sessionKey = getCookie(cookies.sessionCookie, "");
   const url = urlFactory(apiUrl, null, sessionKey);
@@ -192,7 +149,9 @@ export async function fetchPrompt(config, messages, cookies) {
   const init = requestInitFactory(headers, body);
   const responseJson = await getJsonResponse(url, init, cookies);
   if (responseJson && responseJson.body) {
-    console.log("fetchPrompt(): parsing responseJson.body ");
+    if (debugMode) {
+      console.log("fetchPrompt(): parsing responseJson.body ");
+    }
     const responseBody = await JSON.parse(responseJson.body);
     return responseBody;
   }
@@ -234,6 +193,7 @@ export async function fetchConfig(apiUrl, cookies) {
   if (newConfig) {
     setCookie(cookies.sessionCookie, newConfig.session_key);
     setCookie(cookies.debugCookie, newConfig.debug_mode);
+    debugMode = newConfig.debug_mode || developerMode;
     return newConfig;
   }
   return null;

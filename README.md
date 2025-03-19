@@ -23,20 +23,33 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { SmarterChat } from "@smarter.sh/ui-chat";
 
-const DEFAULT_COOKIE_EXPIRATION = 1000 * 60 * 60 * 24 * 1; // 1 day
 const rootElement = document.getElementById("root");
 const root = ReactDOM.createRoot(rootElement);
+const apiUrl = rootElement.getAttribute("smarter-chatbot-api-url");
+const toggleMetadata = rootElement.getAttribute("smarter-toggle-metadata") === "true";
+const csrfCookieName = rootElement.getAttribute("smarter-csrf-cookie-name") || "csrftoken";
+const sessionCookieName = rootElement.getAttribute("smarter-session-cookie-name") || "session_key";
+const cookieDomain = rootElement.getAttribute("smarter-cookie-domain") || "platform.smarter.sh";
+const authSessionCookieName = rootElement.getAttribute("django-session-cookie-name") || "sessionid";
+const csrftoken = rootElement.getAttribute("django-csrftoken");
+const debugCookieName = "debug";
+
 root.render(
-  <SmarterChat
-    apiUrl={"https://smarter.3141-5926-5359.api.smarter.sh/"}
-    toggleMetadata={false}
-    csrfCookieName={"csrftoken"}
-    debugCookieName={"debug"}
-    debugCookieExpiration={DEFAULT_COOKIE_EXPIRATION}
-    sessionCookieName={"session_key"}
-    sessionCookieExpiration={DEFAULT_COOKIE_EXPIRATION}
-    showConsole={true}
-  />,
+  <React.StrictMode>
+    <SmarterChat
+      apiUrl={apiUrl}
+      apiKey={apiKey}
+      toggleMetadata={toggleMetadata}
+      csrfCookieName={csrfCookieName}
+      csrftoken={csrftoken}
+      debugCookieName={debugCookieName}
+      debugCookieExpiration={debugCookieExpiration}
+      sessionCookieName={sessionCookieName}
+      sessionCookieExpiration={sessionCookieExpiration}
+      authSessionCookieName={authSessionCookieName}
+      cookieDomain={cookieDomain}
+    />
+  </React.StrictMode>,
 );
 ```
 

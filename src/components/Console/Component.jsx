@@ -6,19 +6,17 @@
 //---------------------------------------------------------------------------------
 
 // React stuff
-import React, { useState, useEffect } from 'react';
-import ReactJson from 'react-json-view';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect } from "react";
+import ReactJson from "react-json-view";
+import PropTypes from "prop-types";
 
 // This component
-import ConfigPropTypes from '../../types/propTypes';
-import HelmetHeadStyles from "./HeadStyles"
+import ConfigPropTypes from "../../types/propTypes";
+import HelmetHeadStyles from "./HeadStyles";
 import "./Component.css";
-import { MenuItems } from './enums';
-
+import { MenuItems } from "./enums";
 
 function Console({ config }) {
-
   const [consoleText, setConsoleText] = useState();
   const [chatToolCallHistory, setChatToolCallHistory] = useState();
   const [chatPluginUsageHistory, setChatPluginUsageHistory] = useState();
@@ -27,17 +25,18 @@ function Console({ config }) {
   const [selectedMenuItem, setSelectedMenuItem] = useState(MenuItems.CHAT_CONFIG);
 
   // simulated bash shell environment
-  const [podHash, setPodHash] = useState(Math.floor(Math.random() * 0xFFFFFFFF).toString(16));
+  const [podHash, setPodHash] = useState(Math.floor(Math.random() * 0xffffffff).toString(16));
   const [lastLogin, setLastLogin] = useState(new Date().toString());
-  const [randomIpAddress, setRandomIpAddress] = useState(`192.168.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`);
+  const [randomIpAddress, setRandomIpAddress] = useState(
+    `192.168.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`,
+  );
   const [systemPrompt, setSystemPrompt] = useState(`smarter_user@smarter-${podHash}:~/smarter$`);
-
 
   // Lifecycle hooks
   useEffect(() => {
     if (config) {
-      if (config.debug_mode) {
-        console.log('Console() component mounted');
+      if (config?.debug_mode) {
+        console.log("Console() component mounted");
       }
 
       setChatToolCallHistory(config.history?.chat_tool_call_history || []);
@@ -47,23 +46,18 @@ function Console({ config }) {
       const newConsoleText = Array.isArray(config) ? config : [config] || [{}];
       setConsoleText(newConsoleText);
       setSelectedMenuItem(MenuItems.CHAT_CONFIG);
-      }
-
+    }
 
     return () => {
       if (config?.debug_mode) {
-        console.log('Console() component unmounted');
+        console.log("Console() component unmounted");
       }
     };
-
   }, [config]);
 
-
   const ConsoleNavItem = (props) => {
-
     // set the console output text based on the selected menu item
     function consoleNavItemClicked(event, id) {
-
       let newData = [{}];
       switch (id) {
         case MenuItems.CHAT_CONFIG:
@@ -85,18 +79,20 @@ function Console({ config }) {
       // set the 'active' menu item
       requestAnimationFrame(() => {
         if (id != selectedMenuItem) {
-          document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+          document.querySelectorAll(".nav-link").forEach((el) => el.classList.remove("active"));
         } else {
-          event.target.classList.add('active');
+          event.target.classList.add("active");
         }
-        });
+      });
     }
 
     return (
       <li className="nav-item my-1">
         <a
           id={props.id}
-          className={`btn btn-sm btn-color-gray-600 bg-state-body btn-active-color-gray-800 fw-bolder fw-bold fs-6 fs-lg-base nav-link px-3 px-lg-4 mx-1 ${props.id === selectedMenuItem ? 'active' : ''}`}
+          className={`btn btn-sm btn-color-gray-600 bg-state-body btn-active-color-gray-800 fw-bolder fw-bold fs-6 fs-lg-base nav-link px-3 px-lg-4 mx-1 ${
+            props.id === selectedMenuItem ? "active" : ""
+          }`}
           onClick={(event) => consoleNavItemClicked(event, props.id)}
         >
           {props.label}
@@ -132,7 +128,9 @@ function Console({ config }) {
   const ConsoleOutputInitializing = () => {
     return (
       <div>
-        <p className="mb-0">Last login: {lastLogin} from {randomIpAddress}</p>
+        <p className="mb-0">
+          Last login: {lastLogin} from {randomIpAddress}
+        </p>
         <p className="mb-0">{systemPrompt}</p>
       </div>
     );
@@ -143,11 +141,11 @@ function Console({ config }) {
       <div className="console-output rounded">
         <div className="console-output-content">
           <ConsoleOutputInitializing />
-          {Array.isArray(consoleText) && consoleText.length === 1 && JSON.stringify(consoleText[0]) === '{}' ? null : (
+          {Array.isArray(consoleText) && consoleText.length === 1 && JSON.stringify(consoleText[0]) === "{}" ? null : (
             <>
-              {Array.isArray(consoleText) ? consoleText.map((item, index) => (
-                <ReactJson key={index} src={item} theme="monokai" />
-              )) : null}
+              {Array.isArray(consoleText)
+                ? consoleText.map((item, index) => <ReactJson key={index} src={item} theme="monokai" />)
+                : null}
               <p className="mb-0">{systemPrompt}</p>
             </>
           )}
@@ -156,32 +154,28 @@ function Console({ config }) {
     );
   };
 
-
   return (
-      <div className="console">
-        <HelmetHeadStyles />
-        {/*begin::Main*/}
-        <div className="app-main flex-column flex-row-fluid" id="chatapp_console_app_main">
-          {/*begin::Content wrapper*/}
-          <div className="d-flex flex-column flex-column-fluid">
-            {/*begin::Content*/}
-            <div id="chatapp_console_app_content" className="app-content flex-column-fluid p-0 pb-5">
-              {/*begin::Content container*/}
-              <div
-                id="chatapp_console_app_content_container"
-                className="app-container container-lg"
-              >
-                <ConsoleMenu />
-                <ConsoleScreen />
-              </div>
-              {/*end::Content container*/}
+    <div className="console">
+      <HelmetHeadStyles />
+      {/*begin::Main*/}
+      <div className="app-main flex-column flex-row-fluid" id="chatapp_console_app_main">
+        {/*begin::Content wrapper*/}
+        <div className="d-flex flex-column flex-column-fluid">
+          {/*begin::Content*/}
+          <div id="chatapp_console_app_content" className="app-content flex-column-fluid p-0 pb-5">
+            {/*begin::Content container*/}
+            <div id="chatapp_console_app_content_container" className="app-container container-lg">
+              <ConsoleMenu />
+              <ConsoleScreen />
             </div>
-            {/*end::Content*/}
+            {/*end::Content container*/}
           </div>
-          {/*end::Content wrapper*/}
+          {/*end::Content*/}
         </div>
-        {/*end:::Main*/}
+        {/*end::Content wrapper*/}
       </div>
+      {/*end:::Main*/}
+    </div>
   );
 }
 

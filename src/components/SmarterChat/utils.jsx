@@ -1,17 +1,5 @@
 import { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum } from "./enums.js";
 
-export function cookieMetaFactory(cookieName, cookieExpiration, cookieDomain, cookieValue = null) {
-  /*
-  Create a cookie object.
-   */
-  return {
-    name: cookieName,
-    expiration: cookieExpiration,
-    domain: cookieDomain,
-    value: cookieValue,
-  };
-}
-
 export function chatRestoreFromBackend(chat_history, last_response) {
   /*
   Rebuild the message thread from the most recently persisted chat history.
