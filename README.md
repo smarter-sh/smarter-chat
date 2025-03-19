@@ -32,6 +32,7 @@ const sessionCookieName = rootElement.getAttribute("smarter-session-cookie-name"
 const cookieDomain = rootElement.getAttribute("smarter-cookie-domain") || "platform.smarter.sh";
 const authSessionCookieName = rootElement.getAttribute("django-session-cookie-name") || "sessionid";
 const csrftoken = rootElement.getAttribute("django-csrftoken");
+const debugMode = rootElement.getAttribute("smarter-debug-mode") === "true";
 const debugCookieName = "debug";
 
 root.render(
@@ -44,9 +45,11 @@ root.render(
       csrftoken={csrftoken}
       debugCookieName={debugCookieName}
       debugCookieExpiration={debugCookieExpiration}
+      debugMode={debugMode}
       sessionCookieName={sessionCookieName}
       sessionCookieExpiration={sessionCookieExpiration}
       authSessionCookieName={authSessionCookieName}
+      showConsole={true}
       cookieDomain={cookieDomain}
     />
   </React.StrictMode>,

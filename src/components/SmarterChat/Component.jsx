@@ -52,6 +52,7 @@ function SmarterChat({
   csrftoken, // the Django CSRF token. Passed from the Django template in the Smarter web console workbench.
   debugCookieName, // the Smarter chat debug cookie. Set here.
   debugCookieExpiration, // the Smarter chat debug cookie. Set here.
+  debugMode = false, // if true then show the browser console log messages. Set in Smarter web console admin waffle switches: SmarterWaffleSwitches.SMARTER_WAFFLE_REACTAPP_DEBUG_MODE
   sessionCookieName = "session_key", // the Smarter chat session cookie. Set here, where the user creates a new chat session.
   sessionCookieExpiration, // the Smarter chat session cookie. Set here, where the user creates a new chat session.
   authSessionCookieName = "sessionid", // the Django session cookie. Set when the user logs in to the Smarter web console app.
@@ -74,7 +75,7 @@ function SmarterChat({
   const [isValid, setIsValid] = useState(false);
   const [isDeployed, setIsDeployed] = useState(false);
 
-  const [debugMode, setDebugMode] = useState(false);
+  const [debugMode, setDebugMode] = useState(debugMode);
   const [messages, setMessages] = useState([]);
 
   // future use
