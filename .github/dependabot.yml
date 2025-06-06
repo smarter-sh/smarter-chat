@@ -7,7 +7,7 @@ updates:
       - "javascript"
       - "automated pr"
     schedule:
-      interval: "monthly"
+      interval: "daily"
     target-branch: "main"
     assignees:
       - "lpm0073"
@@ -20,7 +20,7 @@ updates:
       - "dependencies"
       - "automated pr"
     schedule:
-      interval: "monthly"
+      interval: "daily"
     target-branch: "main"
     assignees:
       - "lpm0073"
