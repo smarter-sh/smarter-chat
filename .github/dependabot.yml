@@ -8,7 +8,7 @@ updates:
       - "automated pr"
     schedule:
       interval: "monthly"
-    target-branch: "alpha"
+    target-branch: "main"
     assignees:
       - "lpm0073"
     reviewers:
@@ -21,7 +21,7 @@ updates:
       - "automated pr"
     schedule:
       interval: "monthly"
-    target-branch: "alpha"
+    target-branch: "main"
     assignees:
       - "lpm0073"
     reviewers:
