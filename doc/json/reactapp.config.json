@@ -38,7 +38,7 @@
     "app_placeholder": "Ask me anything...",
     "app_info_url": "https://smarter.sh",
     "app_background_image_url": null,
-    "app_logo_url": "/static/querium/querium-logo-white-transparent.png",
+    "app_logo_url": null,
     "app_file_attachment": false,
     "default_host": "example.3141-5926-5359.api.localhost:8000",
     "default_url": "http://example.3141-5926-5359.api.localhost:8000/",

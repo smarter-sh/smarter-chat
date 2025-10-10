@@ -75,7 +75,7 @@ function SmarterChat({
   const [isValid, setIsValid] = useState(false);
   const [isDeployed, setIsDeployed] = useState(false);
 
-  const [debugMode, setDebugMode] = useState(debugMode);
+  const [debugModeState, setDebugMode] = useState(debugMode);
   const [messages, setMessages] = useState([]);
 
   // future use
@@ -107,9 +107,9 @@ function SmarterChat({
   const refetchConfig = async () => {
     const newConfig = await fetchConfig(configApiUrl, cookies);
     setDebugMode(newConfig?.debug_mode);
-    setCookie(cookies.debugCookie, debugMode);
+    setCookie(cookies.debugCookie, debugModeStateState);
 
-    if (debugMode) {
+    if (debugModeState) {
       console.log("refetchConfig() config:", newConfig);
     }
 
@@ -122,7 +122,7 @@ function SmarterChat({
     try {
       const newConfig = await refetchConfig();
 
-      if (debugMode) {
+      if (debugModeState) {
         console.log("fetchAndSetConfig() config:", newConfig);
       }
 
@@ -157,7 +157,7 @@ function SmarterChat({
       setIsReady(true);
       setIsTyping(false);
 
-      if (debugMode) {
+      if (debugModeState) {
         console.log("fetchAndSetConfig() done!");
       }
     } catch (error) {
@@ -167,14 +167,14 @@ function SmarterChat({
 
   // Lifecycle hooks
   useEffect(() => {
-    if (debugMode) {
+    if (debugModeState) {
       console.log("ChatApp() component mounted");
     }
 
     fetchAndSetConfig();
 
     return () => {
-      if (debugMode) {
+      if (debugModeState) {
         console.log("ChatApp() component unmounted");
       }
     };
@@ -194,7 +194,7 @@ function SmarterChat({
   const handleInfoButtonClick = () => {
     const newValue = !showMetadata;
     setShowMetadata(newValue);
-    if (debugMode) {
+    if (debugModeState) {
       console.log("showMetadata:", newValue);
     }
     const newMessages = messages.map((message) => {
@@ -233,7 +233,7 @@ function SmarterChat({
 
       (async () => {
         try {
-          if (debugMode) {
+          if (debugModeState) {
             console.log("handleApiRequest() messages:", updatedMessages);
           }
           const msgs = chatMessages2RequestMessages(updatedMessages);
