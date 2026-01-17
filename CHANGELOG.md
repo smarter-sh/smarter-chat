@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.2.14
+
+- bug fix in Component.jsx - setCookie(cookies.debugCookie, debugModeState)
+
+## 0.2.13
+
+- left-align section.smarter-message
+
+## 0.2.10 - 0.2.12
+
+- minor patches and version bumps
+
 ## 0.2.9
 
 - add csrftoken param in SmarterChat

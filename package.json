@@ -1,7 +1,7 @@
 {
   "name": "@smarter.sh/ui-chat",
-  "version": "0.2.12",
-  "description": "chatbot React.js component for the https://smarter.sh no-code, plugin based AI resource management platform.",
+  "version": "0.2.14",
+  "description": "chatbot React.js component for the https://smarter.sh declarative, plugin-based AI resource management platform.",
   "homepage": "https://smarter.sh",
   "main": "dist/smarter-chat-library.umd.js",
   "module": "dist/smarter-chat-library.es.js",

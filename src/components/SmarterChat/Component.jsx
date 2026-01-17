@@ -107,7 +107,7 @@ function SmarterChat({
   const refetchConfig = async () => {
     const newConfig = await fetchConfig(configApiUrl, cookies);
     setDebugMode(newConfig?.debug_mode);
-    setCookie(cookies.debugCookie, debugModeStateState);
+    setCookie(cookies.debugCookie, debugModeState);
 
     if (debugModeState) {
       console.log("refetchConfig() config:", newConfig);

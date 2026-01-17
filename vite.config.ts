@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => {
         output: {
           globals: {
             react: "React",
+            "react/jsx-runtime": "jsxRuntime",
+            "react-modal": "ReactModal",
+            "react-helmet": "reactHelmet",
           },
         },
       },

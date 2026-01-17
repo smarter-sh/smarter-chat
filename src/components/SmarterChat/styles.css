@@ -70,7 +70,7 @@ section.smarter-message .cs-message__html-content {
   background-color: blanchedalmond;
   font-family: "Courier New", Courier, monospace;
   font-weight: bold;
-  text-align: center;
+  text-align: left;
 }
 
 section.smarter-message .cs-message__content {
