@@ -14,6 +14,8 @@ This project is also suitable for all front-end cross-platform projects. For exa
 
 ## Usage
 
+Generic usage of the published npm package is as follows
+
 ```console
 npm install @smarter.sh/ui-chat
 ```
@@ -23,7 +25,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { SmarterChat } from "@smarter.sh/ui-chat";
 
-const rootElement = document.getElementById("root");
+const rootElement = document.getElementById("smarter-sh-v1-ui-chat-root");
 const root = ReactDOM.createRoot(rootElement);
 const apiUrl = rootElement.getAttribute("smarter-chatbot-api-url");
 const toggleMetadata = rootElement.getAttribute("smarter-toggle-metadata") === "true";
@@ -56,9 +58,22 @@ root.render(
 );
 ```
 
+### Build from source
+
+To build and deploy for use in the Smarter Web Console Prompt Engineer Workbench, do the following.
+This assumes that you have already built your AWS cloud infrastructure using [github.com/smarter-sh/smarter-infrastructure](https://github.com/smarter-sh/smarter-infrastructure) and that a CDN exists at cdn.platform.example.com.
+
+```console
+export ROOT_DOMAIN=example.com
+export PLATFORM_SUBDOMAIN=platform
+npm install
+make build
+make release
+```
+
 ## Integrate to an existing web page
 
-We integrate this react component to the [Smarter developer workbench](https://platform.smarter.sh/) using this small repo, [github.com/smarter-sh/smarter-workbench](https://github.com/smarter-sh/smarter-workbench). This methodology provides a layer of separation between Django and react.js, which keeps things simple. smarter-workbench substantially consists of the following three files:
+We integrate this react component to the [Smarter developer workbench](https://platform.smarter.sh/) using this small repo, [github.com/smarter-sh/web-integration-example](https://github.com/smarter-sh/web-integration-example). This methodology provides a layer of separation between Django and react.js, which keeps things simple. smarter-workbench substantially consists of the following three files:
 
 - [main.jsx](https://github.com/smarter-sh/smarter-workbench/blob/main/src/main.jsx): a 40-line react.js mini app for configuring this npm component with a Smarter Api url and any initialization settings we choose to include.
 - [app-loader.js](https://github.com/smarter-sh/smarter-workbench/blob/main/src/public/app-loader.js): a small js script that injects the react.js build assets into your DOM, initiating the React boot-up process.

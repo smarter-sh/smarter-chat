@@ -28,7 +28,7 @@ export function ErrorModal(props) {
     <ReactModal
       isOpen={props.isModalOpen}
       onRequestClose={props.onCloseClick}
-      appElement={document.getElementById("root")}
+      appElement={document.getElementById("root")} // mcdaniel: pretty sure this is wrong.
       style={ModalStyle}
     >
       <div className="modal-container">

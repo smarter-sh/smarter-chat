@@ -1,7 +1,23 @@
 # ---------------------------------------------------------
 # Makefile for the React.js app
 # ---------------------------------------------------------
+
+ifneq (,$(wildcard .env))
+	include .env
+	export
+else
+	$(shell cp .env.example .env)
+	include .env
+	export
+endif
+
+# Set PLATFORM_SUBDOMAIN to environment variable or 'platform' if not set
+PLATFORM_SUBDOMAIN ?= platform
+PLATFORM_SUBDOMAIN := $(if $(PLATFORM_SUBDOMAIN),$(PLATFORM_SUBDOMAIN),platform)
+ROOT_DOMAIN ?= smarter.sh
+ROOT_DOMAIN := $(if $(ROOT_DOMAIN),$(ROOT_DOMAIN),smarter.sh)
 @echo 'AWS_PROFILE=$(AWS_PROFILE)'
+
 
 # Set environment variables based on the git branch name
 # aws resources were created by Terraform in the smarter-infrastructure repository
@@ -9,22 +25,22 @@
 BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
 TARGET_FOLDER := ui-chat
 ifeq ($(BRANCH_NAME),main)
-    ENVIRONMENT := prod
-    BUCKET := platform.smarter.sh
-    DISTRIBUTION_ID := E1AQ8TNR0TZNRT
-    URL := https://cdn.platform.smarter.sh/$(TARGET_FOLDER)/
+	ENVIRONMENT := prod
+	BUCKET := $(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)
+	DISTRIBUTION_ID := E1AQ8TNR0TZNRT
+	URL := https://cdn.$(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)/$(TARGET_FOLDER)/
 else ifeq ($(BRANCH_NAME),alpha)
-    ENVIRONMENT := alpha
-    BUCKET := alpha.platform.smarter.sh
-    URL := https://cdn.alpha.platform.smarter.sh/$(TARGET_FOLDER)/
+	ENVIRONMENT := alpha
+	BUCKET := alpha.$(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)
+	URL := https://cdn.alpha.$(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)/$(TARGET_FOLDER)/
 else ifeq ($(BRANCH_NAME),beta)
-    ENVIRONMENT := beta
-    BUCKET := beta.platform.smarter.sh
-    URL := https://cdn.beta.platform.smarter.sh/$(TARGET_FOLDER)/
+	ENVIRONMENT := beta
+	BUCKET := beta.$(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)
+	URL := https://cdn.beta.$(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)/$(TARGET_FOLDER)/
 else
-    ENVIRONMENT := $(BRANCH_NAME)
-    BUCKET := no-bucket
-    URL := ''
+	ENVIRONMENT := $(BRANCH_NAME)
+	BUCKET := no-bucket
+	URL := ''
 endif
 S3_TARGET := s3://$(BUCKET)/$(TARGET_FOLDER)
 
