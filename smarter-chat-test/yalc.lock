@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "packages": {
+    "@smarter.sh/ui-chat": {
+      "signature": "c6b20d38b4649e9e26b3433afaa51287",
+      "file": true
+    }
+  }
+}
