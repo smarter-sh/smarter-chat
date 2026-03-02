@@ -2,12 +2,12 @@
 //  written by: Lawrence McDaniel
 //              https://lawrencemcdaniel.com
 //
-//  date:       Mar-2024
+//  date:       Mar-2023
 //---------------------------------------------------------------------------------
 
 // React stuff
 import React, { useState, useEffect } from "react";
-import ReactJson from "react-json-view";
+import ReactJsonView from "@microlink/react-json-view";
 import PropTypes from "prop-types";
 
 // This component
@@ -144,7 +144,7 @@ function Console({ config }) {
           {Array.isArray(consoleText) && consoleText.length === 1 && JSON.stringify(consoleText[0]) === "{}" ? null : (
             <>
               {Array.isArray(consoleText)
-                ? consoleText.map((item, index) => <ReactJson key={index} src={item} theme="monokai" />)
+                ? consoleText.map((item, index) => <ReactJsonView key={index} src={item} theme="monokai" />)
                 : null}
               <p className="mb-0">{systemPrompt}</p>
             </>

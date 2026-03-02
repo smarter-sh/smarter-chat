@@ -27,11 +27,11 @@ import { SmarterChat } from "@smarter.sh/ui-chat";
 
 const rootElement = document.getElementById("smarter-sh-v1-ui-chat-root");
 const root = ReactDOM.createRoot(rootElement);
-const apiUrl = rootElement.getAttribute("smarter-chatbot-api-url");
+const apiUrl = rootElement.getAttribute("smarter-chatbot-api-url") || "http://localhost:9357/api/v1/chatbots/1/";
 const toggleMetadata = rootElement.getAttribute("smarter-toggle-metadata") === "true";
 const csrfCookieName = rootElement.getAttribute("smarter-csrf-cookie-name") || "csrftoken";
 const sessionCookieName = rootElement.getAttribute("smarter-session-cookie-name") || "session_key";
-const cookieDomain = rootElement.getAttribute("smarter-cookie-domain") || "platform.smarter.sh";
+const cookieDomain = rootElement.getAttribute("smarter-cookie-domain") || "localhost";
 const authSessionCookieName = rootElement.getAttribute("django-session-cookie-name") || "sessionid";
 const csrftoken = rootElement.getAttribute("django-csrftoken");
 const debugMode = rootElement.getAttribute("smarter-debug-mode") === "true";
@@ -94,6 +94,40 @@ Meanwhile, Django adds a pair of DOM elements like the following example, where 
 ## Developers
 
 SmarterChat is created with [React](https://react.dev/) leveraging [@chatscope/chat-ui-kit-react](https://www.npmjs.com/package/@chatscope/chat-ui-kit-react)
+
+### Setup
+
+1. Build your component
+
+   ```console
+   npm install -g yalc
+   npm run build
+   yalc publish
+   ```
+
+2. Create a separate test React app (outside your library folder)
+
+```console
+npx create-react-app smarter-chat-test
+cd smarter-chat-test
+```
+
+3. Link your local package to the test app. This is a 1-time operation.
+
+```console
+yalc add @smarter.sh/ui-chat
+npm install # verifies peer dependencies
+```
+
+4. In the test app, import and use your component as you described.
+
+5. Start the test app
+
+```console
+yalc update @smarter.sh/ui-chat
+npm run build
+npm start
+```
 
 ### Backend integration
 

@@ -2,7 +2,7 @@
 //  written by: Lawrence McDaniel
 //              https://lawrencemcdaniel.com
 //
-//  date:       Mar-2024
+//  date:       Mar-2023
 //---------------------------------------------------------------------------------
 
 // React stuff
@@ -72,7 +72,7 @@ function SmarterChat({
   // header text
   const [title, setTitle] = useState("");
   const [info, setInfo] = useState("");
-  const [isValid, setIsValid] = useState(false);
+  const [isValid, setIsValid] = useState(true);
   const [isDeployed, setIsDeployed] = useState(false);
 
   const [debugModeState, setDebugMode] = useState(debugMode);
@@ -304,11 +304,13 @@ function SmarterChat({
               <FontAwesomeIcon icon={faTimesCircle} style={{ color: "red" }} />
             )}
             {isDeployed ? (
-              <>
+              <span>
                 &nbsp;
                 <FontAwesomeIcon icon={faRocket} style={{ color: "orange" }} />
-              </>
-            ) : null}
+              </span>
+            ) : (
+              <span style={{ color: "brown" }}>&nbsp;(sandbox)</span>
+            )}
           </>
         ) : (
           <div>Loading...</div>
@@ -321,6 +323,8 @@ function SmarterChat({
     let messageClassNames = "";
     if (message.sender === "smarter") {
       messageClassNames = "smarter-message";
+    } else if (message.sender === "smarter_error") {
+      messageClassNames = "smarter-error-message";
     } else if (["tool", "system"].includes(message.sender)) {
       messageClassNames = "system-message";
     }

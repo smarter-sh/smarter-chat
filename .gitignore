@@ -1,6 +1,7 @@
 
 # ReactJS
 .env
+.yalc
 package-lock.json
 node_modules
 build

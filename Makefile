@@ -88,17 +88,6 @@ analyze:
 pre-commit:
 	pre-commit run --all-files
 
-lint:
-	npm run lint
-	npx prettier --write "./src/**/*.{js,cjs,jsx,ts,tsx,json,css,scss,md}"
-
-update:
-	npm install -g npm
-	npm install -g npm-check-updates
-	ncu --upgrade --packageFile package.json
-	npm update -g
-	npm install
-
 # ---------------------------------------------------------
 # Python
 # for pre-commit and code quality checks.
@@ -125,7 +114,7 @@ init:
 	make npm-check
 	make clean
 	npm install
-	cd npm install && npm init @eslint/config
+	npm init @eslint/config
 
 run:
 	npm run dev
@@ -133,8 +122,20 @@ run:
 build:
 	@echo 'Building the React app...'
 	rm -rf dist
-	npm install --legacy-peer-deps
+	npm install
 	npm run build
+	yalc publish
+
+lint:
+	npm run lint
+	npx prettier --write "./src/**/*.{js,cjs,jsx,ts,tsx,json,css,scss,md}"
+
+update:
+	npm install -g npm
+	npm install -g npm-check-updates
+	ncu --upgrade --peer --packageFile package.json
+	npm update -g
+	npm install
 
 release:
     #---------------------------------------------------------

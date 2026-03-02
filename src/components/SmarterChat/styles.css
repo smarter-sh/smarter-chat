@@ -65,14 +65,6 @@ div.cs-message__html-content a:hover {
   color: orange;
 }
 
-section.smarter-message .cs-message__html-content {
-  color: brown !important;
-  background-color: blanchedalmond;
-  font-family: "Courier New", Courier, monospace;
-  font-weight: bold;
-  text-align: left;
-}
-
 section.smarter-message .cs-message__content {
   color: brown !important;
   background-color: blanchedalmond;
@@ -80,13 +72,22 @@ section.smarter-message .cs-message__content {
   margin-top: 10px;
   margin-bottom: 10px;
   border-radius: 10px;
-}
 
-section.system-message .cs-message__html-content {
-  color: beige !important;
-  background-color: rgb(39, 40, 34);
   font-family: "Courier New", Courier, monospace;
   font-weight: bold;
+  text-align: left;
+}
+
+section.smarter-error-message .cs-message__content {
+  position: relative;
+  color: black !important;
+  background-color: #f5f5f5;
+  border: 3px solid crimson;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  font-family: "Courier New", Courier, monospace;
+  text-align: left;
 }
 
 section.system-message .cs-message__content {
@@ -96,6 +97,8 @@ section.system-message .cs-message__content {
   margin-top: 10px;
   margin-bottom: 10px;
   border-radius: 10px;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: bold;
 }
 
 /*-------------- Responsive Styling -----------------------
