@@ -15,10 +15,10 @@ interface ConsoleProps {
 }
 
 const MENU: { label: string; id: MenuItem }[] = [
-  { label: "Config", id: MenuItems.CHAT_CONFIG },
-  { label: "Api Calls", id: MenuItems.CHATBOT_REQUEST_HISTORY },
+  { label: "Api Calls", id: MenuItems.LLMCLIENT_REQUEST_HISTORY },
   { label: "Tool Calls", id: MenuItems.CHAT_TOOL_CALL_HISTORY },
   { label: "Plugin Usage", id: MenuItems.CHAT_PLUGIN_USAGE_HISTORY },
+  { label: "Config", id: MenuItems.CHAT_CONFIG },
 ];
 
 function Console({ config }: ConsoleProps) {

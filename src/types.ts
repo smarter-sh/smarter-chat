@@ -53,11 +53,12 @@ export interface ChatHistory {
   chat_history?: ApiMessage[];
   prompt_tool_call_history?: unknown[];
   prompt_plugin_usage_history?: unknown[];
-  chatbot_request_history?: unknown[];
+  llmclient_request_history?: unknown[];
   plugin_selector_history?: unknown[];
-  /** Legacy names of prompt_tool_call_history and prompt_plugin_usage_history. */
+  /** Legacy names of prompt_tool_call_history, prompt_plugin_usage_history and llmclient_request_history. */
   chat_tool_call_history?: unknown[];
   chat_plugin_usage_history?: unknown[];
+  chatbot_request_history?: unknown[];
   [key: string]: unknown;
 }
 

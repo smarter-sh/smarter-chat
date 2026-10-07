@@ -58,7 +58,7 @@ export function makeConfig(overrides: Partial<ChatConfig> = {}): ChatConfig {
       chat_history: [],
       prompt_tool_call_history: [],
       prompt_plugin_usage_history: [],
-      chatbot_request_history: [],
+      llmclient_request_history: [],
       plugin_selector_history: [],
     },
     meta_data: {
@@ -101,7 +101,7 @@ export const configWithHistory = makeConfig({
     chat_history: chatHistory,
     prompt_tool_call_history: [{ id: 1, function_name: "stackademy_sql", function_args: "{}" }],
     prompt_plugin_usage_history: [{ id: 1, input_text: "Do you offer any courses on AI?", plugin: 16 }],
-    chatbot_request_history: [{ id: 1, request: { session_key: SESSION_KEY, messages: chatHistory.slice(0, 3) } }],
+    llmclient_request_history: [{ id: 1, request: { session_key: SESSION_KEY, messages: chatHistory.slice(0, 3) } }],
   },
 });
 

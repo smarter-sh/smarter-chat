@@ -21,6 +21,12 @@ describe("Console", () => {
     expect(screen.getByText("function_name")).toBeInTheDocument();
   });
 
+  it("lists Config last", () => {
+    render(<Console config={configWithHistory} />);
+    const labels = screen.getAllByRole("button").map((button) => button.textContent);
+    expect(labels).toEqual(["Api Calls", "Tool Calls", "Plugin Usage", "Config"]);
+  });
+
   it("displays only the shell's prompt before the configuration loads", () => {
     render(<Console config={null} />);
     expect(screen.getByRole("log", { name: "Console output" })).toHaveTextContent(/Last login: .* from 192\.168\./);
@@ -31,7 +37,7 @@ describe("consoleData", () => {
   it("returns each menu item's data", () => {
     const history = configWithHistory.history;
     expect(consoleData(configWithHistory, MenuItems.CHAT_CONFIG)).toEqual([configWithHistory]);
-    expect(consoleData(configWithHistory, MenuItems.CHATBOT_REQUEST_HISTORY)).toBe(history.chatbot_request_history);
+    expect(consoleData(configWithHistory, MenuItems.LLMCLIENT_REQUEST_HISTORY)).toBe(history.llmclient_request_history);
     expect(consoleData(configWithHistory, MenuItems.CHAT_TOOL_CALL_HISTORY)).toBe(history.prompt_tool_call_history);
     expect(consoleData(configWithHistory, MenuItems.CHAT_PLUGIN_USAGE_HISTORY)).toBe(
       history.prompt_plugin_usage_history,
@@ -41,11 +47,15 @@ describe("consoleData", () => {
   it("reads the legacy history names", () => {
     const legacy = {
       ...config,
-      history: { chat_tool_call_history: [{ id: 1 }], chat_plugin_usage_history: [{ id: 2 }] },
+      history: {
+        chat_tool_call_history: [{ id: 1 }],
+        chat_plugin_usage_history: [{ id: 2 }],
+        chatbot_request_history: [{ id: 3 }],
+      },
     };
     expect(consoleData(legacy, MenuItems.CHAT_TOOL_CALL_HISTORY)).toEqual([{ id: 1 }]);
     expect(consoleData(legacy, MenuItems.CHAT_PLUGIN_USAGE_HISTORY)).toEqual([{ id: 2 }]);
-    expect(consoleData(legacy, MenuItems.CHATBOT_REQUEST_HISTORY)).toEqual([]);
+    expect(consoleData(legacy, MenuItems.LLMCLIENT_REQUEST_HISTORY)).toEqual([{ id: 3 }]);
   });
 
   it("returns nothing before the configuration loads", () => {

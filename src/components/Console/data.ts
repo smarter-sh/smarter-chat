@@ -18,8 +18,8 @@ export function consoleData(config: ConsoleConfig, item: MenuItem): object[] {
   const list = (value: unknown, legacy?: unknown) =>
     Array.isArray(value) ? value : Array.isArray(legacy) ? legacy : [];
   switch (item) {
-    case MenuItems.CHATBOT_REQUEST_HISTORY:
-      return list(history.chatbot_request_history);
+    case MenuItems.LLMCLIENT_REQUEST_HISTORY:
+      return list(history.llmclient_request_history, history.chatbot_request_history);
     case MenuItems.CHAT_TOOL_CALL_HISTORY:
       return list(history.prompt_tool_call_history, history.chat_tool_call_history);
     case MenuItems.CHAT_PLUGIN_USAGE_HISTORY:
