@@ -32,6 +32,51 @@ describe("convertMarkdownLinksToHTML", () => {
   });
 });
 
+describe("convertMarkdownLinksToHTML, with images", () => {
+  const img = (src: string, alt: string) => `<img class="smarter-chat-image" src="${src}" alt="${alt}" loading="lazy">`;
+  const link = (href: string, content: string) =>
+    `<a href="${href}" target="_blank" rel="noopener noreferrer">${content}</a>`;
+
+  it("displays a markdown image, which opens at full size in a new tab", () => {
+    expect(convertMarkdownLinksToHTML("A chart: ![sales by month](https://example.com/chart.png)")).toBe(
+      `A chart: ${link("https://example.com/chart.png", img("https://example.com/chart.png", "sales by month"))}`,
+    );
+  });
+
+  it("displays an image from a relative url, with an empty alt text", () => {
+    expect(convertMarkdownLinksToHTML("![](/static/logo.png)")).toBe(
+      link("/static/logo.png", img("/static/logo.png", "")),
+    );
+  });
+
+  it("displays a linked image, which opens its link", () => {
+    expect(convertMarkdownLinksToHTML("[![logo](/static/logo.png)](https://smarter.sh)")).toBe(
+      link("https://smarter.sh", img("/static/logo.png", "logo")),
+    );
+  });
+
+  it("displays a raster data url image without a link, which browsers wouldn't open", () => {
+    const src = "data:image/png;base64,iVBORw0KGgo=";
+    expect(convertMarkdownLinksToHTML(`![dot](${src})`)).toBe(img(src, "dot"));
+  });
+
+  it("does not display svg data urls, or javascript: urls, as images", () => {
+    expect(convertMarkdownLinksToHTML("![x](data:image/svg+xml;base64,PHN2Zz4=)")).not.toContain("<img");
+    expect(convertMarkdownLinksToHTML("![x](javascript:alert(1))")).not.toContain("<img");
+  });
+
+  it("escapes the alt text and the url, so that an image cannot inject markup", () => {
+    const html = convertMarkdownLinksToHTML('![<b onmouseover="x">](https://example.com/a.png?x=1&y=2)');
+    expect(html).toContain('alt="&lt;b onmouseover=&quot;x&quot;&gt;"');
+    expect(html).toContain('src="https://example.com/a.png?x=1&amp;y=2"');
+  });
+
+  it("displays images and links in the same message", () => {
+    const html = convertMarkdownLinksToHTML("![a](/a.png) and [b](/b)");
+    expect(html).toBe(`${link("/a.png", img("/a.png", "a"))} and ${link("/b", "b")}`);
+  });
+});
+
 describe("messageFactory", () => {
   it("displays a message with text, as html, and keeps its text for the api", () => {
     const message = messageFactory("a < b", "user");

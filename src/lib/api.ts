@@ -10,12 +10,18 @@
  *   Smarter's own messages in body.smarter.messages. A failed prompt has the LLM provider's status,
  *   and its body is {error: {status, message}, response: <the completion>}, whose messages include a
  *   "smarter_error" message.
+ *
+ * A prompt can stream its progress, e.g. its tool calls and MCP server requests, as Server-Sent
+ * Events: the request accepts text/event-stream, and the response is "progress" events, then a
+ * "result" event with the same JSON as a non-streaming response. Servers that don't stream answer
+ * with JSON, as before. See smarter.apps.prompt.progress.
  */
 import type { ApiMessage, ChatConfig, ChatCookies, ClientContext } from "../types";
 import { getCookie, setCookie } from "./cookie";
 import { SenderRoleEnum } from "./enums";
 
 const applicationJson = "application/json";
+const textEventStream = "text/event-stream";
 
 export class SmarterApiError extends Error {
   status: number;
@@ -32,6 +38,18 @@ export interface PromptResult {
   messages: ApiMessage[];
   error: string | null;
 }
+
+/** A step of a prompt that is still running, e.g. a tool call. */
+export interface PromptProgressEvent {
+  /** e.g. llm_request, tool_requested, tool_responded, plugin_called, mcp_tool_called */
+  type: string;
+  /** A short, human-readable description of the step. */
+  message: string;
+  [key: string]: unknown;
+}
+
+/** The http status of a response, as errorMessage() reads it. */
+type ResponseStatus = Pick<Response, "status" | "statusText">;
 
 /** The url of an api endpoint, relative to apiUrl, with the chat session's key. */
 export function urlFactory(apiUrl: string, endpoint: string | null, sessionKey: string | null): string {
@@ -89,7 +107,7 @@ async function getJson(response: Response): Promise<Record<string, unknown>> {
 }
 
 /** The error message of an api error response, whatever its shape. */
-export function errorMessage(json: Record<string, unknown>, response: Response): string {
+export function errorMessage(json: Record<string, unknown>, response: ResponseStatus): string {
   const error = (json.error ?? (json.data as Record<string, unknown> | undefined)?.error) as unknown;
   if (typeof error === "string") {
     return error;
@@ -143,24 +161,76 @@ function smarterMessages(completion: Record<string, unknown> | null | undefined)
 }
 
 /**
- * Sends the thread to the LLMClient's prompt api. Resolves to the messages to add to the thread.
- * A failed prompt resolves too, with its error, and with a "smarter_error" message to display.
+ * Reads a Server-Sent Events stream, and calls onEvent with each event's name and data. Comments
+ * (e.g. keepalives) and retry hints are ignored.
  */
-export async function fetchPrompt(
-  config: ChatConfig,
-  messages: ApiMessage[],
-  cookies: ChatCookies,
-  context: ClientContext,
-): Promise<PromptResult> {
-  const sessionKey = getCookie(cookies.sessionCookie, "") || config.session_key;
-  const headers = requestHeadersFactory(cookies, context);
-  const init = requestInitFactory(headers, { session_key: sessionKey, messages });
-  const response = await fetch(urlFactory(config.chatbot.url_chatbot, null, sessionKey), init);
-  const json = await getJson(response);
+export async function readEventStream(
+  body: ReadableStream<Uint8Array>,
+  onEvent: (event: string, data: string) => void,
+): Promise<void> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  const dispatch = (frame: string) => {
+    let event = "message";
+    const data: string[] = [];
+    for (const line of frame.split("\n")) {
+      if (line.startsWith("event:")) event = line.slice(6).trim();
+      else if (line.startsWith("data:")) data.push(line.slice(5).replace(/^ /, ""));
+    }
+    if (data.length > 0) onEvent(event, data.join("\n"));
+  };
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    buffer += decoder.decode(value, { stream: !done }).replace(/\r\n?/g, "\n");
+    let boundary = buffer.indexOf("\n\n");
+    while (boundary >= 0) {
+      dispatch(buffer.slice(0, boundary));
+      buffer = buffer.slice(boundary + 2);
+      boundary = buffer.indexOf("\n\n");
+    }
+    if (done) break;
+  }
+  if (buffer.trim()) dispatch(buffer);
+}
+
+/**
+ * The api's JSON, and its http status, from a prompt's event stream. Progress events are passed to
+ * onProgress as they arrive.
+ */
+async function readPromptEventStream(
+  response: Response,
+  onProgress: (event: PromptProgressEvent) => void,
+): Promise<{ json: Record<string, unknown>; status: number }> {
+  // assigned in a callback, which typescript's narrowing doesn't see.
+  const received: { result: { status?: number; response?: Record<string, unknown> } | null } = { result: null };
+  if (!response.body) {
+    throw new SmarterApiError("The Smarter api returned an empty event stream.", response.status);
+  }
+  await readEventStream(response.body, (event, data) => {
+    try {
+      if (event === "progress") onProgress(JSON.parse(data) as PromptProgressEvent);
+      else if (event === "result") received.result = JSON.parse(data) as typeof received.result;
+    } catch {
+      // a malformed event. The result is required, below; progress is optional.
+    }
+  });
+  if (!received.result) {
+    throw new SmarterApiError("The Smarter api's event stream ended without a result.", response.status);
+  }
+  const { status, response: json } = received.result;
+  return { json: json ?? {}, status: status ?? response.status };
+}
+
+/** The result of a prompt, from the api's JSON and http status. */
+function promptResult(json: Record<string, unknown>, response: ResponseStatus): PromptResult {
   const body = parseBody(json);
   const statusCode = (json.data as Record<string, unknown> | undefined)?.statusCode;
+  const ok = response.status >= 200 && response.status < 300;
 
-  if (response.ok && (statusCode === undefined || statusCode === 200) && body) {
+  if (ok && (statusCode === undefined || statusCode === 200) && body) {
     return { messages: smarterMessages(body), error: null };
   }
 
@@ -173,4 +243,34 @@ export async function fetchPrompt(
     messages: hasErrorMessage ? returned : [...returned, { role: SenderRoleEnum.SMARTER_ERROR, content: error }],
     error,
   };
+}
+
+/**
+ * Sends the thread to the LLMClient's prompt api. Resolves to the messages to add to the thread.
+ * A failed prompt resolves too, with its error, and with a "smarter_error" message to display.
+ *
+ * With onProgress, the prompt's progress is requested as Server-Sent Events, and each step is
+ * passed to onProgress while the prompt runs.
+ */
+export async function fetchPrompt(
+  config: ChatConfig,
+  messages: ApiMessage[],
+  cookies: ChatCookies,
+  context: ClientContext,
+  onProgress?: (event: PromptProgressEvent) => void,
+): Promise<PromptResult> {
+  const sessionKey = getCookie(cookies.sessionCookie, "") || config.session_key;
+  const headers = requestHeadersFactory(cookies, context);
+  if (onProgress) {
+    headers.Accept = `${textEventStream}, ${applicationJson}`;
+  }
+  const init = requestInitFactory(headers, { session_key: sessionKey, messages });
+  const response = await fetch(urlFactory(config.chatbot.url_chatbot, null, sessionKey), init);
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (onProgress && contentType.includes(textEventStream)) {
+    const { json, status } = await readPromptEventStream(response, onProgress);
+    return promptResult(json, { status, statusText: "" });
+  }
+  return promptResult(await getJson(response), response);
 }

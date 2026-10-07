@@ -3,7 +3,7 @@
  * it, and turning it back into the api's messages.
  *
  * Messages are displayed as html (by @chatscope/chat-ui-kit-react). Their text, which comes from the
- * user and from the LLM, is escaped, and only markdown links become html.
+ * user and from the LLM, is escaped, and only markdown images and links become html.
  */
 import type { ApiMessage, ChatMessage } from "../types";
 import { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum, type MessageDirection } from "./enums";
@@ -20,10 +20,43 @@ export function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (character) => HTML_ESCAPES[character]);
 }
 
-/** Html for a message's text: escaped, with markdown links to http(s) and relative urls as html links. */
+// the urls that messages may link to, and display images from: http(s), and relative to the page.
+const URL_PATTERN = String.raw`(?:https?:\/\/|\/)[^\s)"]+`;
+// images may also be inline, e.g. from a tool that generates them. Raster formats only: no svg.
+const IMAGE_URL_PATTERN = String.raw`(?:${URL_PATTERN}|data:image\/(?:png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+)`;
+const IMAGE_PATTERN = String.raw`!\[([^\]]*)\]\((${IMAGE_URL_PATTERN})\)`;
+
+const linkedImageRegex = new RegExp(String.raw`\[${IMAGE_PATTERN}\]\((${URL_PATTERN})\)`, "g");
+const imageRegex = new RegExp(IMAGE_PATTERN, "g");
+const linkRegex = new RegExp(String.raw`\[([^\]]+)\]\((${URL_PATTERN})\)`, "g");
+
+function anchor(href: string, content: string): string {
+  return `<a href="${href}" target="_blank" rel="noopener noreferrer">${content}</a>`;
+}
+
+/** An image, sized to fit its chat bubble by the "smarter-chat-image" css class. See styles.css. */
+function image(src: string, alt: string): string {
+  return `<img class="smarter-chat-image" src="${src}" alt="${alt}" loading="lazy">`;
+}
+
+/**
+ * Html for a message's text: escaped, with markdown images and links as html.
+ *
+ * - ``![alt](url)`` is an image, which opens at full size in a new tab, unless it's a data url,
+ *   which browsers don't open.
+ * - ``[![alt](url)](href)`` is an image that links to href.
+ * - ``[text](href)`` is a link, which opens in a new tab.
+ *
+ * Urls are http(s) or relative to the page. Images may also be base64 png, jpeg, gif or webp data
+ * urls. Anything else, e.g. a javascript: url, stays as text.
+ */
 export function convertMarkdownLinksToHTML(text: string): string {
-  const markdownLinkRegex = /\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g;
-  return escapeHtml(text).replace(markdownLinkRegex, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  return escapeHtml(text)
+    .replace(linkedImageRegex, (_match, alt: string, src: string, href: string) => anchor(href, image(src, alt)))
+    .replace(imageRegex, (_match, alt: string, src: string) =>
+      src.startsWith("data:") ? image(src, alt) : anchor(src, image(src, alt)),
+    )
+    .replace(linkRegex, (_match, label: string, href: string) => anchor(href, label));
 }
 
 /** The direction of a message from the given sender. */

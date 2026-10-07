@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { projectName, projectVersion } from "@/const";
 import {
@@ -8,14 +8,25 @@ import {
   PROMPT_URL,
   SESSION_KEY,
   config,
+  progressEvents,
   promptErrorResponse,
+  promptEventStream,
   promptResponse,
   responseMessages,
 } from "@/mocks/fixtures";
 import type { ChatCookies, ClientContext } from "@/types";
 import { server } from "@test/server";
 
-import { SmarterApiError, errorMessage, fetchConfig, fetchPrompt, requestHeadersFactory, urlFactory } from "./api";
+import {
+  SmarterApiError,
+  errorMessage,
+  fetchConfig,
+  fetchPrompt,
+  readEventStream,
+  requestHeadersFactory,
+  urlFactory,
+  type PromptProgressEvent,
+} from "./api";
 import { cookieMetaFactory, getCookie } from "./cookie";
 
 const cookies: ChatCookies = {
@@ -127,6 +138,105 @@ describe("fetchPrompt", () => {
     server.use(http.post(PROMPT_URL, () => HttpResponse.json({ data: { statusCode: 200, body: "{not json" } })));
     const result = await fetchPrompt(config, [], cookies, context);
     expect(result.error).toBe("The Smarter api returned http 200 OK");
+  });
+});
+
+/** A text/event-stream response, sent in the given chunks. */
+function eventStreamResponse(...chunks: string[]) {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      chunks.forEach((chunk) => controller.enqueue(encoder.encode(chunk)));
+      controller.close();
+    },
+  });
+  return new HttpResponse(stream, { headers: { "Content-Type": "text/event-stream" } });
+}
+
+/** A ReadableStream of the given chunks. */
+function streamOf(...chunks: string[]) {
+  return eventStreamResponse(...chunks).body!;
+}
+
+describe("fetchPrompt, streaming its progress", () => {
+  it("asks for an event stream, passes each step to onProgress, and returns the result", async () => {
+    let accept: string | null = null;
+    server.use(
+      http.post(PROMPT_URL, ({ request }) => {
+        accept = request.headers.get("Accept");
+        return eventStreamResponse(promptEventStream());
+      }),
+    );
+    const steps: PromptProgressEvent[] = [];
+    const result = await fetchPrompt(config, [], cookies, context, (event) => steps.push(event));
+    expect(accept).toBe("text/event-stream, application/json");
+    expect(steps).toEqual(progressEvents);
+    expect(result).toEqual({ messages: responseMessages, error: null });
+  });
+
+  it("reads events that are split across chunks", async () => {
+    const text = promptEventStream();
+    const chunks = text.match(/[\s\S]{1,7}/g)!;
+    server.use(http.post(PROMPT_URL, () => eventStreamResponse(...chunks)));
+    const steps: PromptProgressEvent[] = [];
+    const result = await fetchPrompt(config, [], cookies, context, (event) => steps.push(event));
+    expect(steps).toHaveLength(progressEvents.length);
+    expect(result.error).toBeNull();
+  });
+
+  it("returns a failed prompt's error from the result event", async () => {
+    server.use(http.post(PROMPT_URL, () => eventStreamResponse(promptEventStream([], promptErrorResponse(), 401))));
+    const result = await fetchPrompt(config, [], cookies, context, () => {});
+    expect(result.error).toBe("Incorrect API key provided.");
+  });
+
+  it("ignores malformed progress events", async () => {
+    const stream = "event: progress\ndata: {not json\n\n" + promptEventStream([]);
+    server.use(http.post(PROMPT_URL, () => eventStreamResponse(stream)));
+    const steps: PromptProgressEvent[] = [];
+    const result = await fetchPrompt(config, [], cookies, context, (event) => steps.push(event));
+    expect(steps).toEqual([]);
+    expect(result.error).toBeNull();
+  });
+
+  it("throws when the stream ends without a result", async () => {
+    server.use(http.post(PROMPT_URL, () => eventStreamResponse("event: progress\ndata: {}\n\n")));
+    await expect(fetchPrompt(config, [], cookies, context, () => {})).rejects.toThrow("without a result");
+  });
+
+  it("accepts a JSON response from a server that doesn't stream", async () => {
+    server.use(http.post(PROMPT_URL, () => HttpResponse.json(promptResponse())));
+    const onProgress = vi.fn();
+    const result = await fetchPrompt(config, [], cookies, context, onProgress);
+    expect(result).toEqual({ messages: responseMessages, error: null });
+    expect(onProgress).not.toHaveBeenCalled();
+  });
+
+  it("does not ask for an event stream without onProgress", async () => {
+    let accept: string | null = null;
+    server.use(
+      http.post(PROMPT_URL, ({ request }) => {
+        accept = request.headers.get("Accept");
+        return HttpResponse.json(promptResponse());
+      }),
+    );
+    await fetchPrompt(config, [], cookies, context);
+    expect(accept).toBe("application/json");
+  });
+});
+
+describe("readEventStream", () => {
+  it("reads named events, unnamed events, and multi-line data, and ignores comments and retry hints", async () => {
+    const events: [string, string][] = [];
+    await readEventStream(
+      streamOf("retry: 3000\n\n: keepalive\n\nevent: bulk\ndata: a\ndata: b\n\ndata: c\r\n\r\n", "data: last"),
+      (event, data) => events.push([event, data]),
+    );
+    expect(events).toEqual([
+      ["bulk", "a\nb"],
+      ["message", "c"],
+      ["message", "last"],
+    ]);
   });
 });
 

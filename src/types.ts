@@ -137,4 +137,14 @@ export interface SmarterChatProps {
   cookieDomain?: string;
   /** A unique id of the page request, sent as the X-Smarter-RequestId header. */
   smarterRequestId?: string;
+  /**
+   * The url of the user's server log stream (Server-Sent Events), which the Console displays in
+   * its "Server Logs" tab. Without it, the Console has no such tab.
+   */
+  logStreamUrl?: string | null;
+  /**
+   * Display the progress of a running prompt, e.g. its tool calls, which the prompt api streams as
+   * Server-Sent Events. Servers that don't stream answer as before.
+   */
+  streamProgress?: boolean;
 }
