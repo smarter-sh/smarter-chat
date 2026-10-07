@@ -17,28 +17,47 @@
   -webkit-text-size-adjust: 100%;
 }
 
-.app-title {
-  text-align: center;
-  background-color: rgba(255, 87, 51, 0.75);
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  color: whitesmoke;
-}
+/* ------------------------- layout ------------------------- */
 
-h5 {
-  color: whitesmoke;
-  margin-left: 10px;
-  margin-bottom: 0;
-}
-.app-logo {
-  width: 75px;
-  margin: 0 auto;
-  display: block;
-}
-
-.container {
+.smarter-chat-container {
+  height: 100%;
   display: flex;
+  flex-direction: row;
+  margin: 0;
+  padding: 0;
+}
+
+.smarter-chat-app,
+.smarter-chat-console {
+  margin: 0;
+  padding: 5px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.smarter-chat-app {
+  flex-basis: 33.33%;
+  min-width: 400px;
+}
+
+.smarter-chat-app-full {
+  flex-basis: 100%;
+}
+
+.smarter-chat-console {
+  flex-basis: 66.67%;
+  min-width: 600px;
+}
+
+/* the Console is visible only on large screens */
+@media (max-width: 992px) {
+  .smarter-chat-app {
+    flex-basis: 100%;
+  }
+  .smarter-chat-console {
+    display: none;
+    flex-basis: 0%;
+  }
 }
 
 .chat-app {
@@ -47,6 +66,15 @@ h5 {
   width: 100%;
 }
 
+.smarter-chat-container-inner,
+.smarter-chat-message-list {
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  color: lightgray;
+}
+
+/* ------------------------- messages ------------------------- */
+
 .cs-message-separator::before,
 .cs-message-separator::after {
   background-color: lightgray !important;
@@ -54,6 +82,10 @@ h5 {
 
 .cs-conversation-header {
   text-align: center;
+}
+
+div.cs-message__html-content {
+  white-space: pre-wrap;
 }
 
 div.cs-message__html-content a {
@@ -101,52 +133,7 @@ section.system-message .cs-message__content {
   font-weight: bold;
 }
 
-/*-------------- Responsive Styling -----------------------
-
-xs = Extra small <576px. Max container width None (auto)
-sm = Small ≥576px. Max container width 540px.
-md = Medium ≥768px. Max container width 720px.
-lg = Large ≥992px. Max container width 960px.
-xl = Extra large ≥1200px. Max container width 1140px.
-
-*/
-
-/********** Extra large devices only **********/
-@media (min-width: 1200px) {
-}
-
-/********** Large devices only **********/
-@media (min-width: 992px) and (max-width: 1199px) {
-}
-
-/********** Medium devices only **********/
-@media (min-width: 768px) and (max-width: 991px) {
-}
-
-/********** Small devices only **********/
-@media (min-width: 576) and (max-width: 767px) {
-}
-
-/********** Extra small devices only **********/
-@media (min-width: 480px) and (max-width: 575px) {
-}
-/********** Super extra small devices Only :-) (e.g., iPhone 4) **********/
-@media (max-width: 479px) {
-}
-
-/*  ------------ MCDANIEL ------------------ */
-@media (max-width: 991px) {
-  .hide-medium {
-    display: none;
-    width: 0 !important;
-    height: 0 !important;
-  }
-}
-
-@media (max-width: 767px) {
-  .hide-small {
-    display: none;
-    width: 0 !important;
-    height: 0 !important;
-  }
+.smarter-chat-error-boundary {
+  padding: 1rem;
+  color: crimson;
 }

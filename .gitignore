@@ -1,28 +1,29 @@
-
-# ReactJS
-.env
-.yalc
+# smarter-chat is developed inside the npm workspace of
+# https://github.com/smarter-sh/smarter (smarter/react/packages/smarter-chat),
+# which owns package-lock.json and node_modules.
 package-lock.json
 node_modules
+.yalc
+
+# build output. The library (npm run build:lib) is built into dist/. The app
+# (npm run build) is built into the Django static directory, outside this repo.
 build
 dist
 dist-ssr
+storybook-static
+coverage
 *.local
-
+.env
 
 # Logs
 logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+*storybook.log
 
-# Python
+# Python (pre-commit)
 .pypi_cache
 venv
-
 
 # Editor directories and files
 .vscode/*
