@@ -1,181 +1,103 @@
 # ---------------------------------------------------------
-# Makefile for the React.js app
+# Makefile for Smarter Chat
+#
+# These targets work in a plain clone of this repository,
+# and inside the npm workspace of
+# https://github.com/smarter-sh/smarter, which clones it
+# into smarter/react/packages/smarter-chat. There, npm
+# installs the dependencies once, for the whole workspace,
+# and `make build` builds the app into Django's static
+# directory. See README.md.
+#
+# The Smarter backend is optional: `make serve` runs the
+# component in Storybook, whose stories mock the Smarter
+# API. `make run` runs the app against a local Smarter
+# dev server instead.
 # ---------------------------------------------------------
 
-ifneq (,$(wildcard .env))
-	include .env
-	export
-else
-	$(shell cp .env.example .env)
-	include .env
-	export
-endif
-
-# Set PLATFORM_SUBDOMAIN to environment variable or 'platform' if not set
-PLATFORM_SUBDOMAIN ?= platform
-PLATFORM_SUBDOMAIN := $(if $(PLATFORM_SUBDOMAIN),$(PLATFORM_SUBDOMAIN),platform)
-ROOT_DOMAIN ?= smarter.sh
-ROOT_DOMAIN := $(if $(ROOT_DOMAIN),$(ROOT_DOMAIN),smarter.sh)
-@echo 'AWS_PROFILE=$(AWS_PROFILE)'
-
-
-# Set environment variables based on the git branch name
-# aws resources were created by Terraform in the smarter-infrastructure repository
-# https://github.com/smarter-sh/smarter-infrastructure
-BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
-TARGET_FOLDER := ui-chat
-ifeq ($(BRANCH_NAME),main)
-	ENVIRONMENT := prod
-	BUCKET := $(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)
-	DISTRIBUTION_ID := E1AQ8TNR0TZNRT
-	URL := https://cdn.$(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)/$(TARGET_FOLDER)/
-else ifeq ($(BRANCH_NAME),alpha)
-	ENVIRONMENT := alpha
-	BUCKET := alpha.$(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)
-	URL := https://cdn.alpha.$(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)/$(TARGET_FOLDER)/
-else ifeq ($(BRANCH_NAME),beta)
-	ENVIRONMENT := beta
-	BUCKET := beta.$(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)
-	URL := https://cdn.beta.$(PLATFORM_SUBDOMAIN).$(ROOT_DOMAIN)/$(TARGET_FOLDER)/
-else
-	ENVIRONMENT := $(BRANCH_NAME)
-	BUCKET := no-bucket
-	URL := ''
-endif
-S3_TARGET := s3://$(BUCKET)/$(TARGET_FOLDER)
-
-# Detect the operating system and set the shell accordingly
 SHELL := /bin/bash
-include .env
-export PATH := /usr/local/bin:$(PATH)
-export
+PYTHON := python3.13
+ACTIVATE_VENV := source venv/bin/activate
 
-ifeq ($(OS),Windows_NT)
-    AWS_CLI := aws
-    PYTHON := python.exe
-    ACTIVATE_VENV := venv\Scripts\activate
-else
-    AWS_CLI := /opt/homebrew/bin/aws
-    PYTHON := python3.12
-    ACTIVATE_VENV := source venv/bin/activate
-endif
-PIP := $(PYTHON) -m pip
+# The Smarter React workspace, if this package is inside one.
+WORKSPACE := ../..
+IN_WORKSPACE := $(shell grep -qs '"packages/\*"' $(WORKSPACE)/package.json && echo true)
 
-# Ensure that the .env file exists
-ifneq ("$(wildcard .env)","")
-else
-    $(shell cp ./doc/example-dot-env .env)
-endif
-
-.PHONY: help clean npm-check analyze pre-commit lint update python-check python-init init run build release aws-verify-bucket aws-sync-s3 aws-bust-cache
+.PHONY: help init serve run build test coverage lint format release pre-commit-init pre-commit-run python-init clean
 all: help
 
-# ---------------------------------------------------------
-# Anciallary tasks
-# ---------------------------------------------------------
-clean:
-	rm -rf .pypi_cache
-	rm -rf venv
-	rm -rf node_modules
-	rm -rf dist
-
-npm-check:
-	@command -v npm >/dev/null 2>&1 || { echo >&2 "This project requires npm but it's not installed.  Aborting."; exit 1; }
-
-analyze:
-	cloc . --exclude-ext=svg,json,zip --fullpath --not-match-d=smarter/smarter/static/assets/ --vcs=git
-
-pre-commit:
-	pre-commit run --all-files
-
-# ---------------------------------------------------------
-# Python
-# for pre-commit and code quality checks.
-# ---------------------------------------------------------
-python-check:
-	@command -v $(PYTHON) >/dev/null 2>&1 || { echo >&2 "This project requires $(PYTHON) but it's not installed.  Aborting."; exit 1; }
-
-python-init:
-	mkdir -p .pypi_cache && \
-	make python-check
-	make python-clean && \
-	$(PYTHON) -m venv venv && \
-	$(ACTIVATE_VENV) && \
-	PIP_CACHE_DIR=.pypi_cache $(PIP) install --upgrade pip && \
-	PIP_CACHE_DIR=.pypi_cache $(PIP) install -r requirements/local.txt
-	source venv/bin/activate
-	pre-commit install
-	pre-commit autoupdate
-
-# ---------------------------------------------------------
-# Primary targets
-# ---------------------------------------------------------
 init:
-	make npm-check
-	make clean
-	npm install
-	npm init @eslint/config
+ifeq ($(IN_WORKSPACE),true)
+	cd $(WORKSPACE) && npm install --include=dev
+else
+	npm install --include=dev
+endif
 
+# Storybook, at http://localhost:6006. The stories mock the Smarter API, and use the
+# web console's stylesheets when the Smarter dev server is running, or Bootstrap if not.
+serve:
+	npm run storybook
+
+# The app with the Vite dev server, against the Smarter dev server at http://localhost:9357.
 run:
 	npm run dev
 
+# The app, and the npm package into dist/.
 build:
-	@echo 'Building the React app...'
-	rm -rf dist
-	npm install
 	npm run build
-	yalc publish
+	npm run build:lib
+
+test:
+	npm test
+
+# The tests, with a coverage report in coverage/.
+coverage:
+	npm run coverage
 
 lint:
-	npm run lint
-	npx prettier --write "./src/**/*.{js,cjs,jsx,ts,tsx,json,css,scss,md}"
+	npm run lint && npm run typecheck && npm run format:check
 
-update:
-	npm install -g npm
-	npm install -g npm-check-updates
-	ncu --upgrade --peer --packageFile package.json
-	npm update -g
-	npm install
+format:
+	npm run format
 
-release:
-    #---------------------------------------------------------
-    # usage: deploy prouduction build of chat UI for Smarter Platform
-    #        react.js app to AWS S3 bucket.
-    #
-    # https://gist.github.com/kellyrmilligan/e242d3dc743105fe91a83cc933ee1314
-    #
-    # 1. Build the React application
-    # 2. Upload to AWS S3
-    # 3. Invalidate all items in the AWS Cloudfront CDN.
-    #---------------------------------------------------------
-	make build
+# Publish the npm package, @smarter.sh/ui-chat, once the tests pass.
+# prepublishOnly builds it first.
+release: test
 	npm publish --access public
 
+# Installs the pre-commit and commit-msg hooks. See .pre-commit-config.yaml.
+pre-commit-init:
+	pre-commit install
+	pre-commit autoupdate
 
-######################
-# HELP
-######################
+pre-commit-run:
+	pre-commit run --all-files
+
+python-init:
+	$(PYTHON) -m venv venv && \
+	$(ACTIVATE_VENV) && \
+	pip install --upgrade pip && \
+	pip install -r requirements/local.txt && \
+	pre-commit install
+
+clean:
+	rm -rf build dist coverage storybook-static venv
 
 help:
 	@echo '===================================================================='
-	@echo 'smarter-chat customizable react.js app for the Smarter Platform'
-	@echo 'AWS_PROFILE=$(AWS_PROFILE)'
-	@echo 'environment: $(ENVIRONMENT)'
-	@echo 'aws s3 build target: $(S3_TARGET)'
-	@echo 'aws cloudfront distribution-id: $(DISTRIBUTION_ID)'
-	@echo 'url: $(URL)'
+	@echo 'Smarter Chat: the React chat component of https://smarter.sh'
 	@echo '===================================================================='
-	@echo 'init             - Run npm install for React app'
-	@echo 'build            - Build the React app for production'
-	@echo 'run              - Run the React app in development mode'
-	@echo 'release          - Force new releases to npm and Github release'
-	@echo '-----------------------OTHER TASKS----------------------------------'
-	@echo 'npm-check        - Ensure that npm is installed'
-	@echo 'clean            - Remove node_modules directories for React app'
-	@echo 'lint             - Run npm lint for React app'
-	@echo 'update           - Update npm packages for React app'
-	@echo 'analyze          - Generate code analysis report using cloc'
-	@echo 'python-check     - Ensure that Python is installed'
-	@echo 'python-init      - Create Python virtual environment and install dependencies'
-	@echo 'pre-commit       - runs all pre-commit hooks on all files'
+	@echo 'init             - npm install (in the Smarter React workspace, if inside one)'
+	@echo 'serve            - Browse the component in Storybook. No Smarter backend needed'
+	@echo 'run              - Run the app against the Smarter dev server (localhost:9357)'
+	@echo 'build            - Build the app, and the npm package into dist/'
+	@echo 'test             - Run the unit tests'
+	@echo 'coverage         - Run the unit tests with a coverage report in coverage/'
+	@echo 'lint             - Lint, type-check and check formatting'
+	@echo 'format           - Format the code with Prettier'
+	@echo 'release          - Run the tests, then publish the npm package'
+	@echo 'python-init      - Create a Python virtual environment, for pre-commit'
+	@echo 'pre-commit-init  - Install the pre-commit and commit-msg hooks'
+	@echo 'pre-commit-run   - Run all pre-commit hooks on all files'
+	@echo 'clean            - Remove build output, coverage and venv/'
 	@echo '--------------------------------------------------------------------'

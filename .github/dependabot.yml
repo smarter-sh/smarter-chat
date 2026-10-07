@@ -1,3 +1,4 @@
+# The same schedule and target branch as https://github.com/smarter-sh/smarter's.
 version: 2
 updates:
   - package-ecosystem: "npm"
@@ -7,23 +8,21 @@ updates:
       - "javascript"
       - "automated pr"
     schedule:
-      interval: "daily"
-    target-branch: "main"
+      interval: "monthly"
+    target-branch: "alpha"
     assignees:
       - "lpm0073"
     reviewers:
       - "lpm0073"
-      - "kentfuka"
   - package-ecosystem: "github-actions"
     directory: "/.github"
     labels:
       - "dependencies"
       - "automated pr"
     schedule:
-      interval: "daily"
-    target-branch: "main"
+      interval: "monthly"
+    target-branch: "alpha"
     assignees:
       - "lpm0073"
     reviewers:
       - "lpm0073"
-      - "kentfuka"
