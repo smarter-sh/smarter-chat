@@ -24,6 +24,9 @@ export function consoleData(config: ConsoleConfig, item: MenuItem): object[] {
       return list(history.prompt_tool_call_history, history.chat_tool_call_history);
     case MenuItems.CHAT_PLUGIN_USAGE_HISTORY:
       return list(history.prompt_plugin_usage_history, history.chat_plugin_usage_history);
+    case MenuItems.SERVER_LOGS:
+      // streamed. See ServerLogs.
+      return [];
     default:
       return [config];
   }

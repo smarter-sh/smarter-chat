@@ -37,3 +37,29 @@ div.app-container {
   font-family: "Courier New", Courier, monospace;
   font-size: 16px;
 }
+
+.console-server-logs {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.console-server-logs-status {
+  color: #a6e22e;
+}
+
+.console-log-level {
+  font-weight: bold;
+}
+
+.console-log-warning .console-log-level {
+  color: #e6db74;
+}
+
+.console-log-error .console-log-level,
+.console-log-critical .console-log-level {
+  color: #f92672;
+}
+
+.console-empty {
+  color: #75715e;
+}

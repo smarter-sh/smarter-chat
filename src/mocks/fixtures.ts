@@ -8,6 +8,7 @@ import type { ApiMessage, ChatConfig, SmarterChatProps } from "@/types";
 export const API_URL = "http://localhost:9357/workbench/llm-clients/rMTAwMDAwMQx/";
 export const CONFIG_URL = `${API_URL}config/`;
 export const PROMPT_URL = "http://localhost:9357/api/v1/llm-clients/rMTAwMDAwMQx/prompt/";
+export const LOG_STREAM_URL = "http://localhost:9357/dashboard/logs/api/stream/";
 export const SESSION_KEY = "e019a5c1cb2c1cb87992d2d03bccaf44c9d98406b46de5516a4fa03650038ac8";
 
 export const props: SmarterChatProps = {
@@ -147,3 +148,60 @@ export function promptErrorResponse(message = "Incorrect API key provided.", sta
     api: "smarter.sh/v1",
   };
 }
+
+/** A small png, as a data url, so that the stories' images need no network. */
+export const IMAGE_DATA_URL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABaCAIAAACwpMoFAAABK0lEQVR42u3b0S0DAACE4ZulL7zfMIg2JUiZohoVBMEUKghC05rubGCA6598G/yPl1N2jGLKrlFM2TOKKftGMWVoFFNGRjFlbBRTDoxiyqFRTDkyiinHRjHlxCimTIxiyqlRTDkzimlre4BiBCYwCAwCg8AgMAgMAhMYBAaBQWAQGATGP4EzNYop50YxZWYUUy6MYsrcKKZcGsWUK6OYcm0UU26MYsqtUUy5M4op90Yx5cEopjwaxZQnoxh7MIM/CAwCg8AgMAgMAhMYBAaBQWAQGAQGgTf4XfhsFFMWRjHlxSimvBrFlDejmPJuFFM+jGLKp1FM+TKKKd9GMeXHKKYsjWLKyiimrI1iyq9RjD2YwR8EBoFBYBAYBAaBCQwCg8AgMAgMAoPAG+sPxer85czgf1MAAAAASUVORK5CYII=";
+
+/** A chat session whose assistant replied with markdown images: one inline, one linked. */
+export const configWithImages = makeConfig({
+  history: {
+    ...config.history,
+    chat_history: [
+      { role: "system", content: "You are a helpful assistant. DO NOT GUESS." },
+      { role: "user", content: "Show me the course banner." },
+      {
+        role: "assistant",
+        content: `Here is the course banner:\n\n![CS210 course banner](${IMAGE_DATA_URL})\n\nand the catalogue, linked:\n\n[![the catalogue](${IMAGE_DATA_URL})](https://stackademy.edu)`,
+      },
+    ],
+  },
+});
+
+/** The progress of a prompt that calls a tool and an MCP server, as the prompt api streams it. */
+export const progressEvents = [
+  { type: "llm_request", message: "Sending the prompt to the LLM", iteration: 1 },
+  { type: "tool_requested", message: "Calling tool stackademy_sql", tool: "stackademy_sql", arguments: "{}" },
+  {
+    type: "mcp_tool_called",
+    message: "Calling MCP server github: search_code",
+    mcpclient: "github",
+    tool: "search_code",
+  },
+  { type: "tool_responded", message: "Tool stackademy_sql responded", tool: "stackademy_sql" },
+  { type: "llm_request", message: "Sending the tool results to the LLM", iteration: 2 },
+];
+
+/** A prompt api response as Server-Sent Events: its progress, keepalives, and then its result. */
+export function promptEventStream(
+  events: object[] = progressEvents,
+  response: object = promptResponse(),
+  status = 200,
+): string {
+  const frames = events.map((event) => `event: progress\ndata: ${JSON.stringify(event)}\n\n`);
+  return [
+    "retry: 3000\n\n",
+    ...frames,
+    ": keepalive\n\n",
+    `event: result\ndata: ${JSON.stringify({ status, response })}\n\n`,
+  ].join("");
+}
+
+/** The user's recent server logs, which the log stream sends first, as its "bulk" event. */
+export const bulkLogs = [
+  { message: "prompt started", level: "INFO", logger: "smarter.apps.prompt" },
+  { message: "plugin stackademy_sql is slow", level: "WARNING", logger: "smarter.apps.plugin" },
+];
+
+/** A server log record that arrives after the bulk history. */
+export const liveLog = { message: "prompt finished", level: "ERROR", logger: "smarter.apps.prompt" };

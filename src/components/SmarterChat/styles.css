@@ -35,28 +35,49 @@
   box-sizing: border-box;
 }
 
+/* the chat's width is set by the separator, as a percentage. See lib/layout.ts. */
 .smarter-chat-app {
-  flex-basis: 33.33%;
-  min-width: 400px;
+  flex: 0 0 33.33%;
+  min-width: 280px;
 }
 
 .smarter-chat-app-full {
-  flex-basis: 100%;
+  flex: 1 1 100%;
 }
 
 .smarter-chat-console {
-  flex-basis: 66.67%;
-  min-width: 600px;
+  flex: 1 1 0;
+  min-width: 280px;
+}
+
+.smarter-chat-console[hidden] {
+  display: none;
+}
+
+.smarter-chat-separator {
+  flex: 0 0 8px;
+  margin: 5px 0;
+  cursor: col-resize;
+  touch-action: none;
+  border-radius: 4px;
+  background-color: rgba(255, 87, 51, 0.25);
+}
+
+.smarter-chat-separator:hover,
+.smarter-chat-separator:focus-visible {
+  background-color: rgba(255, 87, 51, 0.75);
+  outline: none;
 }
 
 /* the Console is visible only on large screens */
 @media (max-width: 992px) {
   .smarter-chat-app {
-    flex-basis: 100%;
+    flex: 1 1 100% !important;
   }
-  .smarter-chat-console {
-    display: none;
-    flex-basis: 0%;
+  .smarter-chat-console,
+  .smarter-chat-separator,
+  .smarter-chat-console-toggle {
+    display: none !important;
   }
 }
 
@@ -120,6 +141,33 @@ section.smarter-error-message .cs-message__content {
   border-radius: 10px;
   font-family: "Courier New", Courier, monospace;
   text-align: left;
+}
+
+/* a step of the running prompt, e.g. a tool call, until its response arrives. */
+section.smarter-progress-message .cs-message__content {
+  color: brown !important;
+  background-color: transparent;
+  border: 1px dashed brown;
+  border-radius: 10px;
+  font-family: "Courier New", Courier, monospace;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+/* markdown images, sized to fit their chat bubble. See lib/messages.ts. */
+div.cs-message__html-content img.smarter-chat-image {
+  display: block;
+  max-width: min(100%, 480px);
+  max-height: 360px;
+  width: auto;
+  height: auto;
+  margin: 4px 0;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+div.cs-message__html-content a:has(> img.smarter-chat-image) {
+  filter: none;
 }
 
 section.system-message .cs-message__content {

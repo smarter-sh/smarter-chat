@@ -1,13 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 
-import { props } from "@/mocks/fixtures";
+import { LOG_STREAM_URL, props } from "@/mocks/fixtures";
 import {
   chatHandlers,
   configErrorHandlers,
   historyHandlers,
+  imageHandlers,
   loadingHandlers,
   promptErrorHandlers,
+  streamingHandlers,
 } from "@/mocks/handlers";
 
 import SmarterChat from "./Component";
@@ -79,4 +81,30 @@ export const ConfigError: Story = {
 /** The chat alone, without the Console, e.g. on a bespoke web page. */
 export const WithoutConsole: Story = {
   args: { showConsole: false, toggleMetadata: false },
+};
+
+/**
+ * The prompt api streams the prompt's progress: its LLM requests, tool calls and MCP server
+ * requests are displayed while it runs, and are replaced by the response. The Console has a
+ * "Server Logs" tab, which streams the user's server logs. Drag the separator to resize the chat.
+ */
+export const StreamingProgress: Story = {
+  args: { logStreamUrl: LOG_STREAM_URL },
+  parameters: { msw: { handlers: streamingHandlers } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await canvas.findByText("Welcome to Stackademy! How can I help you today?");
+    await userEvent.click(canvas.getByRole("textbox", { name: "Message" }));
+    await userEvent.keyboard("Do you offer any courses on AI?{Enter}");
+    await expect(await canvas.findByText("Sending the prompt to the LLM")).toBeInTheDocument();
+  },
+};
+
+/** The assistant replied with markdown images, which are sized to fit their chat bubble. */
+export const WithImages: Story = {
+  parameters: { msw: { handlers: imageHandlers } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByRole("img", { name: "CS210 course banner" })).toBeInTheDocument();
+  },
 };

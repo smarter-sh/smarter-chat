@@ -10,8 +10,11 @@
 
 Smarter Chat is the React chat component of the [Smarter](https://smarter.sh) LLMClient prompt engineering
 workbench. Beside the chat, its Console displays the LLMClient's configuration, and the chat session's api calls,
-tool calls and plugin usage. A toggle shows and hides the backend's own messages in the chat thread, and a failed
-prompt is displayed in the thread with the LLM provider's error message.
+tool calls and plugin usage, and optionally streams your server logs. Drag the separator between the chat and the
+Console to resize them, or hide the Console. A toggle shows and hides the backend's own messages in the chat thread.
+While a prompt runs, its progress (LLM requests, tool, plugin and MCP server calls) is displayed in the thread, and a
+failed prompt is displayed with the LLM provider's error message. Markdown links and images in messages are rendered,
+and images are scaled to fit their chat bubble.
 
 It is also published to npm as [@smarter.sh/ui-chat](https://www.npmjs.com/package/@smarter.sh/ui-chat), so that
 any web page can use a Smarter LLMClient as its chat backend: a Wordpress or Squarespace site, a Salesforce portal,
@@ -60,10 +63,12 @@ React 19 is a peer dependency.
 | `debugCookieExpiration`   | one day         | The debug cookie's lifetime, in milliseconds.                                                           |
 | `cookieDomain`            | `""`            | The domain whose cookies the chat reads. Empty means the page's own domain.                             |
 | `smarterRequestId`        | `""`            | A unique id of the page request, sent as the `X-Smarter-RequestId` header.                              |
+| `streamProgress`          | `true`          | Display a running prompt's progress, which the prompt api streams as Server-Sent Events.                |
+| `logStreamUrl`            | `null`          | The url of a server log stream (Server-Sent Events), for the Console's "Server Logs" tab.               |
 
 The package also exports the `Console` component, the `MessageDirectionEnum`, `SenderRoleEnum`,
 `ValidMessageRolesEnum` and `MenuItems` enums, `version`, and TypeScript types for its props and for the
-Smarter api's data (`SmarterChatProps`, `ChatConfig`, `ChatMessage`, ...).
+Smarter api's data (`SmarterChatProps`, `ChatConfig`, `ChatMessage`, `PromptProgressEvent`, ...).
 
 ### The Smarter api
 
@@ -74,7 +79,9 @@ Smarter Chat calls two apis, both with POST requests that send the browser's coo
 - `chatbot.url_chatbot` in the configuration: the LLMClient's prompt api. It receives the chat thread with each
   new message, `{"session_key": "...", "messages": [...]}`, and returns the completion as a JSON string, in
   `data.body`, whose `smarter.messages` are added to the thread. A failed prompt returns the LLM provider's status,
-  and `{"error": {"status", "message"}, "response": <the completion>}` in its body.
+  and `{"error": {"status", "message"}, "response": <the completion>}` in its body. With `streamProgress`, the
+  request accepts `text/event-stream`, and the response is `progress` events while the prompt runs, then a `result`
+  event, `{"status": <http status>, "response": <the same JSON>}`. A server that doesn't stream answers with JSON.
 
 Requests from your page to the Smarter api are cross-origin, so your page's origin must be allowed by the Smarter
 platform's CORS configuration.

@@ -21,6 +21,7 @@ const cookieDomain = rootEl.getAttribute("smarter-cookie-domain") || window.loca
 const toggleMetadata = isTrue(rootEl.getAttribute("smarter-toggle-metadata"));
 const debugMode = isTrue(rootEl.getAttribute("react-debug-mode"));
 const smarterRequestId = rootEl.getAttribute("smarter-request-id") || "";
+const logStreamUrl = rootEl.getAttribute("smarter-log-stream-url") || null;
 
 if (!apiUrl) throw new Error("LLMClient API URL not found in root element attributes");
 if (!csrfCookieName) throw new Error("CSRF cookie name not found in root element attributes");
@@ -35,6 +36,7 @@ const props: SmarterChatProps = {
   toggleMetadata,
   debugMode,
   smarterRequestId,
+  logStreamUrl,
 };
 
 console.debug(`${loggerPrefix} initialized with:`, props);

@@ -1,17 +1,22 @@
 /**
  * The Console: a simulated terminal beside the chat, which displays the LLMClient's configuration,
- * and the chat session's api calls, tool calls and plugin usage, as JSON.
+ * and the chat session's api calls, tool calls and plugin usage, as JSON, and optionally the
+ * user's server logs, as they stream in.
  */
 import { useState } from "react";
 import ReactJsonView from "@microlink/react-json-view";
 
+import { useLogStream } from "../../lib/logStream";
 import { consoleData, type ConsoleConfig } from "./data";
 import { MenuItems, type MenuItem } from "./enums";
+import ServerLogs from "./ServerLogs";
 import "./styles.css";
 
 interface ConsoleProps {
   /** The LLMClient's configuration, from its config api. Empty until it loads. */
   config: ConsoleConfig;
+  /** The url of the user's server log stream. Without it, there is no "Server Logs" tab. */
+  logStreamUrl?: string | null;
 }
 
 const MENU: { label: string; id: MenuItem }[] = [
@@ -20,9 +25,18 @@ const MENU: { label: string; id: MenuItem }[] = [
   { label: "Plugin Usage", id: MenuItems.CHAT_PLUGIN_USAGE_HISTORY },
   { label: "Config", id: MenuItems.CHAT_CONFIG },
 ];
+const SERVER_LOGS = { label: "Server Logs", id: MenuItems.SERVER_LOGS };
 
-function Console({ config }: ConsoleProps) {
-  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem>(MenuItems.CHAT_CONFIG);
+function Console({ config, logStreamUrl = null }: ConsoleProps) {
+  // the server logs, when there are any, are first, and selected. Their stream stays connected,
+  // so that the logs keep arriving while another tab is selected.
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem>(
+    logStreamUrl ? MenuItems.SERVER_LOGS : MenuItems.CHAT_CONFIG,
+  );
+  const logStream = useLogStream(logStreamUrl);
+  const menu = logStreamUrl ? [SERVER_LOGS, ...MENU] : MENU;
+  const showLogs = selectedMenuItem === MenuItems.SERVER_LOGS && !!logStreamUrl;
+  const selectedLabel = menu.find(({ id }) => id === selectedMenuItem)?.label ?? "";
 
   // a simulated bash shell.
   const [shell] = useState(() => ({
@@ -32,6 +46,7 @@ function Console({ config }: ConsoleProps) {
   }));
 
   const data = consoleData(config, selectedMenuItem);
+  const isEmpty = !showLogs && data.length === 0 && !!config && Object.keys(config).length > 0;
 
   return (
     <div className="console">
@@ -45,7 +60,7 @@ function Console({ config }: ConsoleProps) {
                 className="bg-gray-200 d-flex flex-stack flex-wrap mb-2 p-2 console-nav-items"
               >
                 <ul className="nav flex-wrap border-transparent">
-                  {MENU.map(({ label, id }) => (
+                  {menu.map(({ label, id }) => (
                     <li className="nav-item my-1" key={id}>
                       <button
                         type="button"
@@ -68,6 +83,10 @@ function Console({ config }: ConsoleProps) {
                     Last login: {shell.lastLogin} from {shell.ipAddress}
                   </p>
                   <p className="mb-0">{shell.prompt}</p>
+                  {showLogs && <ServerLogs {...logStream} />}
+                  {isEmpty && (
+                    <p className="mb-0 console-empty">No {selectedLabel.toLowerCase()} in this chat session yet.</p>
+                  )}
                   {data.length > 0 && (
                     <>
                       {data.map((item, index) => (

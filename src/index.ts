@@ -9,6 +9,7 @@ export { default as Console } from "./components/Console";
 export { MenuItems } from "./components/Console/enums";
 export { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum } from "./lib/enums";
 export { projectVersion as version } from "./const";
+export type { PromptProgressEvent } from "./lib/api";
 export type {
   ApiMessage,
   ChatConfig,

@@ -4,6 +4,11 @@
  * It fetches the LLMClient's configuration, which includes the chat session's history, then sends
  * the chat thread to the LLMClient's prompt api with each new message, and adds the response's
  * messages to the thread. Failed prompts are displayed in the thread, as "smarter_error" messages.
+ * While a prompt runs, its progress (e.g. its tool calls and MCP server requests) is displayed in
+ * the thread, and is replaced by the response's messages when it finishes.
+ *
+ * The user can resize the chat and the Console by dragging the separator between them, and can
+ * hide the Console.
  *
  * This is the component that the @smarter.sh/ui-chat npm package exports, and that the Smarter web
  * console's LLMClient prompt workbench renders. See main.tsx.
@@ -11,6 +16,7 @@
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import {
   AddUserButton,
+  ArrowButton,
   ChatContainer,
   ConversationHeader,
   InfoButton,
@@ -23,9 +29,10 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
 import { DEFAULT_COOKIE_EXPIRATION, loggerPrefix, projectName, projectVersion } from "../../const";
-import { fetchConfig, fetchPrompt } from "../../lib/api";
+import { fetchConfig, fetchPrompt, type PromptProgressEvent } from "../../lib/api";
 import { cookieMetaFactory, setCookie } from "../../lib/cookie";
 import { MetadataRolesEnum, SenderRoleEnum } from "../../lib/enums";
+import { useChatWidth, useConsoleVisible } from "../../lib/layout";
 import {
   chatInit,
   chatMessages2RequestMessages,
@@ -47,6 +54,11 @@ function messageClassName(sender: string): string {
   return "";
 }
 
+/** A step of the running prompt, as a chat message, which is never sent to the api. */
+function progressMessage(event: PromptProgressEvent) {
+  return messageFactory(event.message, SenderRoleEnum.SMARTER).message;
+}
+
 function SmarterChat({
   apiUrl,
   apiKey = null,
@@ -61,14 +73,21 @@ function SmarterChat({
   showConsole = true,
   cookieDomain = "",
   smarterRequestId = "",
+  logStreamUrl = null,
+  streamProgress = true,
 }: SmarterChatProps) {
   const [config, setConfig] = useState<ChatConfig | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [showMetadata, setShowMetadata] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [progress, setProgress] = useState<PromptProgressEvent[]>([]);
+  const [consoleVisible, setConsoleVisible] = useConsoleVisible();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatAppRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { chatWidth, separatorProps } = useChatWidth(containerRef);
+  const isSplit = showConsole && consoleVisible;
 
   const cookies: ChatCookies = useMemo(
     () => ({
@@ -162,8 +181,15 @@ function SmarterChat({
     const thread = [...messages, messageFactory(text, SenderRoleEnum.USER)];
     setMessages(thread);
     setIsTyping(true);
+    setProgress([]);
+    const onProgress = streamProgress
+      ? (event: PromptProgressEvent) => {
+          debug("prompt progress", event);
+          setProgress((previous) => [...previous, event]);
+        }
+      : undefined;
     try {
-      const result = await fetchPrompt(config, chatMessages2RequestMessages(thread), cookies, context);
+      const result = await fetchPrompt(config, chatMessages2RequestMessages(thread), cookies, context, onProgress);
       const responseMessages = result.messages.map((message) => {
         const chatMessage = messageFactory(message.content, message.role, message);
         const hidden = MetadataRolesEnum.includes(chatMessage.sender as never) && !showMetadata;
@@ -179,6 +205,7 @@ function SmarterChat({
       setMessages((previous) => [...previous, messageFactory(errorText, SenderRoleEnum.SMARTER_ERROR)]);
     } finally {
       setIsTyping(false);
+      setProgress([]);
     }
   }
 
@@ -206,6 +233,10 @@ function SmarterChat({
   const isValid = config?.meta_data?.is_valid ?? config?.meta_data?.ready ?? true;
   const isDeployed = !!(config?.meta_data?.is_deployed ?? chatbot?.deployed);
 
+  const assistant = chatbot?.app_assistant ?? "Assistant";
+  const currentStep = progress.at(-1)?.message;
+  const typingText = currentStep ? `${assistant}: ${currentStep}` : `${assistant} is typing`;
+
   let headerName;
   if (configError) {
     headerName = "Smarter Chat is not available";
@@ -217,8 +248,13 @@ function SmarterChat({
 
   return (
     <div id="smarter_chat_component_container" className="SmarterChat">
-      <div className="smarter-chat-container">
-        <div className={`smarter-chat-app ${showConsole ? "" : "smarter-chat-app-full"}`}>
+      <div className="smarter-chat-container" ref={containerRef}>
+        <div
+          role="region"
+          aria-label="Chat"
+          className={`smarter-chat-app ${isSplit ? "" : "smarter-chat-app-full"}`}
+          style={isSplit ? { flexBasis: `${chatWidth}%` } : undefined}
+        >
           <div className="chat-app" ref={chatAppRef}>
             <ErrorBoundary>
               <MainContainer style={{ width: "100%", height: "100%" }}>
@@ -227,6 +263,16 @@ function SmarterChat({
                     <ConversationHeader.Content userName={headerName} info={isReady ? info : ""} />
                     <ConversationHeader.Actions>
                       <AddUserButton onClick={handleNewChat} title="Start a new chat" aria-label="Start a new chat" />
+                      {showConsole && (
+                        <ArrowButton
+                          className="smarter-chat-console-toggle"
+                          direction={consoleVisible ? "right" : "left"}
+                          onClick={() => setConsoleVisible((visible) => !visible)}
+                          title={consoleVisible ? "Hide the Console" : "Show the Console"}
+                          aria-label="Show the Console"
+                          aria-pressed={consoleVisible}
+                        />
+                      )}
                       {toggleMetadata && (
                         <InfoButton
                           onClick={handleToggleMetadata}
@@ -240,11 +286,7 @@ function SmarterChat({
                   <MessageList
                     className="smarter-chat-message-list"
                     scrollBehavior="auto"
-                    typingIndicator={
-                      isTyping ? (
-                        <TypingIndicator content={`${chatbot?.app_assistant ?? "Assistant"} is typing`} />
-                      ) : null
-                    }
+                    typingIndicator={isTyping ? <TypingIndicator content={typingText} /> : null}
                   >
                     {configError && (
                       <Message
@@ -272,6 +314,19 @@ function SmarterChat({
                         />
                       ) : null,
                     )}
+                    {showMetadata &&
+                      progress.map((event, index) => (
+                        <Message
+                          key={`progress-${index}`}
+                          className="smarter-progress-message"
+                          model={{
+                            message: progressMessage(event),
+                            sender: SenderRoleEnum.SMARTER,
+                            direction: "incoming",
+                            position: "single",
+                          }}
+                        />
+                      ))}
                   </MessageList>
                   <MessageInput
                     placeholder={chatbot?.app_placeholder ?? ""}
@@ -294,10 +349,12 @@ function SmarterChat({
             />
           </div>
         </div>
+        {isSplit && <div className="smarter-chat-separator" {...separatorProps} />}
+        {/* hidden, rather than removed, so that the Console keeps its tab and its streamed logs. */}
         {showConsole && (
-          <div className="smarter-chat-console">
+          <div className="smarter-chat-console" hidden={!consoleVisible}>
             <ErrorBoundary>
-              <Console config={config} />
+              <Console config={config} logStreamUrl={logStreamUrl} />
             </ErrorBoundary>
           </div>
         )}
