@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.4.0](https://github.com/smarter-sh/smarter-chat/compare/v0.3.0...v0.4.0) (2026-10-07)
+
+### ⚠ BREAKING CHANGES
+
+* version 0.4.0. ConfigPropTypes is no longer exported. Use the exported TypeScript types instead (ChatConfig, SmarterChatProps, ...). authSessionCookieName is deprecated and unused. React 19 is a peer dependency. The SmarterChat props, the Console, MenuItems, the message enums, version and the ui-chat.css path are unchanged. SenderRoleEnum gains SMARTER_ERROR.
+
+Co-authored-by: Lawrence McDaniel <lpm0073@gmail.com>
+
+### Features
+
+* asynchronous chat support and server log streams ([1216746](https://github.com/smarter-sh/smarter-chat/commit/12167467e86724e67ea28c44e38f1ee032635dce))
+
+### Bug Fixes
+
+* **console:** read llmclient_request_history, move Config tab last ([2e4ae62](https://github.com/smarter-sh/smarter-chat/commit/2e4ae62bdadec1b8bd002bf491d9e1e161daf00d))
+
+### Refactoring
+
+* rewrite in typescript as a smarter react workspace package ([3c665b4](https://github.com/smarter-sh/smarter-chat/commit/3c665b4bc9383d6b70f026c59b4fbfc525161f1c))
+
 ## [0.4.0-alpha.1](https://github.com/smarter-sh/smarter-chat/compare/v0.3.1-alpha.1...v0.4.0-alpha.1) (2026-10-07)
 
 ### Features
