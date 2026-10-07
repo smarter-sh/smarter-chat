@@ -1,0 +1,57 @@
+---
+#------------------------------------------------------------------------------
+# Merge one branch into another. The same as https://github.com/smarter-sh/smarter's.
+#------------------------------------------------------------------------------
+name: Merge
+description: "Merge one branch into another"
+branding:
+  icon: "git-pull-request"
+  color: "orange"
+inputs:
+  github-token:
+    description: "The GitHub token to use for authentication"
+    required: true
+    type: string
+  source-branch:
+    description: "The branch to merge from"
+    required: false
+    type: string
+    default: "main"
+  target-branch:
+    description: "The branch to merge to"
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      id: checkout
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+        token: ${{ inputs.github-token }}
+
+    - name: Remember current branch
+      shell: bash
+      run: |
+        echo "CURRENT_BRANCH=$(git branch --show-current)" >> $GITHUB_ENV
+
+    - name: Merge
+      id: merge
+      shell: bash
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git checkout ${{ inputs.source-branch }}
+        git checkout ${{ inputs.target-branch }}
+        git merge -Xtheirs ${{ inputs.source-branch }}
+        # github.repository is owner/name, e.g. smarter-sh/smarter-chat.
+        git remote set-url origin https://x-access-token:${{ inputs.github-token }}@github.com/${{ github.repository }}.git
+        git push origin ${{ inputs.target-branch }}
+
+    - name: Checkout current branch
+      shell: bash
+      run: |
+        git checkout ${{ env.CURRENT_BRANCH }}

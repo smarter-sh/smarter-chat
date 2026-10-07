@@ -3,10 +3,11 @@
  *
  * Smarter Chat is built two ways:
  *
- * - `npm run build` (the default, as for every app in this workspace): builds the React app that the
- *   Django LLMClient prompt workbench hosts. Output is written to the Django static directory, with a
- *   manifest.json that Django's templatetag (smarter.apps.prompt.templatetags.react_smarter_chat) reads
- *   to resolve the hashed asset filenames.
+ * - `npm run build` (the default, as for every app in the Smarter React workspace): builds the React app
+ *   that the Django LLMClient prompt workbench hosts. Inside the workspace, output is written to the
+ *   Django static directory, with a manifest.json that Django's templatetag
+ *   (smarter.apps.prompt.templatetags.react_smarter_chat) reads to resolve the hashed asset filenames.
+ *   In a plain clone of this repository, which has no Django static directory, it is written to build/.
  * - `npm run build:lib` (`vite build --mode lib`): builds the @smarter.sh/ui-chat library that is
  *   published to npm, for bespoke web pages that use Smarter as their chat backend. Output is written
  *   to dist/: ES and UMD bundles, and ui-chat.css. React is a peer dependency, and is not bundled.
@@ -21,7 +22,13 @@ import path from "path";
 import packageJson from "./package.json" with { type: "json" };
 
 const packageName = packageJson.name;
-const djangoStaticDir = `../../../smarter/static/react/${packageName}`;
+
+// Inside the Smarter repository, smarter/react/packages/smarter-chat, the app is built into Django's
+// static directory. A plain clone of this repository builds it into build/ instead.
+const djangoStaticRoot = path.resolve(import.meta.dirname, "../../../smarter/static");
+const djangoStaticDir = fs.existsSync(djangoStaticRoot)
+  ? path.join(djangoStaticRoot, "react", packageName)
+  : path.resolve(import.meta.dirname, "build");
 
 /**
  * Vite Plugin: addCustomManifestData
@@ -32,7 +39,7 @@ const djangoStaticDir = `../../../smarter/static/react/${packageName}`;
 const addCustomManifestData: PluginOption = {
   name: "add-custom-manifest-data",
   writeBundle() {
-    const manifestPath = path.resolve(import.meta.dirname, djangoStaticDir, "manifest.json");
+    const manifestPath = path.join(djangoStaticDir, "manifest.json");
     if (fs.existsSync(manifestPath)) {
       const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
       manifest._custom = {

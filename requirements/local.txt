@@ -1,11 +1,5 @@
-
-# Code linters, formatters, and security scanners
+# Code linters, formatters, and scanners, for pre-commit. The same versions as
+# https://github.com/smarter-sh/smarter's smarter/requirements/local.txt.
 # ------------
-watchdog==4.0.1
-pre-commit==4.0.1
-mypy==1.14.1
-pylint==3.3.1
-pylint-django==2.6.1
-bandit==1.8.0
-tox==4.23.2
-codespell==2.3.0
+pre-commit==4.6.2
+codespell==2.4.3

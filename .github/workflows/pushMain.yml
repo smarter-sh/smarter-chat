@@ -1,0 +1,93 @@
+---
+#---------------------------------------------------------
+# The same workflow as https://github.com/smarter-sh/smarter's:
+# - Create a semantic release. See release.config.js.
+# - Merge main into alpha
+#
+# Requires a PAT secret: a GitHub personal access token that
+# may push to this repository's protected branches.
+#---------------------------------------------------------
+name: Push to main
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - alpha
+      - beta
+      - next
+      - next-major
+jobs:
+  semantic-release:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.PAT }}
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+
+    steps:
+      - uses: actions/checkout@v6
+        id: checkout
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+
+      # The package's own dependencies are installed by the Smarter React
+      # workspace, so only semantic-release's plugins are installed here.
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v5
+        id: semantic
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+            conventional-changelog-conventionalcommits
+          branches: |
+            [
+              '+([0-9])?(.{+([0-9]),x}).x',
+              'main',
+              'next',
+              'next-major',
+              {
+                name: 'beta',
+                prerelease: true
+              },
+              {
+                name: 'alpha',
+                prerelease: true
+              }
+            ]
+        env:
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+
+      - name: Push updates to branch for major version
+        id: push_major
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: "git push --force https://x-access-token:${{ secrets.PAT }}@github.com/${GITHUB_REPOSITORY}.git HEAD:refs/heads/v${{steps.semantic.outputs.new_release_major_version}}"
+        shell: bash
+
+  merge-main:
+    needs: semantic-release
+    if: needs.semantic-release.outputs.new_release_published == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        id: checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          token: ${{ secrets.PAT }}
+
+      - name: Merge main into alpha
+        uses: ./.github/actions/merge-branch
+        with:
+          github-token: ${{ secrets.PAT }}
+          source-branch: main
+          target-branch: alpha

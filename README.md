@@ -1,5 +1,7 @@
 [![NPM](https://a11ybadges.com/badge?logo=npm)](https://www.npmjs.com/package/@smarter.sh/ui-chat)
 [![GitHub](https://a11ybadges.com/badge?logo=github)](https://github.com/smarter-sh/smarter-chat/)
+[![Test Status](https://github.com/smarter-sh/smarter-chat/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/smarter-sh/smarter-chat/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/smarter-sh/smarter-chat/main?label=coverage&logo=codecov)](https://codecov.io/gh/smarter-sh/smarter-chat)
 <a href="https://smarter.sh">
 <img src="https://img.shields.io/badge/Smarter.sh-orange?style=flat&logo=appveyor&logoColor=white" height="32">
 </a>
@@ -79,10 +81,36 @@ platform's CORS configuration.
 
 ## Development
 
-Smarter Chat is developed inside the npm workspace of the
-[Smarter repository](https://github.com/smarter-sh/smarter), whose web console hosts it as one of its React apps,
-and whose TypeScript, Vite, Vitest, Storybook, ESLint and Prettier configuration it shares. `make react-install`,
-in the Smarter repository, clones this repository into `smarter/react/packages/smarter-chat`:
+This repository is self-contained: clone it, and its Makefile does the rest. The Smarter backend is optional.
+
+```console
+git clone https://github.com/smarter-sh/smarter-chat.git
+cd smarter-chat
+make init    # npm install
+make serve   # Storybook, at http://localhost:6006
+```
+
+`make serve` browses the components in Storybook, whose stories mock the Smarter api with
+[MSW](https://mswjs.io/), so no backend is needed. When the Smarter dev server is running at http://localhost:9357, the
+stories use the web console's own stylesheets; without it, they use Bootstrap, which the web console's theme is built
+on.
+
+| Command         | What it does                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------- |
+| `make init`     | Installs the dependencies.                                                                        |
+| `make serve`    | Browses the components in Storybook, with the Smarter api mocked.                                 |
+| `make run`      | Runs the app with Vite's dev server, proxying api requests to the Smarter dev server (port 9357). |
+| `make build`    | Builds the app, with a Vite manifest for Django, and the npm package into `dist/`.                |
+| `make test`     | Runs the unit tests (Vitest and React Testing Library). Every story is also rendered as a test.   |
+| `make coverage` | Runs the unit tests with a coverage report in `coverage/`, which CI uploads to Codecov.           |
+| `make lint`     | Lints with ESLint, type-checks with TypeScript, and checks formatting with Prettier.              |
+| `make release`  | Runs the tests, then builds the npm package into `dist/` and publishes it to npm.                 |
+
+### Inside the Smarter repository
+
+Smarter's web console hosts Smarter Chat as one of the React apps in its npm workspace. `make react-install`, in the
+[Smarter repository](https://github.com/smarter-sh/smarter), clones this repository into
+`smarter/react/packages/smarter-chat`:
 
 ```console
 git clone https://github.com/smarter-sh/smarter.git
@@ -91,21 +119,25 @@ make react-install                            # clones smarter-chat's main branc
 make react-install SMARTER_CHAT_BRANCH=alpha  # or another branch
 ```
 
-Then, in `smarter/react/packages/smarter-chat`, which is this repository's own git working tree:
+The same `make` commands work there, in `smarter/react/packages/smarter-chat`, which is this repository's own git
+working tree. Two differ: `make init` installs the whole workspace's dependencies, and `make build` builds the app into
+the Smarter web console's static files, rather than into `build/`. The Smarter repository's `make react-test` and
+`make react-lint`, and its GitHub Actions workflows, also test and lint Smarter Chat along with the other React apps.
 
-| Command             | What it does                                                                                      |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| `npm run dev`       | Runs the app with Vite's dev server, proxying api requests to the Smarter dev server (port 9357). |
-| `npm run storybook` | Browses the components in Storybook, with the Smarter api mocked by MSW.                          |
-| `npm test`          | Runs the unit tests (Vitest and React Testing Library). Every story is also rendered as a test.   |
-| `npm run lint`      | Lints with the workspace's ESLint configuration.                                                  |
-| `npm run typecheck` | Type-checks with TypeScript.                                                                      |
-| `npm run build`     | Builds the app into the Smarter web console's static files, with a Vite manifest for Django.      |
-| `npm run build:lib` | Builds the npm package into `dist/`: ES and UMD bundles, `ui-chat.css`, and type declarations.    |
-| `npm publish`       | Builds the npm package, then publishes it.                                                        |
+### Commits, versions and releases
 
-The Smarter repository's `make react-test` and `make react-lint`, and its GitHub Actions workflows, test and lint
-Smarter Chat along with the other React apps.
+Run `make pre-commit-init` once per clone (the Smarter repository's `make react-install` does it when its virtual
+environment is active). It installs two git hooks: pre-commit, which runs codespell, Prettier and
+ESLint, and the standard pre-commit-hooks checks, and commit-msg, which runs commitlint.
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/), as Smarter's do, because
+[semantic-release](https://semantic-release.gitbook.io/) versions this package from them. On each push to `alpha`
+(prereleases, e.g. `1.0.0-alpha.1`) and to `main`, `.github/workflows/pushMain.yml` determines the next version, writes
+it to `package.json`, adds the release notes to `CHANGELOG.md`, tags the commit and creates a GitHub release. A release
+on `main` is then merged back into `alpha`. `feat` commits are minor releases, `fix` and `perf` commits are patches, and
+a `BREAKING CHANGE:` footer is a major release. See `release.config.cjs`.
+
+semantic-release does not publish to npm. After a release on `main`, publish it with `make release`.
 
 ### Source
 
@@ -116,6 +148,11 @@ Smarter Chat along with the other React apps.
 | `src/components/`             | `SmarterChat`, `Console`, `AppTitle` and `ErrorBoundary`, with their stories and tests.    |
 | `src/lib/`                    | The Smarter api calls, the chat thread's messages, and cookies.                            |
 | `src/mocks/`                  | Example api data and MSW handlers, for the stories and tests.                              |
+
+## License
+
+Smarter Chat is licensed under the GNU Affero General Public License v3.0 or later
+([AGPL-3.0-or-later](./LICENSE)), as Smarter is.
 
 ## Contributing
 

@@ -123,7 +123,7 @@ describe("fetchPrompt", () => {
     expect(result).toEqual({ messages: [{ role: "smarter_error", content: "Server error" }], error: "Server error" });
   });
 
-  it("treats an unparseable body as an error", async () => {
+  it("treats an unparsable body as an error", async () => {
     server.use(http.post(PROMPT_URL, () => HttpResponse.json({ data: { statusCode: 200, body: "{not json" } })));
     const result = await fetchPrompt(config, [], cookies, context);
     expect(result.error).toBe("The Smarter api returned http 200 OK");
