@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -32,8 +32,14 @@ describe("Console", () => {
     installFakes();
     const user = userEvent.setup();
     render(<Console config={configWithHistory} logStreamUrl={LOG_STREAM_URL} />);
-    const labels = screen.getAllByRole("button").map((button) => button.textContent);
-    expect(labels).toEqual(["Server Logs", "Api Calls", "Tool Calls", "Plugin Usage", "Config"]);
+    const tabs = within(screen.getByRole("navigation", { name: "Console" })).getAllByRole("button");
+    expect(tabs.map((button) => button.textContent)).toEqual([
+      "Server Logs",
+      "Api Calls",
+      "Tool Calls",
+      "Plugin Usage",
+      "Config",
+    ]);
     expect(screen.getByRole("button", { name: "Server Logs" })).toHaveAttribute("aria-pressed", "true");
 
     const output = screen.getByRole("log", { name: "Console output" });
@@ -43,20 +49,57 @@ describe("Console", () => {
     act(() => stream.open());
     expect(output).toHaveTextContent("Streaming server logs... There are none yet.");
     act(() => stream.emit(bulkLogs, "bulk"));
-    expect(output).toHaveTextContent("INFO prompt started");
-    expect(output).toHaveTextContent("WARNING plugin stackademy_sql is slow");
+    // as the log viewer displays them: their text, which has their time and level, in color.
+    expect(output).toHaveTextContent("2026-01-01 12:00:00,000 INFO smarter.apps.prompt prompt started");
+    expect(output).toHaveTextContent("2026-01-01 12:00:01,000 WARNING plugin stackademy_sql is slow");
+    expect(output).not.toHaveTextContent("\u001b");
+    expect(screen.getByText("smarter.apps.prompt")).toHaveStyle("color: #78dce8; font-weight: 700");
 
     await user.click(screen.getByRole("button", { name: "Config" }));
     act(() => stream.emit(liveLog));
     expect(output).not.toHaveTextContent("prompt finished");
     await user.click(screen.getByRole("button", { name: "Server Logs" }));
-    expect(screen.getByText("prompt finished")).toHaveClass("console-log-error");
+    expect(screen.getByText("prompt finished")).toHaveStyle({ color: "#ff8f8f" });
     expect(FakeEventSource.instances).toHaveLength(1);
 
+    act(() => stream.emit({ message: "Waiting for log stream..." }));
     act(() => stream.emit({ message: "no level" }));
-    expect(screen.getByText("no level")).toHaveClass("console-log-info");
+    expect(screen.getByText("no level")).toBeInTheDocument();
+    expect(output).not.toHaveTextContent("Waiting for log stream...");
     act(() => stream.fail());
     expect(output).toHaveTextContent("The log stream disconnected. Reconnecting...");
+    vi.unstubAllGlobals();
+  });
+
+  it("scrolls long lines, or wraps them, and remembers which", async () => {
+    installFakes();
+    const user = userEvent.setup();
+    const { unmount } = render(<Console config={config} logStreamUrl={LOG_STREAM_URL} />);
+    const toggle = screen.getByRole("button", { name: "Wrap lines" });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    unmount();
+
+    render(<Console config={config} logStreamUrl={LOG_STREAM_URL} />);
+    expect(screen.getByRole("button", { name: "Wrap lines" })).toHaveAttribute("aria-pressed", "true");
+    vi.unstubAllGlobals();
+  });
+
+  it("clears the server logs when its reset key changes", () => {
+    installFakes();
+    const { rerender } = render(<Console config={config} logStreamUrl={LOG_STREAM_URL} resetKey={0} />);
+    const stream = FakeEventSource.latest();
+    act(() => stream.open());
+    act(() => stream.emit(bulkLogs, "bulk"));
+    const output = screen.getByRole("log", { name: "Console output" });
+    expect(output).toHaveTextContent("prompt started");
+
+    rerender(<Console config={config} logStreamUrl={LOG_STREAM_URL} resetKey={0} />);
+    expect(output).toHaveTextContent("prompt started");
+    rerender(<Console config={config} logStreamUrl={LOG_STREAM_URL} resetKey={1} />);
+    expect(output).not.toHaveTextContent("prompt started");
     vi.unstubAllGlobals();
   });
 

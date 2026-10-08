@@ -199,9 +199,24 @@ export function promptEventStream(
 
 /** The user's recent server logs, which the log stream sends first, as its "bulk" event. */
 export const bulkLogs = [
-  { message: "prompt started", level: "INFO", logger: "smarter.apps.prompt" },
-  { message: "plugin stackademy_sql is slow", level: "WARNING", logger: "smarter.apps.plugin" },
+  {
+    message: "2026-01-01 12:00:00,000 INFO \u001b[1;34msmarter.apps.prompt\u001b[0m prompt started",
+    level: "INFO",
+    logger: "smarter.apps.prompt",
+    timestamp: 1767268800,
+  },
+  {
+    message: "2026-01-01 12:00:01,000 WARNING plugin stackademy_sql is slow",
+    level: "WARNING",
+    logger: "smarter.apps.plugin",
+    timestamp: 1767268801,
+  },
 ];
 
 /** A server log record that arrives after the bulk history. */
-export const liveLog = { message: "prompt finished", level: "ERROR", logger: "smarter.apps.prompt" };
+export const liveLog = {
+  message: "2026-01-01 12:00:02,000 ERROR \u001b[31mprompt finished\u001b[0m",
+  level: "ERROR",
+  logger: "smarter.apps.prompt",
+  timestamp: 1767268802,
+};

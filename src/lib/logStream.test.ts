@@ -51,6 +51,25 @@ describe("useLogStream", () => {
     expect(result.current.logs[0]).toEqual({ message: "log 2" });
   });
 
+  it("clears its records, and doesn't display the older ones again", () => {
+    const { result } = renderHook(() => useLogStream(LOG_STREAM_URL));
+    const stream = FakeEventSource.latest();
+    act(() => stream.emit(bulkLogs, "bulk"));
+    act(() => result.current.clear());
+    expect(result.current.logs).toEqual([]);
+
+    // e.g. a reconnection, which replays the history, and records that were in transit.
+    act(() => stream.emit(bulkLogs, "bulk"));
+    act(() => stream.emit(liveLog));
+    expect(result.current.logs).toEqual([]);
+
+    const newer = { message: "newer", timestamp: String(Date.now() / 1000 + 60) };
+    const untimed = { message: "untimed" };
+    act(() => stream.emit(newer));
+    act(() => stream.emit(untimed));
+    expect(result.current.logs).toEqual([newer, untimed]);
+  });
+
   it("reports a disconnection", () => {
     const { result } = renderHook(() => useLogStream(LOG_STREAM_URL));
     act(() => FakeEventSource.latest().open());

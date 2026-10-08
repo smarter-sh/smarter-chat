@@ -8,8 +8,10 @@ import {
   chatIntro,
   chatMessages2RequestMessages,
   convertMarkdownLinksToHTML,
+  convertMarkdownToHTML,
   examplePrompts,
   messageFactory,
+  messageHtml,
   sanitizeInput,
   toggleMetadataMessages,
 } from "./messages";
@@ -74,6 +76,62 @@ describe("convertMarkdownLinksToHTML, with images", () => {
   it("displays images and links in the same message", () => {
     const html = convertMarkdownLinksToHTML("![a](/a.png) and [b](/b)");
     expect(html).toBe(`${link("/a.png", img("/a.png", "a"))} and ${link("/b", "b")}`);
+  });
+});
+
+describe("convertMarkdownToHTML", () => {
+  const link = (href: string, content: string) =>
+    `<a href="${href}" target="_blank" rel="noopener noreferrer">${content}</a>`;
+
+  it("renders a single paragraph without wrapping it, and keeps its line breaks", () => {
+    expect(convertMarkdownToHTML("**bold**, *italic*, ~~struck~~ and `code`\nnext line")).toBe(
+      "<strong>bold</strong>, <em>italic</em>, <del>struck</del> and <code>code</code><br>next line",
+    );
+  });
+
+  it("renders headings, lists, block quotes, tables and code blocks", () => {
+    const html = convertMarkdownToHTML(
+      "# Title\n\ntext\n\n- one\n- two\n\n1. first\n\n> quoted\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n```py\nx = 1 < 2\n```",
+    );
+    expect(html).toContain("<h1>Title</h1>");
+    expect(html).toContain("<p>text</p>");
+    expect(html).toContain("<ul>\n<li>one</li>\n<li>two</li>\n</ul>");
+    expect(html).toContain("<ol>\n<li>first</li>\n</ol>");
+    expect(html).toContain("<blockquote>\n<p>quoted</p>\n</blockquote>");
+    expect(html).toContain("<th>a</th>");
+    expect(html).toContain("<td>2</td>");
+    expect(html).toContain('<pre><code class="language-py">x = 1 &lt; 2\n</code></pre>');
+  });
+
+  it("renders links, bare urls and images as convertMarkdownLinksToHTML does", () => {
+    expect(convertMarkdownToHTML("See [the docs](https://docs.smarter.sh).")).toBe(
+      `See ${link("https://docs.smarter.sh", "the docs")}.`,
+    );
+    expect(convertMarkdownToHTML("visit https://example.com")).toBe(
+      `visit ${link("https://example.com", "https://example.com")}`,
+    );
+    expect(convertMarkdownToHTML("[![logo](/static/logo.png)](https://smarter.sh)")).toBe(
+      link("https://smarter.sh", '<img class="smarter-chat-image" src="/static/logo.png" alt="logo" loading="lazy">'),
+    );
+    expect(convertMarkdownToHTML("![dot](data:image/png;base64,iVBORw0KGgo=)")).toBe(
+      '<img class="smarter-chat-image" src="data:image/png;base64,iVBORw0KGgo=" alt="dot" loading="lazy">',
+    );
+  });
+
+  it("displays raw html as text, and does not link or display unsafe urls", () => {
+    expect(convertMarkdownToHTML('<img src=x onerror="alert(1)">')).toBe(
+      "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;",
+    );
+    expect(convertMarkdownToHTML("[click](javascript:alert(1))")).toBe("click");
+    expect(convertMarkdownToHTML("![x](data:image/svg+xml;base64,PHN2Zz4=)")).toBe("x");
+    expect(convertMarkdownToHTML("[![x](javascript:alert(1))](https://smarter.sh)")).not.toContain("<img");
+  });
+});
+
+describe("messageHtml", () => {
+  it("displays the user's messages as they were typed, and the others as markdown", () => {
+    expect(messageHtml("# not a heading", "user")).toBe("# not a heading");
+    expect(messageHtml("# a heading", "assistant")).toBe("<h1>a heading</h1>");
   });
 });
 

@@ -3,7 +3,7 @@
  * and the chat session's api calls, tool calls and plugin usage, as JSON, and optionally the
  * user's server logs, as they stream in.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactJsonView from "@microlink/react-json-view";
 
 import { useLogStream } from "../../lib/logStream";
@@ -17,6 +17,8 @@ interface ConsoleProps {
   config: ConsoleConfig;
   /** The url of the user's server log stream. Without it, there is no "Server Logs" tab. */
   logStreamUrl?: string | null;
+  /** Changes when a new chat session starts, which clears the server logs. */
+  resetKey?: number | string;
 }
 
 const MENU: { label: string; id: MenuItem }[] = [
@@ -27,13 +29,21 @@ const MENU: { label: string; id: MenuItem }[] = [
 ];
 const SERVER_LOGS = { label: "Server Logs", id: MenuItems.SERVER_LOGS };
 
-function Console({ config, logStreamUrl = null }: ConsoleProps) {
+function Console({ config, logStreamUrl = null, resetKey }: ConsoleProps) {
   // the server logs, when there are any, are first, and selected. Their stream stays connected,
   // so that the logs keep arriving while another tab is selected.
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem>(
     logStreamUrl ? MenuItems.SERVER_LOGS : MenuItems.CHAT_CONFIG,
   );
-  const logStream = useLogStream(logStreamUrl);
+  const { clear: clearLogs, ...logStream } = useLogStream(logStreamUrl);
+  const previousResetKey = useRef(resetKey);
+
+  useEffect(() => {
+    // a new chat session: its server logs start empty.
+    if (resetKey === previousResetKey.current) return;
+    previousResetKey.current = resetKey;
+    clearLogs();
+  }, [resetKey, clearLogs]);
   const menu = logStreamUrl ? [SERVER_LOGS, ...MENU] : MENU;
   const showLogs = selectedMenuItem === MenuItems.SERVER_LOGS && !!logStreamUrl;
   const selectedLabel = menu.find(({ id }) => id === selectedMenuItem)?.label ?? "";
@@ -77,7 +87,11 @@ function Console({ config, logStreamUrl = null }: ConsoleProps) {
                   ))}
                 </ul>
               </nav>
-              <div className="console-output rounded" role="log" aria-label="Console output">
+              <div
+                className={`console-output rounded ${showLogs ? "console-output-logs" : ""}`}
+                role="log"
+                aria-label="Console output"
+              >
                 <div className="console-output-content">
                   <p className="mb-0">
                     Last login: {shell.lastLogin} from {shell.ipAddress}

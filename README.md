@@ -10,11 +10,13 @@
 
 Smarter Chat is the React chat component of the [Smarter](https://smarter.sh) LLMClient prompt engineering
 workbench. Beside the chat, its Console displays the LLMClient's configuration, and the chat session's api calls,
-tool calls and plugin usage, and optionally streams your server logs. Drag the separator between the chat and the
-Console to resize them, or hide the Console. A toggle shows and hides the backend's own messages in the chat thread.
-While a prompt runs, its progress (LLM requests, tool, plugin and MCP server calls) is displayed in the thread, and a
-failed prompt is displayed with the LLM provider's error message. Markdown links and images in messages are rendered,
-and images are scaled to fit their chat bubble.
+tool calls and plugin usage, and optionally streams your server logs, in color, with long lines that scroll or wrap.
+Drag the separator between the chat and the Console to resize them, or hide the Console, which slides out to the right.
+The new chat button starts a new chat session, and clears the server logs. The Sandbox mode / Production mode button
+shows and hides the backend's own messages in the chat thread. While a prompt runs, its progress (LLM requests, tool,
+plugin and MCP server calls) is displayed in the thread, and a failed prompt is displayed with the LLM provider's error
+message. Responses are rendered as GitHub flavored markdown (headings, emphasis, lists, tables, block quotes, code,
+links and images), with raw html escaped, and images are scaled to fit their chat bubble.
 
 It is also published to npm as [@smarter.sh/ui-chat](https://www.npmjs.com/package/@smarter.sh/ui-chat), so that
 any web page can use a Smarter LLMClient as its chat backend: a Wordpress or Squarespace site, a Salesforce portal,
