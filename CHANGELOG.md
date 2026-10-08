@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.6.0-alpha.1](https://github.com/smarter-sh/smarter-chat/compare/v0.5.0...v0.6.0-alpha.1) (2026-10-08)
+
+### Features
+
+* highlight code blocks and explain max-token cutoffs ([8e625dd](https://github.com/smarter-sh/smarter-chat/commit/8e625dd5c7154026fd426aaff87f5e7c33d1e78c))
+
 ## [0.5.0](https://github.com/smarter-sh/smarter-chat/compare/v0.4.0...v0.5.0) (2026-10-08)
 
 ### Features
