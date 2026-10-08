@@ -11,9 +11,11 @@ import {
   PROMPT_URL,
   SESSION_KEY,
   config,
+  configWithCode,
   configWithImages,
   progressEvents,
   promptEventStream,
+  promptMaxTokensResponse,
   promptResponse,
   props,
 } from "@/mocks/fixtures";
@@ -109,6 +111,23 @@ describe("SmarterChat", () => {
     await screen.findByText(WELCOME);
     await send(user, "hello");
     expect(await screen.findByText("401 error: Incorrect API key provided.")).toBeInTheDocument();
+  });
+
+  it("explains an empty response that reached the max tokens, in sandbox mode", async () => {
+    server.use(
+      http.post(CONFIG_URL, () => HttpResponse.json({ data: config })),
+      http.post(PROMPT_URL, () => HttpResponse.json(promptMaxTokensResponse())),
+    );
+    const user = userEvent.setup();
+    render(<SmarterChat {...props} />);
+    await screen.findByText(WELCOME);
+    await send(user, "What is the weather in San Francisco?");
+
+    const explanation = await screen.findByText(/The LLM reached this LLMClient's max tokens of 256/);
+    expect(explanation).toHaveTextContent("so its response is empty. Raise defaultMaxTokens");
+
+    await user.click(screen.getByRole("button", { name: "Sandbox mode" }));
+    expect(screen.queryByText(/The LLM reached this LLMClient's max tokens/)).not.toBeInTheDocument();
   });
 
   it("displays a network failure in the thread", async () => {
@@ -290,6 +309,20 @@ describe("SmarterChat", () => {
     expect(screen.queryByRole("link", { name: "CS210 course banner" })).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: "the catalogue" })).toHaveClass("smarter-chat-image");
     expect(screen.getByRole("link", { name: "the catalogue" })).toHaveAttribute("href", "https://stackademy.edu");
+  });
+
+  it("highlights code blocks, and copies their code", async () => {
+    server.use(http.post(CONFIG_URL, () => HttpResponse.json({ data: configWithCode })));
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    render(<SmarterChat {...props} />);
+    const copy = await screen.findByRole("button", { name: "Copy code" });
+    expect(screen.getByText("python")).toHaveClass("smarter-chat-code-language");
+    expect(screen.getByText('"CS210"')).toHaveClass("hljs-string");
+
+    fireEvent.click(copy);
+    expect(writeText).toHaveBeenCalledWith('import stackademy\n\nstackademy.enroll("CS210")');
+    await waitFor(() => expect(copy).toHaveTextContent("Copied!"));
   });
 
   it("hides and shows the Console, and remembers it", async () => {

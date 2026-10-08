@@ -224,6 +224,34 @@ async function readPromptEventStream(
   return { json: json ?? {}, status: status ?? response.status };
 }
 
+interface CompletionUsage {
+  completion_tokens?: number;
+  completion_tokens_details?: { reasoning_tokens?: number };
+}
+
+/**
+ * A "smarter" message that explains a completion that the LLM stopped because it reached the
+ * LLMClient's max tokens, i.e. whose finish_reason is "length", or null. A reasoning model can
+ * spend all of its tokens reasoning, and then return an empty response, which is otherwise
+ * displayed as nothing at all.
+ */
+export function maxTokensMessage(completion: Record<string, unknown> | null | undefined): ApiMessage | null {
+  const choices = completion?.choices as
+    { finish_reason?: string; message?: { content?: string | null } }[] | undefined;
+  const choice = Array.isArray(choices) ? choices[0] : undefined;
+  if (choice?.finish_reason !== "length") return null;
+  const usage = completion?.usage as CompletionUsage | undefined;
+  const tokens = usage?.completion_tokens;
+  const reasoning = usage?.completion_tokens_details?.reasoning_tokens;
+  const limit = tokens ? ` of ${tokens} completion tokens` : "";
+  const spent = reasoning ? `, ${reasoning} of which it spent reasoning` : "";
+  const outcome = choice.message?.content ? "so its response is incomplete" : "so its response is empty";
+  return {
+    role: SenderRoleEnum.SMARTER,
+    content: `The LLM reached this LLMClient's max tokens${limit}${spent}, ${outcome}. Raise defaultMaxTokens in the LLMClient's manifest.`,
+  };
+}
+
 /** The result of a prompt, from the api's JSON and http status. */
 function promptResult(json: Record<string, unknown>, response: ResponseStatus): PromptResult {
   const body = parseBody(json);
@@ -231,7 +259,8 @@ function promptResult(json: Record<string, unknown>, response: ResponseStatus): 
   const ok = response.status >= 200 && response.status < 300;
 
   if (ok && (statusCode === undefined || statusCode === 200) && body) {
-    return { messages: smarterMessages(body), error: null };
+    const truncated = maxTokensMessage(body);
+    return { messages: truncated ? [...smarterMessages(body), truncated] : smarterMessages(body), error: null };
   }
 
   // a failed prompt: the provider's error, with the messages of the backend's response, if any.
