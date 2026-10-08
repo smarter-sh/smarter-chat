@@ -112,13 +112,21 @@ export const responseMessages: ApiMessage[] = [
   { role: "assistant", content: "We offer CS210 Artificial Intelligence, for $700.00." },
 ];
 
-/** The prompt api's response: an AWS Lambda style response, whose body is a JSON string. */
-export function promptResponse(messages: ApiMessage[] = responseMessages, statusCode = 200) {
+/**
+ * The prompt api's response: an AWS Lambda style response, whose body is a JSON string. The
+ * completion's fields, e.g. its choices and usage, can be overridden.
+ */
+export function promptResponse(
+  messages: ApiMessage[] = responseMessages,
+  statusCode = 200,
+  overrides: Record<string, unknown> = {},
+) {
   const completion = {
     id: "chatcmpl-123",
     object: "chat.completion",
     choices: [{ index: 0, finish_reason: "stop", message: messages[messages.length - 1] }],
     smarter: { plugins: ["stackademy_sql"], messages },
+    ...overrides,
   };
   return {
     data: {
@@ -129,6 +137,24 @@ export function promptResponse(messages: ApiMessage[] = responseMessages, status
     },
     api: "smarter.sh/v1",
   };
+}
+
+/**
+ * The response of a prompt that a reasoning model stopped at the LLMClient's max tokens: it spent
+ * them all reasoning, so its response is empty.
+ */
+export function promptMaxTokensResponse() {
+  const messages: ApiMessage[] = [
+    { role: "assistant", content: "" },
+    {
+      role: "smarter",
+      content: "openai prompt charges: 3538 prompt tokens, 256 completion tokens = 3794 total tokens charged.",
+    },
+  ];
+  return promptResponse(messages, 200, {
+    choices: [{ index: 0, finish_reason: "length", message: { role: "assistant", content: "" } }],
+    usage: { completion_tokens: 256, completion_tokens_details: { reasoning_tokens: 256 } },
+  });
 }
 
 /** A failed prompt's response: the provider's error, and the completion, with its smarter_error message. */
@@ -163,6 +189,21 @@ export const configWithImages = makeConfig({
       {
         role: "assistant",
         content: `Here is the course banner:\n\n![CS210 course banner](${IMAGE_DATA_URL})\n\nand the catalogue, linked:\n\n[![the catalogue](${IMAGE_DATA_URL})](https://stackademy.edu)`,
+      },
+    ],
+  },
+});
+
+/** A configuration whose history has a code block, which is highlighted, with a copy button. */
+export const configWithCode = makeConfig({
+  history: {
+    ...config.history,
+    chat_history: [
+      { role: "system", content: "You are a helpful assistant. DO NOT GUESS." },
+      { role: "user", content: "How do I enroll in CS210 from Python?" },
+      {
+        role: "assistant",
+        content: 'Like this:\n\n```python\nimport stackademy\n\nstackademy.enroll("CS210")\n```',
       },
     ],
   },

@@ -10,6 +10,7 @@ import DOMPurify from "dompurify";
 import { Marked, type Tokens } from "marked";
 
 import type { ApiMessage, ChatMessage } from "../types";
+import { codeBlockHtml } from "./code";
 import { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum, type MessageDirection } from "./enums";
 
 const HTML_ESCAPES: Record<string, string> = {
@@ -90,6 +91,10 @@ markdown.use({
     image({ href, text }: Tokens.Image): string {
       return imageUrlRegex.test(href) ? linkedImage(escapeHtml(href), text) : text;
     },
+    // highlighted, with a header of its language and a copy button. See code.ts.
+    code({ text, lang }: Tokens.Code): string {
+      return codeBlockHtml(text, lang);
+    },
   },
 });
 
@@ -100,7 +105,8 @@ function sanitize(html: string): string {
 
 /**
  * Html for a markdown message, e.g. an LLM's response: GitHub flavored markdown, i.e. headings,
- * emphasis, lists, tables, block quotes, code, links and images. Line breaks are kept.
+ * emphasis, lists, tables, block quotes, code, links and images. Line breaks are kept. Code blocks
+ * are syntax highlighted, as GitHub's are. See code.ts.
  *
  * Raw html is displayed as text, and links and images follow the rules of
  * convertMarkdownLinksToHTML. A message that is a single paragraph is not wrapped in one,

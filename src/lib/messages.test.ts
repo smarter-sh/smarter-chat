@@ -100,7 +100,12 @@ describe("convertMarkdownToHTML", () => {
     expect(html).toContain("<blockquote>\n<p>quoted</p>\n</blockquote>");
     expect(html).toContain("<th>a</th>");
     expect(html).toContain("<td>2</td>");
-    expect(html).toContain('<pre><code class="language-py">x = 1 &lt; 2\n</code></pre>');
+    expect(html).toContain('<div class="smarter-chat-code">');
+    expect(html).toContain('<span class="smarter-chat-code-language">py</span>');
+    expect(html).toContain('<button type="button" class="smarter-chat-code-copy" aria-label="Copy code">Copy</button>');
+    expect(html).toContain(
+      '<pre><code class="hljs language-py">x = <span class="hljs-number">1</span> &lt; <span class="hljs-number">2</span>\n</code></pre>',
+    );
   });
 
   it("renders links, bare urls and images as convertMarkdownLinksToHTML does", () => {

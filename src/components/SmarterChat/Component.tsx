@@ -5,7 +5,8 @@
  * the chat thread to the LLMClient's prompt api with each new message, and adds the response's
  * messages to the thread. Failed prompts are displayed in the thread, as "smarter_error" messages.
  * While a prompt runs, its progress (e.g. its tool calls and MCP server requests) is displayed in
- * the thread, and is replaced by the response's messages when it finishes.
+ * the thread, and is replaced by the response's messages when it finishes. Code blocks in messages
+ * are syntax highlighted, and have a copy button.
  *
  * The user can resize the chat and the Console by dragging the separator between them, and can
  * hide the Console, which slides out to the right. In sandbox mode, the thread also displays
@@ -30,6 +31,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } f
 
 import { DEFAULT_COOKIE_EXPIRATION, loggerPrefix, projectName, projectVersion } from "../../const";
 import { fetchConfig, fetchPrompt, type PromptProgressEvent } from "../../lib/api";
+import { copyCodeBlock } from "../../lib/code";
 import { cookieMetaFactory, setCookie } from "../../lib/cookie";
 import { MetadataRolesEnum, SenderRoleEnum } from "../../lib/enums";
 import { useChatWidth, useConsoleVisible } from "../../lib/layout";
@@ -164,6 +166,14 @@ function SmarterChat({
     editor?.setAttribute("role", "textbox");
     editor?.setAttribute("aria-multiline", "true");
     editor?.setAttribute("aria-label", "Message");
+  }, []);
+
+  useEffect(() => {
+    // messages are html strings, so their code blocks' copy buttons are handled here. See lib/code.ts.
+    const chatApp = chatAppRef.current;
+    const handleClick = (event: MouseEvent) => copyCodeBlock(event.target);
+    chatApp?.addEventListener("click", handleClick);
+    return () => chatApp?.removeEventListener("click", handleClick);
   }, []);
 
   const handleNewChat = () => {

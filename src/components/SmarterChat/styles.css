@@ -181,7 +181,7 @@ div.cs-message__html-content > :last-child {
   margin-bottom: 0;
 }
 
-div.cs-message__html-content :is(p, ul, ol, pre, blockquote, table) {
+div.cs-message__html-content :is(p, ul, ol, blockquote, table) {
   margin: 0 0 0.6em;
 }
 
@@ -220,19 +220,146 @@ div.cs-message__html-content code {
   background-color: rgba(0, 0, 0, 0.08);
 }
 
-div.cs-message__html-content pre {
-  padding: 0.6em 0.8em;
-  overflow-x: auto;
+/* code blocks, as GitHub displays them in its dark theme: a header with the language and a copy
+   button, and the highlighted code, which scrolls sideways rather than wrapping. See lib/code.ts. */
+div.cs-message__html-content .smarter-chat-code {
+  max-width: 100%;
+  margin: 0 0 0.6em;
+  overflow: hidden;
+  border: 1px solid #30363d;
   border-radius: 6px;
-  background-color: #171b20;
-  color: #d9e1ea;
+  background-color: #0d1117;
+  text-align: left;
+}
+
+div.cs-message__html-content .smarter-chat-code:last-child {
+  margin-bottom: 0;
+}
+
+div.cs-message__html-content .smarter-chat-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  padding: 0.3em 0.5em 0.3em 1em;
+  border-bottom: 1px solid #30363d;
+  background-color: #161b22;
+  color: #8b949e;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Helvetica,
+    Arial,
+    sans-serif;
+  font-size: 0.8em;
+}
+
+div.cs-message__html-content .smarter-chat-code-copy {
+  padding: 0.2em 0.6em;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  background-color: #21262d;
+  color: #c9d1d9;
+  font: inherit;
+  cursor: pointer;
+}
+
+div.cs-message__html-content .smarter-chat-code-copy:hover,
+div.cs-message__html-content .smarter-chat-code-copy:focus-visible {
+  border-color: #8b949e;
+  background-color: #30363d;
+  outline: none;
+}
+
+div.cs-message__html-content pre {
+  margin: 0;
+  padding: 1em;
+  overflow-x: auto;
+  background-color: #0d1117;
+  color: #c9d1d9;
   white-space: pre;
+  word-wrap: normal;
+  tab-size: 4;
 }
 
 div.cs-message__html-content pre code {
+  display: block;
   padding: 0;
+  border-radius: 0;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 0.85em;
+  line-height: 1.45;
   background-color: transparent;
+  color: inherit;
+}
+
+/* highlight.js's tokens, in GitHub's dark theme colors. */
+div.cs-message__html-content
+  .hljs
+  :is(.hljs-doctag, .hljs-keyword, .hljs-template-tag, .hljs-template-variable, .hljs-type, .hljs-variable.language_) {
+  color: #ff7b72;
+}
+div.cs-message__html-content .hljs :is(.hljs-title, .hljs-title.class_, .hljs-title.function_) {
+  color: #d2a8ff;
+}
+div.cs-message__html-content
+  .hljs
+  :is(
+    .hljs-attr,
+    .hljs-attribute,
+    .hljs-literal,
+    .hljs-meta,
+    .hljs-number,
+    .hljs-operator,
+    .hljs-selector-attr,
+    .hljs-selector-class,
+    .hljs-selector-id,
+    .hljs-variable
+  ) {
+  color: #79c0ff;
+}
+div.cs-message__html-content .hljs :is(.hljs-string, .hljs-regexp, .hljs-meta .hljs-string) {
+  color: #a5d6ff;
+}
+div.cs-message__html-content .hljs :is(.hljs-built_in, .hljs-symbol) {
+  color: #ffa657;
+}
+div.cs-message__html-content .hljs :is(.hljs-comment, .hljs-code, .hljs-formula) {
+  color: #8b949e;
+}
+div.cs-message__html-content .hljs :is(.hljs-name, .hljs-quote, .hljs-selector-tag, .hljs-selector-pseudo) {
+  color: #7ee787;
+}
+div.cs-message__html-content .hljs .hljs-meta .hljs-keyword {
+  color: #ff7b72;
+}
+div.cs-message__html-content .hljs .hljs-subst {
+  color: #c9d1d9;
+}
+div.cs-message__html-content .hljs .hljs-section {
+  color: #1f6feb;
+  font-weight: bold;
+}
+div.cs-message__html-content .hljs .hljs-bullet {
+  color: #f2cc60;
+}
+div.cs-message__html-content .hljs .hljs-emphasis {
+  color: #c9d1d9;
+  font-style: italic;
+}
+div.cs-message__html-content .hljs .hljs-strong {
+  color: #c9d1d9;
+  font-weight: bold;
+}
+div.cs-message__html-content .hljs .hljs-addition {
+  color: #aff5b4;
+  background-color: #033a16;
+}
+div.cs-message__html-content .hljs .hljs-deletion {
+  color: #ffdcd7;
+  background-color: #67060c;
 }
 
 div.cs-message__html-content blockquote {

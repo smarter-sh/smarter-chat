@@ -10,6 +10,7 @@ import {
   config,
   progressEvents,
   promptErrorResponse,
+  promptMaxTokensResponse,
   promptEventStream,
   promptResponse,
   responseMessages,
@@ -22,6 +23,7 @@ import {
   errorMessage,
   fetchConfig,
   fetchPrompt,
+  maxTokensMessage,
   readEventStream,
   requestHeadersFactory,
   urlFactory,
@@ -134,6 +136,17 @@ describe("fetchPrompt", () => {
     expect(result).toEqual({ messages: [{ role: "smarter_error", content: "Server error" }], error: "Server error" });
   });
 
+  it("adds a smarter message when the LLM reached the max tokens", async () => {
+    server.use(http.post(PROMPT_URL, () => HttpResponse.json(promptMaxTokensResponse())));
+    const result = await fetchPrompt(config, [], cookies, context);
+    expect(result.error).toBeNull();
+    expect(result.messages.at(-1)).toEqual({
+      role: "smarter",
+      content:
+        "The LLM reached this LLMClient's max tokens of 256 completion tokens, 256 of which it spent reasoning, so its response is empty. Raise defaultMaxTokens in the LLMClient's manifest.",
+    });
+  });
+
   it("treats an unparsable body as an error", async () => {
     server.use(http.post(PROMPT_URL, () => HttpResponse.json({ data: { statusCode: 200, body: "{not json" } })));
     const result = await fetchPrompt(config, [], cookies, context);
@@ -237,6 +250,24 @@ describe("readEventStream", () => {
       ["message", "c"],
       ["message", "last"],
     ]);
+  });
+});
+
+describe("maxTokensMessage", () => {
+  it("explains a response that the max tokens cut off", () => {
+    const completion = {
+      choices: [{ finish_reason: "length", message: { content: "It is sunny in" } }],
+      usage: { completion_tokens: 512 },
+    };
+    expect(maxTokensMessage(completion)?.content).toBe(
+      "The LLM reached this LLMClient's max tokens of 512 completion tokens, so its response is incomplete. Raise defaultMaxTokens in the LLMClient's manifest.",
+    );
+  });
+
+  it("is null for a completion that finished, or that has no choices", () => {
+    expect(maxTokensMessage({ choices: [{ finish_reason: "stop", message: { content: "Done." } }] })).toBeNull();
+    expect(maxTokensMessage({})).toBeNull();
+    expect(maxTokensMessage(null)).toBeNull();
   });
 });
 
