@@ -3,8 +3,12 @@
  * it, and turning it back into the api's messages.
  *
  * Messages are displayed as html (by @chatscope/chat-ui-kit-react). Their text, which comes from the
- * user and from the LLM, is escaped, and only markdown images and links become html.
+ * user and from the LLM, is escaped. The user's messages are displayed as they were typed, except
+ * for their markdown images and links. The other messages, e.g. the LLM's responses, are markdown.
  */
+import DOMPurify from "dompurify";
+import { Marked, type Tokens } from "marked";
+
 import type { ApiMessage, ChatMessage } from "../types";
 import { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum, type MessageDirection } from "./enums";
 
@@ -26,6 +30,8 @@ const URL_PATTERN = String.raw`(?:https?:\/\/|\/)[^\s)"]+`;
 const IMAGE_URL_PATTERN = String.raw`(?:${URL_PATTERN}|data:image\/(?:png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+)`;
 const IMAGE_PATTERN = String.raw`!\[([^\]]*)\]\((${IMAGE_URL_PATTERN})\)`;
 
+const urlRegex = new RegExp(String.raw`^${URL_PATTERN}$`);
+const imageUrlRegex = new RegExp(String.raw`^${IMAGE_URL_PATTERN}$`);
 const linkedImageRegex = new RegExp(String.raw`\[${IMAGE_PATTERN}\]\((${URL_PATTERN})\)`, "g");
 const imageRegex = new RegExp(IMAGE_PATTERN, "g");
 const linkRegex = new RegExp(String.raw`\[([^\]]+)\]\((${URL_PATTERN})\)`, "g");
@@ -53,15 +59,68 @@ function image(src: string, alt: string): string {
 export function convertMarkdownLinksToHTML(text: string): string {
   return escapeHtml(text)
     .replace(linkedImageRegex, (_match, alt: string, src: string, href: string) => anchor(href, image(src, alt)))
-    .replace(imageRegex, (_match, alt: string, src: string) =>
-      src.startsWith("data:") ? image(src, alt) : anchor(src, image(src, alt)),
-    )
+    .replace(imageRegex, (_match, alt: string, src: string) => linkedImage(src, alt))
     .replace(linkRegex, (_match, label: string, href: string) => anchor(href, label));
+}
+
+/** An image, which opens at full size in a new tab, unless it's a data url. */
+function linkedImage(src: string, alt: string): string {
+  return src.startsWith("data:") ? image(src, alt) : anchor(src, image(src, alt));
+}
+
+// GitHub flavored markdown, in which a line break is a line break, as it is in a chat.
+const markdown = new Marked({ gfm: true, breaks: true, async: false });
+markdown.use({
+  renderer: {
+    // raw html is displayed as text.
+    html({ text }: Tokens.HTML | Tokens.Tag): string {
+      return escapeHtml(text);
+    },
+    link({ href, tokens }: Tokens.Link): string {
+      const [only] = tokens;
+      if (tokens.length === 1 && only.type === "image") {
+        // a linked image: the image, without the link that it would otherwise have.
+        const { href: src, text: alt } = only as Tokens.Image;
+        if (urlRegex.test(href) && imageUrlRegex.test(src))
+          return anchor(escapeHtml(href), image(escapeHtml(src), alt));
+      }
+      const content = this.parser.parseInline(tokens);
+      return urlRegex.test(href) ? anchor(escapeHtml(href), content) : content;
+    },
+    image({ href, text }: Tokens.Image): string {
+      return imageUrlRegex.test(href) ? linkedImage(escapeHtml(href), text) : text;
+    },
+  },
+});
+
+/** The markdown renderer's html, without anything that could run a script. */
+function sanitize(html: string): string {
+  return DOMPurify.sanitize(html, { ADD_ATTR: ["target"] });
+}
+
+/**
+ * Html for a markdown message, e.g. an LLM's response: GitHub flavored markdown, i.e. headings,
+ * emphasis, lists, tables, block quotes, code, links and images. Line breaks are kept.
+ *
+ * Raw html is displayed as text, and links and images follow the rules of
+ * convertMarkdownLinksToHTML. A message that is a single paragraph is not wrapped in one,
+ * so that its chat bubble stays as compact as the text.
+ */
+export function convertMarkdownToHTML(text: string): string {
+  const html = (markdown.parse(text) as string).trim();
+  const paragraph = /^<p>([\s\S]*)<\/p>$/.exec(html);
+  const unwrapped = paragraph && !paragraph[1].includes("<p>") ? paragraph[1] : html;
+  return sanitize(unwrapped);
 }
 
 /** The direction of a message from the given sender. */
 export function directionOf(sender: string): MessageDirection {
   return sender === SenderRoleEnum.USER ? MessageDirectionEnum.OUTGOING : MessageDirectionEnum.INCOMING;
+}
+
+/** Html for a message's text: the user's as they typed it, and the others as markdown. */
+export function messageHtml(content: string, sender: string): string {
+  return sender === SenderRoleEnum.USER ? convertMarkdownLinksToHTML(content) : convertMarkdownToHTML(content);
 }
 
 /**
@@ -76,7 +135,7 @@ export function messageFactory(
 ): ChatMessage {
   const display = typeof content === "string" && content !== "";
   return {
-    message: display ? convertMarkdownLinksToHTML(content) : "",
+    message: display ? messageHtml(content, sender) : "",
     content: content ?? null,
     direction,
     sender,
@@ -93,12 +152,12 @@ export function chatRestoreFromBackend(chatHistory: ApiMessage[] | null | undefi
     .map((message) => messageFactory(message.content, message.role, message));
 }
 
-/** Example prompts, which help the user to get started. */
+/** Example prompts, which help the user to get started, as a markdown list. */
 export function examplePrompts(prompts: string[] | null | undefined): string {
   if (!prompts || prompts.length === 0) {
     return "";
   }
-  return "Some example prompts to get you started:\r\n\r\n" + prompts.map((prompt) => `${prompt}\r\n`).join("");
+  return "Some example prompts to get you started:\n\n" + prompts.map((prompt) => `- ${prompt}\n`).join("");
 }
 
 /** The thread of a new chat session: the system role, the welcome message, and example prompts. */

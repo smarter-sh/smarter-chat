@@ -8,18 +8,18 @@
  * the thread, and is replaced by the response's messages when it finishes.
  *
  * The user can resize the chat and the Console by dragging the separator between them, and can
- * hide the Console.
+ * hide the Console, which slides out to the right. In sandbox mode, the thread also displays
+ * Smarter's system, tool and meta data messages. In production mode, it displays only the
+ * conversation, as the LLMClient's users see it. A new chat also clears the Console's server logs.
  *
  * This is the component that the @smarter.sh/ui-chat npm package exports, and that the Smarter web
  * console's LLMClient prompt workbench renders. See main.tsx.
  */
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import {
-  AddUserButton,
-  ArrowButton,
+  Button,
   ChatContainer,
   ConversationHeader,
-  InfoButton,
   MainContainer,
   Message,
   MessageInput,
@@ -44,6 +44,7 @@ import type { ChatConfig, ChatCookies, ChatMessage, ClientContext, SmarterChatPr
 import AppTitle from "../AppTitle";
 import Console from "../Console";
 import ErrorBoundary from "../ErrorBoundary";
+import { ConsoleIcon, NewChatIcon, ProductionIcon, SandboxIcon } from "./icons";
 import "./styles.css";
 
 /** The css class of a message, by its sender. */
@@ -83,6 +84,8 @@ function SmarterChat({
   const [isTyping, setIsTyping] = useState(false);
   const [progress, setProgress] = useState<PromptProgressEvent[]>([]);
   const [consoleVisible, setConsoleVisible] = useConsoleVisible();
+  // counts the new chats, which clear the Console's server logs.
+  const [chatCount, setChatCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatAppRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -166,6 +169,7 @@ function SmarterChat({
   const handleNewChat = () => {
     setCookie(cookies.sessionCookie, "");
     setConfig(null);
+    setChatCount((count) => count + 1);
     void startChat();
   };
 
@@ -262,23 +266,35 @@ function SmarterChat({
                   <ConversationHeader>
                     <ConversationHeader.Content userName={headerName} info={isReady ? info : ""} />
                     <ConversationHeader.Actions>
-                      <AddUserButton onClick={handleNewChat} title="Start a new chat" aria-label="Start a new chat" />
+                      {toggleMetadata && (
+                        <Button
+                          className="smarter-chat-toolbar-button smarter-chat-mode-toggle"
+                          icon={showMetadata ? <SandboxIcon /> : <ProductionIcon />}
+                          onClick={handleToggleMetadata}
+                          title={
+                            showMetadata
+                              ? "Sandbox mode: Smarter's system, tool and meta data messages are displayed. Click for production mode."
+                              : "Production mode: the conversation is displayed as its users see it. Click for sandbox mode."
+                          }
+                        >
+                          {showMetadata ? "Sandbox mode" : "Production mode"}
+                        </Button>
+                      )}
+                      <Button
+                        className="smarter-chat-toolbar-button"
+                        icon={<NewChatIcon />}
+                        onClick={handleNewChat}
+                        title="Start a new chat"
+                        aria-label="Start a new chat"
+                      />
                       {showConsole && (
-                        <ArrowButton
-                          className="smarter-chat-console-toggle"
-                          direction={consoleVisible ? "right" : "left"}
+                        <Button
+                          className="smarter-chat-toolbar-button smarter-chat-console-toggle"
+                          icon={<ConsoleIcon visible={consoleVisible} />}
                           onClick={() => setConsoleVisible((visible) => !visible)}
                           title={consoleVisible ? "Hide the Console" : "Show the Console"}
                           aria-label="Show the Console"
                           aria-pressed={consoleVisible}
-                        />
-                      )}
-                      {toggleMetadata && (
-                        <InfoButton
-                          onClick={handleToggleMetadata}
-                          title="Toggle system meta data"
-                          aria-label="Toggle system meta data"
-                          aria-pressed={showMetadata}
                         />
                       )}
                     </ConversationHeader.Actions>
@@ -350,11 +366,16 @@ function SmarterChat({
           </div>
         </div>
         {isSplit && <div className="smarter-chat-separator" {...separatorProps} />}
-        {/* hidden, rather than removed, so that the Console keeps its tab and its streamed logs. */}
+        {/* hidden, rather than removed, so that the Console keeps its tab and its streamed logs, and
+            so that it can slide out of view, and back. See styles.css. */}
         {showConsole && (
-          <div className="smarter-chat-console" hidden={!consoleVisible}>
+          <div
+            className={`smarter-chat-console ${consoleVisible ? "" : "smarter-chat-console-hidden"}`}
+            aria-hidden={!consoleVisible}
+            inert={!consoleVisible}
+          >
             <ErrorBoundary>
-              <Console config={config} logStreamUrl={logStreamUrl} />
+              <Console config={config} logStreamUrl={logStreamUrl} resetKey={chatCount} />
             </ErrorBoundary>
           </div>
         )}

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -7,6 +7,7 @@ import { FakeEventSource, installFakes } from "@/mocks/fakes";
 import {
   CONFIG_URL,
   LOG_STREAM_URL,
+  bulkLogs,
   PROMPT_URL,
   SESSION_KEY,
   config,
@@ -46,7 +47,8 @@ describe("SmarterChat", () => {
     render(<SmarterChat {...props} />);
     expect(screen.getByText("Configuring workbench...")).toBeInTheDocument();
     expect(await screen.findByText(WELCOME)).toBeInTheDocument();
-    expect(screen.getByText(/^Some example prompts.*Do you offer any courses on AI\?/s)).toBeInTheDocument();
+    expect(screen.getByText("Some example prompts to get you started:")).toBeInTheDocument();
+    expect(screen.getByText("Do you offer any courses on AI?", { selector: "li" })).toBeInTheDocument();
     expect(screen.getByText("Stackademy v1.0.0")).toBeInTheDocument();
     expect(screen.getByText("openai gpt-4o-mini with 1 additional plugins")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "valid" })).toBeInTheDocument();
@@ -121,26 +123,27 @@ describe("SmarterChat", () => {
     expect(await screen.findByText("Failed to fetch")).toBeInTheDocument();
   });
 
-  it("hides and shows the backend's messages", async () => {
+  it("hides and shows the backend's messages, in production and sandbox mode", async () => {
     server.use(...chatHandlers);
     const user = userEvent.setup();
     render(<SmarterChat {...props} />);
     await screen.findByText(WELCOME);
     expect(screen.getByText(config.chatbot.default_system_role.trim())).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Toggle system meta data" }));
+    await user.click(screen.getByRole("button", { name: "Sandbox mode" }));
     expect(screen.queryByText(config.chatbot.default_system_role.trim())).not.toBeInTheDocument();
     expect(screen.getByText(WELCOME)).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Toggle system meta data" }));
+    await user.click(screen.getByRole("button", { name: "Production mode" }));
     expect(screen.getByText(config.chatbot.default_system_role.trim())).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sandbox mode" })).toBeInTheDocument();
   });
 
   it("has no metadata toggle unless asked for one", async () => {
     server.use(...chatHandlers);
     render(<SmarterChat {...props} toggleMetadata={false} />);
     await screen.findByText(WELCOME);
-    expect(screen.queryByRole("button", { name: "Toggle system meta data" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sandbox mode" })).not.toBeInTheDocument();
   });
 
   it("starts a new chat session without the old session's key", async () => {
@@ -272,7 +275,7 @@ describe("SmarterChat", () => {
     const user = userEvent.setup();
     render(<SmarterChat {...props} />);
     await screen.findByText(WELCOME);
-    await user.click(screen.getByRole("button", { name: "Toggle system meta data" }));
+    await user.click(screen.getByRole("button", { name: "Sandbox mode" }));
     await send(user, "hello");
     expect(await screen.findByText(`Stanley: ${progressEvents.at(-1)!.message}`)).toBeInTheDocument();
     expect(screen.queryByText("Calling tool stackademy_sql")).not.toBeInTheDocument();
@@ -328,6 +331,28 @@ describe("SmarterChat", () => {
     await screen.findByText(WELCOME);
     expect(screen.queryByRole("button", { name: "Show the Console" })).not.toBeInTheDocument();
     expect(screen.queryByRole("separator")).not.toBeInTheDocument();
+  });
+
+  it("clears the Console's server logs when a new chat starts", async () => {
+    installFakes();
+    server.use(...chatHandlers);
+    const user = userEvent.setup();
+    render(<SmarterChat {...props} logStreamUrl={LOG_STREAM_URL} />);
+    await screen.findByText(WELCOME);
+    const stream = FakeEventSource.latest();
+    act(() => stream.open());
+    act(() => stream.emit(bulkLogs, "bulk"));
+    const output = screen.getByRole("log", { name: "Console output" });
+    expect(output).toHaveTextContent("prompt started");
+
+    await user.click(screen.getByRole("button", { name: "Start a new chat" }));
+    await screen.findByText(WELCOME);
+    expect(output).not.toHaveTextContent("prompt started");
+    expect(output).toHaveTextContent("Streaming server logs... There are none yet.");
+    // a reconnection replays the history, whose older records stay cleared.
+    act(() => stream.emit(bulkLogs, "bulk"));
+    expect(output).not.toHaveTextContent("prompt started");
+    vi.unstubAllGlobals();
   });
 
   it("passes the log stream's url to the Console", async () => {

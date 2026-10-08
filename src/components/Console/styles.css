@@ -38,26 +38,75 @@ div.app-container {
   font-size: 16px;
 }
 
+/* the server logs, in the palette and font of the Smarter web console's log viewer, which is an
+   xterm.js terminal. See lib/ansi.ts. */
+.console-output.console-output-logs {
+  background-color: #171b20;
+  color: #d9e1ea;
+}
+
 .console-server-logs {
-  white-space: pre-wrap;
-  word-break: break-word;
+  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.console-server-logs-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0;
 }
 
 .console-server-logs-status {
-  color: #a6e22e;
+  color: #7bd88f;
 }
 
-.console-log-level {
-  font-weight: bold;
+.console-server-logs-wrap-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border: 1px solid #323a45;
+  border-radius: 4px;
+  background-color: #22272e;
+  color: #8b98a7;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
 }
 
-.console-log-warning .console-log-level {
-  color: #e6db74;
+.console-server-logs-wrap-toggle:hover,
+.console-server-logs-wrap-toggle:focus-visible {
+  color: #d9e1ea;
 }
 
-.console-log-error .console-log-level,
-.console-log-critical .console-log-level {
-  color: #f92672;
+.console-server-logs-wrap-toggle[aria-pressed="true"] {
+  border-color: #78dce8;
+  color: #78dce8;
+}
+
+/* long lines scroll horizontally, unless they wrap. */
+.console-server-logs-lines {
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.console-server-logs-wrap .console-server-logs-lines {
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* each line is as wide as the longest, so that the horizontal scrolling is the same for all. */
+.console-log-line {
+  min-width: max-content;
+}
+
+.console-server-logs-wrap .console-log-line {
+  min-width: 0;
 }
 
 .console-empty {
