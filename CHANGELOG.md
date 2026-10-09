@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.6.0-alpha.3](https://github.com/smarter-sh/smarter-chat/compare/v0.6.0-alpha.2...v0.6.0-alpha.3) (2026-10-09)
+
+### Features
+
+* draw mermaid diagrams and tie server logs to chat mode ([1979b87](https://github.com/smarter-sh/smarter-chat/commit/1979b8740273c31fbf644f2d0d16409583da124a))
+
 ## [0.6.0-alpha.2](https://github.com/smarter-sh/smarter-chat/compare/v0.6.0-alpha.1...v0.6.0-alpha.2) (2026-10-09)
 
 ### Features
