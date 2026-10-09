@@ -71,6 +71,7 @@
     "@microlink/react-json-view": "^1.31.40",
     "dompurify": "^3.2.7",
     "highlight.js": "^11.12.0",
+    "katex": "^0.18.7",
     "marked": "^14.0.0"
   },
   "peerDependencies": {

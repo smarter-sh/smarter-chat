@@ -256,6 +256,13 @@ describe("SmarterChat", () => {
     const last = progressEvents.at(-1)!.message;
     expect(screen.getAllByText(last).length).toBeGreaterThan(0);
     expect(screen.getByText(`Stanley: ${last}`)).toBeInTheDocument();
+    // the current step has a spinner, and the steps before it have a check mark. Both are css.
+    // eslint-disable-next-line testing-library/no-node-access -- the steps are styled by their css class.
+    const steps = Array.from(document.querySelectorAll("section.smarter-progress-message"));
+    expect(steps.map((step) => step.classList.contains("smarter-progress-message-active"))).toEqual(
+      progressEvents.map((_, index) => index === progressEvents.length - 1),
+    );
+    expect(steps.slice(0, -1).every((step) => step.classList.contains("smarter-progress-message-done"))).toBe(true);
 
     finish();
     expect(await screen.findByText("We offer CS210 Artificial Intelligence, for $700.00.")).toBeInTheDocument();

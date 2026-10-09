@@ -68,10 +68,26 @@ const resolve = {
   },
 };
 
+/**
+ * Vite Plugin: withoutKatexCss
+ *
+ * Leaves KaTeX's css, which src/lib/math.ts imports, out of the library's ui-chat.css. Library mode
+ * inlines every asset, and KaTeX's 60 font files would add 1.5 MB to the css of every page that
+ * embeds the chat. Instead, pages that display math import "katex/dist/katex.min.css" themselves,
+ * and their bundler emits the fonts as files, which browsers download only when they are used.
+ */
+const KATEX_CSS = "katex/dist/katex.min.css";
+const withoutKatexCss: PluginOption = {
+  name: "without-katex-css",
+  enforce: "pre",
+  resolveId: (id: string) => (id === KATEX_CSS ? `\0${KATEX_CSS}` : undefined),
+  load: (id: string) => (id === `\0${KATEX_CSS}` ? "" : undefined),
+};
+
 /** The npm library: @smarter.sh/ui-chat. */
 function libraryConfig(): UserConfig {
   return {
-    plugins: [react()],
+    plugins: [react(), withoutKatexCss],
     resolve,
     build: {
       outDir: "dist",

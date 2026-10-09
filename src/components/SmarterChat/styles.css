@@ -426,15 +426,81 @@ section.smarter-error-message .cs-message__content {
   text-align: left;
 }
 
-/* a step of the running prompt, e.g. a tool call, until its response arrives. */
+/* a step of the running prompt, e.g. a tool call, until its response arrives. Larger than the
+   response's messages, and in a warmer amber, so that it reads as work in progress. The current
+   step has a spinner and a pulsing border. The steps before it have a check mark. */
 section.smarter-progress-message .cs-message__content {
-  color: brown !important;
-  background-color: transparent;
-  border: 1px dashed brown;
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 0.8em 1.1em;
+  color: #8a3b12 !important;
+  background-color: #fff4dc;
+  border: 2px dashed #d2691e;
   border-radius: 10px;
   font-family: "Courier New", Courier, monospace;
+  font-size: 1.15em;
   font-style: italic;
-  opacity: 0.85;
+  font-weight: bold;
+  text-align: left;
+}
+
+section.smarter-progress-message .cs-message__content::before {
+  content: "";
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 1.2em;
+  height: 1.2em;
+}
+
+section.smarter-progress-message-active .cs-message__content {
+  animation: smarter-progress-pulse 1.6s ease-in-out infinite;
+}
+
+section.smarter-progress-message-active .cs-message__content::before {
+  border: 3px solid rgba(210, 105, 30, 0.25);
+  border-top-color: #d2691e;
+  border-radius: 50%;
+  animation: smarter-progress-spin 0.8s linear infinite;
+}
+
+section.smarter-progress-message-done .cs-message__content {
+  opacity: 0.7;
+}
+
+section.smarter-progress-message-done .cs-message__content::before {
+  content: "\2713";
+  color: #d2691e;
+  font-style: normal;
+  line-height: 1.2em;
+  text-align: center;
+}
+
+@keyframes smarter-progress-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes smarter-progress-pulse {
+  0%,
+  100% {
+    border-color: #d2691e;
+    box-shadow: 0 0 0 0 rgba(210, 105, 30, 0.45);
+  }
+  50% {
+    border-color: #ff8c1a;
+    box-shadow: 0 0 0 5px rgba(210, 105, 30, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  section.smarter-progress-message-active .cs-message__content,
+  section.smarter-progress-message-active .cs-message__content::before {
+    animation: none;
+  }
 }
 
 /* markdown images, sized to fit their chat bubble. See lib/messages.ts. */

@@ -5,7 +5,8 @@
  * the chat thread to the LLMClient's prompt api with each new message, and adds the response's
  * messages to the thread. Failed prompts are displayed in the thread, as "smarter_error" messages.
  * While a prompt runs, its progress (e.g. its tool calls and MCP server requests) is displayed in
- * the thread, and is replaced by the response's messages when it finishes. Code blocks in messages
+ * the thread, with a spinner beside its current step, and is replaced by the response's messages
+ * when it finishes. Code blocks in messages
  * are syntax highlighted, and have a copy button.
  *
  * The user can resize the chat and the Console by dragging the separator between them, and can
@@ -344,7 +345,11 @@ function SmarterChat({
                       progress.map((event, index) => (
                         <Message
                           key={`progress-${index}`}
-                          className="smarter-progress-message"
+                          className={`smarter-progress-message ${
+                            index === progress.length - 1
+                              ? "smarter-progress-message-active"
+                              : "smarter-progress-message-done"
+                          }`}
                           model={{
                             message: progressMessage(event),
                             sender: SenderRoleEnum.SMARTER,

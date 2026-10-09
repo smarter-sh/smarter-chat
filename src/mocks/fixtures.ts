@@ -209,6 +209,25 @@ export const configWithCode = makeConfig({
   },
 });
 
+/** A configuration whose history has math, in LaTeX, which is typeset: inline, and displayed. */
+export const configWithMath = makeConfig({
+  history: {
+    ...config.history,
+    chat_history: [
+      { role: "system", content: "You are a helpful assistant. DO NOT GUESS." },
+      { role: "user", content: "What is the Fibonacci sequence?" },
+      {
+        role: "assistant",
+        content: String.raw`Each term is the sum of the two before it: \(F_n = F_{n-1} + F_{n-2}\), with \(F_0 = 0\) and \(F_1 = 1\). The ratio of consecutive terms approaches the golden ratio:
+
+\[
+\varphi = \lim_{n \to \infty} \frac{F_{n+1}}{F_n} = \frac{1 + \sqrt{5}}{2} \approx 1.618
+\]`,
+      },
+    ],
+  },
+});
+
 /** The progress of a prompt that calls a tool and an MCP server, as the prompt api streams it. */
 export const progressEvents = [
   { type: "llm_request", message: "Sending the prompt to the LLM", iteration: 1 },

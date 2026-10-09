@@ -16,7 +16,8 @@ The new chat button starts a new chat session, and clears the server logs. The S
 shows and hides the backend's own messages in the chat thread. While a prompt runs, its progress (LLM requests, tool,
 plugin and MCP server calls) is displayed in the thread, and a failed prompt is displayed with the LLM provider's error
 message. Responses are rendered as GitHub flavored markdown (headings, emphasis, lists, tables, block quotes, code,
-links and images), with raw html escaped, and images are scaled to fit their chat bubble.
+links and images), with raw html escaped, and images are scaled to fit their chat bubble. Math, written in LaTeX as
+`\( ... \)` inline, or `\[ ... \]` or `$$ ... $$` displayed, is typeset by [KaTeX](https://katex.org).
 
 It is also published to npm as [@smarter.sh/ui-chat](https://www.npmjs.com/package/@smarter.sh/ui-chat), so that
 any web page can use a Smarter LLMClient as its chat backend: a Wordpress or Squarespace site, a Salesforce portal,
@@ -36,6 +37,8 @@ npm install @smarter.sh/ui-chat
 import { createRoot } from "react-dom/client";
 import { SmarterChat } from "@smarter.sh/ui-chat";
 import "@smarter.sh/ui-chat/dist/ui-chat.css";
+// the stylesheet and fonts of math in the responses. katex is installed with @smarter.sh/ui-chat.
+import "katex/dist/katex.min.css";
 
 createRoot(document.getElementById("chat")!).render(
   <SmarterChat

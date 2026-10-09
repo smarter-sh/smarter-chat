@@ -8,6 +8,7 @@ import {
   historyHandlers,
   imageHandlers,
   loadingHandlers,
+  mathHandlers,
   promptErrorHandlers,
   streamingHandlers,
 } from "@/mocks/handlers";
@@ -106,5 +107,16 @@ export const WithImages: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(await canvas.findByRole("img", { name: "CS210 course banner" })).toBeInTheDocument();
+  },
+};
+
+/** The assistant replied with math, in LaTeX, which is typeset: inline, and displayed. */
+export const WithMath: Story = {
+  parameters: { msw: { handlers: mathHandlers } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const paragraph = await canvas.findByText(/Each term is the sum of the two before it/, { selector: "p" });
+    await expect(paragraph.querySelectorAll(".katex")).toHaveLength(3);
+    await expect(canvasElement.querySelector(".katex-display")).toBeInTheDocument();
   },
 };
