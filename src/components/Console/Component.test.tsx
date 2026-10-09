@@ -87,6 +87,16 @@ describe("Console", () => {
     vi.unstubAllGlobals();
   });
 
+  it("streams the server logs at its log level, and reconnects when the level changes", () => {
+    installFakes();
+    const { rerender } = render(<Console config={config} logStreamUrl={LOG_STREAM_URL} logLevel="DEBUG" />);
+    expect(FakeEventSource.latest().url).toBe(`${LOG_STREAM_URL}?level=DEBUG`);
+    rerender(<Console config={config} logStreamUrl={LOG_STREAM_URL} logLevel={null} />);
+    expect(FakeEventSource.instances).toHaveLength(2);
+    expect(FakeEventSource.latest().url).toBe(LOG_STREAM_URL);
+    vi.unstubAllGlobals();
+  });
+
   it("clears the server logs when its reset key changes", () => {
     installFakes();
     const { rerender } = render(<Console config={config} logStreamUrl={LOG_STREAM_URL} resetKey={0} />);

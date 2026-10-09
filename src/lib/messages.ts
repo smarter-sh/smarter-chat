@@ -12,6 +12,7 @@ import { Marked, type Tokens } from "marked";
 import type { ApiMessage, ChatMessage } from "../types";
 import { codeBlockHtml } from "./code";
 import { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum, type MessageDirection } from "./enums";
+import { mathExtension } from "./math";
 
 const HTML_ESCAPES: Record<string, string> = {
   "&": "&amp;",
@@ -70,7 +71,9 @@ function linkedImage(src: string, alt: string): string {
 }
 
 // GitHub flavored markdown, in which a line break is a line break, as it is in a chat.
+// Math, in LaTeX, is typeset. See math.ts.
 const markdown = new Marked({ gfm: true, breaks: true, async: false });
+markdown.use(mathExtension);
 markdown.use({
   renderer: {
     // raw html is displayed as text.
@@ -98,15 +101,20 @@ markdown.use({
   },
 });
 
-/** The markdown renderer's html, without anything that could run a script. */
+/**
+ * The markdown renderer's html, without anything that could run a script. Math's MathML, which
+ * screen readers read, keeps its LaTeX source in a text-only annotation. See math.ts.
+ * (annotation-xml, which may contain html, is still removed.)
+ */
 function sanitize(html: string): string {
-  return DOMPurify.sanitize(html, { ADD_ATTR: ["target"] });
+  return DOMPurify.sanitize(html, { ADD_TAGS: ["semantics", "annotation"], ADD_ATTR: ["target", "encoding"] });
 }
 
 /**
  * Html for a markdown message, e.g. an LLM's response: GitHub flavored markdown, i.e. headings,
- * emphasis, lists, tables, block quotes, code, links and images. Line breaks are kept. Code blocks
- * are syntax highlighted, as GitHub's are. See code.ts.
+ * emphasis, lists, tables, block quotes, code, links and images, and math. Line breaks are kept. Code
+ * blocks are syntax highlighted, as GitHub's are. See code.ts. Math, in LaTeX, is typeset by KaTeX.
+ * See math.ts.
  *
  * Raw html is displayed as text, and links and images follow the rules of
  * convertMarkdownLinksToHTML. A message that is a single paragraph is not wrapped in one,

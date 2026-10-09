@@ -5,13 +5,16 @@
  * the chat thread to the LLMClient's prompt api with each new message, and adds the response's
  * messages to the thread. Failed prompts are displayed in the thread, as "smarter_error" messages.
  * While a prompt runs, its progress (e.g. its tool calls and MCP server requests) is displayed in
- * the thread, and is replaced by the response's messages when it finishes. Code blocks in messages
+ * the thread, with a spinner beside its current step, and is replaced by the response's messages
+ * when it finishes. Code blocks in messages
  * are syntax highlighted, and have a copy button.
  *
  * The user can resize the chat and the Console by dragging the separator between them, and can
  * hide the Console, which slides out to the right. In sandbox mode, the thread also displays
  * Smarter's system, tool and meta data messages. In production mode, it displays only the
- * conversation, as the LLMClient's users see it. A new chat also clears the Console's server logs.
+ * conversation, as the LLMClient's users see it. The Console's server logs follow the mode: DEBUG
+ * and above in sandbox mode, and the server's own log level in production mode. A new chat also
+ * clears the Console's server logs.
  *
  * This is the component that the @smarter.sh/ui-chat npm package exports, and that the Smarter web
  * console's LLMClient prompt workbench renders. See main.tsx.
@@ -27,25 +30,27 @@ import {
   MessageList,
   TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
-import { DEFAULT_COOKIE_EXPIRATION, loggerPrefix, projectName, projectVersion } from "../../const";
-import { fetchConfig, fetchPrompt, type PromptProgressEvent } from "../../lib/api";
-import { copyCodeBlock } from "../../lib/code";
-import { cookieMetaFactory, setCookie } from "../../lib/cookie";
-import { MetadataRolesEnum, SenderRoleEnum } from "../../lib/enums";
-import { useChatWidth, useConsoleVisible } from "../../lib/layout";
+import { DEFAULT_COOKIE_EXPIRATION, loggerPrefix, projectName, projectVersion } from "@/const";
+import { fetchConfig, fetchPrompt, type PromptProgressEvent } from "@/lib/api";
+import { copyCodeBlock } from "@/lib/code";
+import { renderMermaidDiagrams, toggleMermaidDiagram } from "@/lib/mermaid";
+import { cookieMetaFactory, setCookie } from "@/lib/cookie";
+import { MetadataRolesEnum, SenderRoleEnum } from "@/lib/enums";
+import { useChatWidth, useConsoleVisible } from "@/lib/layout";
+import { SANDBOX_LOG_LEVEL } from "@/lib/logStream";
 import {
   chatInit,
   chatMessages2RequestMessages,
   messageFactory,
   sanitizeInput,
   toggleMetadataMessages,
-} from "../../lib/messages";
-import type { ChatConfig, ChatCookies, ChatMessage, ClientContext, SmarterChatProps } from "../../types";
-import AppTitle from "../AppTitle";
-import Console from "../Console";
-import ErrorBoundary from "../ErrorBoundary";
+} from "@/lib/messages";
+import type { ChatConfig, ChatCookies, ChatMessage, ClientContext, SmarterChatProps } from "@/types";
+import AppTitle from "@/components/AppTitle";
+import Console from "@/components/Console";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { ConsoleIcon, NewChatIcon, ProductionIcon, SandboxIcon } from "./icons";
 import "./styles.css";
 
@@ -169,12 +174,19 @@ function SmarterChat({
   }, []);
 
   useEffect(() => {
-    // messages are html strings, so their code blocks' copy buttons are handled here. See lib/code.ts.
+    // messages are html strings, so their code blocks' copy buttons, and their diagrams' code
+    // buttons, are handled here. See lib/code.ts and lib/mermaid.ts.
     const chatApp = chatAppRef.current;
-    const handleClick = (event: MouseEvent) => copyCodeBlock(event.target);
+    const handleClick = (event: MouseEvent) => copyCodeBlock(event.target) || toggleMermaidDiagram(event.target);
     chatApp?.addEventListener("click", handleClick);
     return () => chatApp?.removeEventListener("click", handleClick);
   }, []);
+
+  useLayoutEffect(() => {
+    // mermaid code blocks are displayed as diagrams once they are in the page. A diagram that was
+    // displayed before is cached, and replaces its code before the browser paints. See lib/mermaid.ts.
+    void renderMermaidDiagrams(chatAppRef.current);
+  }, [messages, showMetadata]);
 
   const handleNewChat = () => {
     setCookie(cookies.sessionCookie, "");
@@ -344,7 +356,11 @@ function SmarterChat({
                       progress.map((event, index) => (
                         <Message
                           key={`progress-${index}`}
-                          className="smarter-progress-message"
+                          className={`smarter-progress-message ${
+                            index === progress.length - 1
+                              ? "smarter-progress-message-active"
+                              : "smarter-progress-message-done"
+                          }`}
                           model={{
                             message: progressMessage(event),
                             sender: SenderRoleEnum.SMARTER,
@@ -385,7 +401,12 @@ function SmarterChat({
             inert={!consoleVisible}
           >
             <ErrorBoundary>
-              <Console config={config} logStreamUrl={logStreamUrl} resetKey={chatCount} />
+              <Console
+                config={config}
+                logStreamUrl={logStreamUrl}
+                logLevel={showMetadata ? SANDBOX_LOG_LEVEL : null}
+                resetKey={chatCount}
+              />
             </ErrorBoundary>
           </div>
         )}

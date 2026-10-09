@@ -1,6 +1,6 @@
 {
   "name": "@smarter.sh/ui-chat",
-  "version": "0.6.0",
+  "version": "0.7.0-alpha.1",
   "description": "chatbot React.js component for the https://smarter.sh declarative, plugin-based AI resource management platform.",
   "homepage": "https://smarter.sh",
   "type": "module",
@@ -69,9 +69,11 @@
     "@chatscope/chat-ui-kit-react": "^2.1.1",
     "@chatscope/chat-ui-kit-styles": "^1.4.0",
     "@microlink/react-json-view": "^1.31.40",
-    "dompurify": "^3.2.7",
+    "dompurify": "^3.4.16",
     "highlight.js": "^11.12.0",
-    "marked": "^14.0.0"
+    "katex": "^0.18.7",
+    "marked": "^14.0.0",
+    "mermaid": "^11.17.2"
   },
   "peerDependencies": {
     "react": "^19",

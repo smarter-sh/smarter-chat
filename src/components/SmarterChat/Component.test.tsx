@@ -12,6 +12,7 @@ import {
   SESSION_KEY,
   config,
   configWithCode,
+  configWithDiagram,
   configWithImages,
   progressEvents,
   promptEventStream,
@@ -29,6 +30,8 @@ import {
 import { server } from "@test/server";
 
 import SmarterChat from "./Component";
+
+vi.mock("mermaid", async () => ({ default: (await import("@/mocks/mermaid")).fakeMermaid }));
 
 const WELCOME = "Welcome to Stackademy! How can I help you today?";
 
@@ -256,6 +259,13 @@ describe("SmarterChat", () => {
     const last = progressEvents.at(-1)!.message;
     expect(screen.getAllByText(last).length).toBeGreaterThan(0);
     expect(screen.getByText(`Stanley: ${last}`)).toBeInTheDocument();
+    // the current step has a spinner, and the steps before it have a check mark. Both are css.
+    // eslint-disable-next-line testing-library/no-node-access -- the steps are styled by their css class.
+    const steps = Array.from(document.querySelectorAll("section.smarter-progress-message"));
+    expect(steps.map((step) => step.classList.contains("smarter-progress-message-active"))).toEqual(
+      progressEvents.map((_, index) => index === progressEvents.length - 1),
+    );
+    expect(steps.slice(0, -1).every((step) => step.classList.contains("smarter-progress-message-done"))).toBe(true);
 
     finish();
     expect(await screen.findByText("We offer CS210 Artificial Intelligence, for $700.00.")).toBeInTheDocument();
@@ -323,6 +333,20 @@ describe("SmarterChat", () => {
     fireEvent.click(copy);
     expect(writeText).toHaveBeenCalledWith('import stackademy\n\nstackademy.enroll("CS210")');
     await waitFor(() => expect(copy).toHaveTextContent("Copied!"));
+  });
+
+  it("displays mermaid code blocks as diagrams, and shows their code", async () => {
+    server.use(http.post(CONFIG_URL, () => HttpResponse.json({ data: configWithDiagram })));
+    const user = userEvent.setup();
+    render(<SmarterChat {...props} />);
+    const diagram = await screen.findByRole("figure", { name: "Diagram" });
+    expect(screen.getByText("mermaid")).toHaveClass("smarter-chat-code-language");
+    expect(screen.getByText(/Browse the catalogue/, { selector: "pre code" })).not.toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Show the diagram's code" }));
+    expect(diagram).not.toBeVisible();
+    expect(screen.getByText(/Browse the catalogue/, { selector: "pre code" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Show the diagram" })).toHaveTextContent("Diagram");
   });
 
   it("hides and shows the Console, and remembers it", async () => {
@@ -394,7 +418,22 @@ describe("SmarterChat", () => {
     render(<SmarterChat {...props} logStreamUrl={LOG_STREAM_URL} />);
     await screen.findByText(WELCOME);
     expect(screen.getByRole("button", { name: "Server Logs" })).toHaveAttribute("aria-pressed", "true");
+    expect(FakeEventSource.latest().url).toBe(`${LOG_STREAM_URL}?level=DEBUG`);
+    vi.unstubAllGlobals();
+  });
+
+  it("streams DEBUG server logs in sandbox mode, and the server's log level in production mode", async () => {
+    installFakes();
+    server.use(...chatHandlers);
+    const user = userEvent.setup();
+    render(<SmarterChat {...props} logStreamUrl={LOG_STREAM_URL} />);
+    await screen.findByText(WELCOME);
+    expect(FakeEventSource.latest().url).toBe(`${LOG_STREAM_URL}?level=DEBUG`);
+
+    await user.click(screen.getByRole("button", { name: "Sandbox mode" }));
     expect(FakeEventSource.latest().url).toBe(LOG_STREAM_URL);
+    await user.click(screen.getByRole("button", { name: "Production mode" }));
+    expect(FakeEventSource.latest().url).toBe(`${LOG_STREAM_URL}?level=DEBUG`);
     vi.unstubAllGlobals();
   });
 });

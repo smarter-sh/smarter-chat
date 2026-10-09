@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import ReactJsonView from "@microlink/react-json-view";
 
-import { useLogStream } from "../../lib/logStream";
+import { logStreamUrlForLevel, useLogStream } from "@/lib/logStream";
 import { consoleData, type ConsoleConfig } from "./data";
 import { MenuItems, type MenuItem } from "./enums";
 import ServerLogs from "./ServerLogs";
@@ -17,6 +17,11 @@ interface ConsoleProps {
   config: ConsoleConfig;
   /** The url of the user's server log stream. Without it, there is no "Server Logs" tab. */
   logStreamUrl?: string | null;
+  /**
+   * The minimum log level of the server logs, e.g. "DEBUG" in sandbox mode. Without it, the server's
+   * own log level. A change reconnects the stream, which replays the history at the new level.
+   */
+  logLevel?: string | null;
   /** Changes when a new chat session starts, which clears the server logs. */
   resetKey?: number | string;
 }
@@ -29,13 +34,13 @@ const MENU: { label: string; id: MenuItem }[] = [
 ];
 const SERVER_LOGS = { label: "Server Logs", id: MenuItems.SERVER_LOGS };
 
-function Console({ config, logStreamUrl = null, resetKey }: ConsoleProps) {
+function Console({ config, logStreamUrl = null, logLevel = null, resetKey }: ConsoleProps) {
   // the server logs, when there are any, are first, and selected. Their stream stays connected,
   // so that the logs keep arriving while another tab is selected.
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem>(
     logStreamUrl ? MenuItems.SERVER_LOGS : MenuItems.CHAT_CONFIG,
   );
-  const { clear: clearLogs, ...logStream } = useLogStream(logStreamUrl);
+  const { clear: clearLogs, ...logStream } = useLogStream(logStreamUrlForLevel(logStreamUrl, logLevel));
   const previousResetKey = useRef(resetKey);
 
   useEffect(() => {
