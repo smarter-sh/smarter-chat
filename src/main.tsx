@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 
 import { loggerPrefix } from "@/const.tsx";
 import type { SmarterChatProps } from "@/types";
-import App from "./App.tsx";
+import App from "@/App.tsx";
 
 /*
  * The root element's attributes. See templates/react/smarter-chat.html, and

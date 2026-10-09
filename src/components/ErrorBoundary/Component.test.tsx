@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import ErrorBoundary from "./Component";
+import ErrorBoundary from "@/components/ErrorBoundary/Component";
 
 function Broken(): never {
   throw new Error("It broke.");

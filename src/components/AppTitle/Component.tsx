@@ -2,7 +2,7 @@
  * The chat's title: the LLMClient's app name and version, with icons for whether it is valid, and
  * whether it is deployed or is still in the sandbox.
  */
-import "./styles.css";
+import "@/components/AppTitle/styles.css";
 
 interface AppTitleProps {
   title: string;

@@ -3,7 +3,7 @@
  */
 import { Component, type ErrorInfo, type ReactNode } from "react";
 
-import { loggerPrefix } from "../../const";
+import { loggerPrefix } from "@/const";
 
 interface ErrorBoundaryProps {
   children: ReactNode;

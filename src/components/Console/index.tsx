@@ -1,3 +1,3 @@
-import Console from "./Component";
+import Console from "@/components/Console/Component";
 
 export default Console;

@@ -51,8 +51,8 @@ import type { ChatConfig, ChatCookies, ChatMessage, ClientContext, SmarterChatPr
 import AppTitle from "@/components/AppTitle";
 import Console from "@/components/Console";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { ConsoleIcon, NewChatIcon, ProductionIcon, SandboxIcon } from "./icons";
-import "./styles.css";
+import { ConsoleIcon, NewChatIcon, ProductionIcon, SandboxIcon } from "@/components/SmarterChat/icons";
+import "@/components/SmarterChat/styles.css";
 
 /** The css class of a message, by its sender. */
 function messageClassName(sender: string): string {

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { config, configWithHistory } from "@/mocks/fixtures";
 
-import Console from "./Component";
+import Console from "@/components/Console/Component";
 
 /** The Console: the LLMClient's configuration, and the chat session's histories, as JSON. */
 const meta = {

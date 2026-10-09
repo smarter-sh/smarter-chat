@@ -7,10 +7,10 @@ import { useEffect, useRef, useState } from "react";
 import ReactJsonView from "@microlink/react-json-view";
 
 import { logStreamUrlForLevel, useLogStream } from "@/lib/logStream";
-import { consoleData, type ConsoleConfig } from "./data";
-import { MenuItems, type MenuItem } from "./enums";
-import ServerLogs from "./ServerLogs";
-import "./styles.css";
+import { consoleData, type ConsoleConfig } from "@/components/Console/data";
+import { MenuItems, type MenuItem } from "@/components/Console/enums";
+import ServerLogs from "@/components/Console/ServerLogs";
+import "@/components/Console/styles.css";
 
 interface ConsoleProps {
   /** The LLMClient's configuration, from its config api. Empty until it loads. */

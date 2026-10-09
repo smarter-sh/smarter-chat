@@ -1,3 +1,3 @@
-import AppTitle from "./Component";
+import AppTitle from "@/components/AppTitle/Component";
 
 export default AppTitle;

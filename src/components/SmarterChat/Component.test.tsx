@@ -29,7 +29,7 @@ import {
 } from "@/mocks/handlers";
 import { server } from "@test/server";
 
-import SmarterChat from "./Component";
+import SmarterChat from "@/components/SmarterChat/Component";
 
 vi.mock("mermaid", async () => ({ default: (await import("@/mocks/mermaid")).fakeMermaid }));
 
