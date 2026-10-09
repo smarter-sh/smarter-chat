@@ -24,6 +24,13 @@ describe("stripTrailingFence", () => {
   });
 });
 
+describe("codeBlockHtml, for mermaid", () => {
+  it("marks a mermaid block, so that it can be displayed as a diagram", () => {
+    expect(codeBlockHtml("graph TD", "mermaid")).toMatch(/^<div class="smarter-chat-code smarter-chat-mermaid">/);
+    expect(codeBlockHtml("x = 1", "python")).toMatch(/^<div class="smarter-chat-code">/);
+  });
+});
+
 describe("highlightCode", () => {
   it("highlights the languages that highlight.js knows, by name or alias", () => {
     expect(highlightCode("import os", "python")).toBe('<span class="hljs-keyword">import</span> os');

@@ -62,6 +62,25 @@ const minify = {
   },
 };
 
+/**
+ * The vendor chunk: the packages that the app imports when it loads, which change less often than
+ * the app, so the browser can keep them cached when it changes. Mermaid is left out, as are the
+ * packages that only it uses, including its own copies of katex and marked, because it is imported
+ * only when a message has a diagram, and is downloaded only then. See src/lib/mermaid.ts.
+ */
+const VENDOR_PACKAGES = new Set([
+  ...Object.keys(packageJson.dependencies).filter((name) => name !== "mermaid"),
+  ...Object.keys(packageJson.peerDependencies),
+  "scheduler",
+]);
+
+function vendorChunk(id: string): string | undefined {
+  if (id.includes("/node_modules/mermaid/")) return undefined;
+  // the package of the innermost node_modules directory, e.g. "katex" or "@chatscope/chat-ui-kit-react".
+  const name = /.*\/node_modules\/((?:@[^/]+\/)?[^/]+)\//.exec(id)?.[1];
+  return name && VENDOR_PACKAGES.has(name) ? "vendor" : undefined;
+}
+
 const resolve = {
   alias: {
     "@": path.resolve(import.meta.dirname, "./src"),
@@ -102,12 +121,16 @@ function libraryConfig(): UserConfig {
         cssFileName: "ui-chat",
       },
       rolldownOptions: {
-        external: ["react", "react-dom", "react/jsx-runtime"],
+        // React is a peer dependency. Mermaid is a dependency that the library imports only when a
+        // message has a diagram, so it is left to the page's bundler, which splits it into chunks
+        // that are downloaded only then, rather than adding 1.2 MB, gzipped, to the library.
+        external: ["react", "react-dom", "react/jsx-runtime", "mermaid"],
         output: {
           globals: {
             react: "React",
             "react-dom": "ReactDOM",
             "react/jsx-runtime": "jsxRuntime",
+            mermaid: "mermaid",
           },
           minify,
         },
@@ -135,11 +158,7 @@ function appConfig(command: ConfigEnv["command"]): UserConfig {
           entryFileNames: "assets/[name]-[hash].js",
           chunkFileNames: "assets/[name]-[hash].js",
           assetFileNames: "assets/[name]-[hash][extname]",
-          // React and the chat's ui libraries change less often than this app, so the browser can
-          // keep them cached when it changes.
-          manualChunks(id: string) {
-            return id.includes("node_modules") ? "vendor" : undefined;
-          },
+          manualChunks: vendorChunk,
           minify,
         },
       },

@@ -10,6 +10,7 @@ import {
   bulkLogs,
   config,
   configWithHistory,
+  configWithDiagram,
   configWithImages,
   configWithMath,
   liveLog,
@@ -55,6 +56,12 @@ export const configErrorHandlers = [
 /** A chat session whose assistant replied with markdown images. */
 export const imageHandlers = [
   configHandler(configWithImages),
+  http.post(PROMPT_URL, () => HttpResponse.json(promptResponse())),
+];
+
+/** A chat session whose assistant replied with a mermaid diagram. */
+export const diagramHandlers = [
+  configHandler(configWithDiagram),
   http.post(PROMPT_URL, () => HttpResponse.json(promptResponse())),
 ];
 

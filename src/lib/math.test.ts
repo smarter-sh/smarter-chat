@@ -77,6 +77,27 @@ describe("convertMarkdownToHTML, with math", () => {
     expect(element.querySelector("ul, h1, h2")).toBeNull();
   });
 
+  it("displays an equation that follows a line of text, without a blank line between them", () => {
+    // the line of "=" would otherwise make the text and the equation's first side a setext heading.
+    const equation = "\\[\nx^2 + \\frac{b}{a}x\n=\n-\\frac{c}{a}\n\\]";
+    for (const markdown of [
+      `Add the square to both sides:\n${equation}\n\nNext.`,
+      `1. Add the square to both sides:\n${equation}\n2. Next.`,
+      "Subtract:\n$$\na\n-\nb\n$$",
+    ]) {
+      const element = typeset(markdown);
+      expect(element.querySelectorAll(".katex-display")).toHaveLength(1);
+      expect(element.querySelector("h1, h2")).toBeNull();
+      expect(element).toHaveTextContent(/^(Add the square to both sides:|Subtract:)/);
+    }
+  });
+
+  it("keeps setext headings without math", () => {
+    const element = typeset("Quadratics\n==========\n\nAnd more\n---\n\ntext");
+    expect(element.querySelector("h1")).toHaveTextContent("Quadratics");
+    expect(element.querySelector("h2")).toHaveTextContent("And more");
+  });
+
   it("displays \\[...\\] and $$...$$ within a line of text", () => {
     const element = typeset(String.raw`So \[a^2 + b^2 = c^2\] and $$x = 1$$ hold.`);
     expect(sources(element)).toEqual(["a^2 + b^2 = c^2", "x = 1"]);

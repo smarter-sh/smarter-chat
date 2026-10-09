@@ -4,7 +4,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeEventSource, installFakes } from "@/mocks/fakes";
 import { LOG_STREAM_URL, bulkLogs, liveLog } from "@/mocks/fixtures";
 
-import { MAX_LOG_EVENTS, useLogStream } from "./logStream";
+import { MAX_LOG_EVENTS, SANDBOX_LOG_LEVEL, logStreamUrlForLevel, useLogStream } from "./logStream";
+
+describe("logStreamUrlForLevel", () => {
+  it("adds the log level to the url, and leaves the url alone without one", () => {
+    expect(logStreamUrlForLevel(LOG_STREAM_URL, SANDBOX_LOG_LEVEL)).toBe(`${LOG_STREAM_URL}?level=DEBUG`);
+    expect(logStreamUrlForLevel(`${LOG_STREAM_URL}?level=INFO&x=1`, "DEBUG")).toBe(`${LOG_STREAM_URL}?level=DEBUG&x=1`);
+    expect(logStreamUrlForLevel("/dashboard/logs/api/stream/", "DEBUG")).toBe(
+      `${window.location.origin}/dashboard/logs/api/stream/?level=DEBUG`,
+    );
+    expect(logStreamUrlForLevel(LOG_STREAM_URL, null)).toBe(LOG_STREAM_URL);
+    expect(logStreamUrlForLevel(null, "DEBUG")).toBeNull();
+  });
+});
 
 describe("useLogStream", () => {
   beforeEach(() => installFakes());

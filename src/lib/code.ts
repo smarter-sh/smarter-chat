@@ -20,6 +20,9 @@ hljs.registerLanguage("powershell", powershell);
 
 export const CODE_BLOCK_CLASS = "smarter-chat-code";
 export const COPY_BUTTON_CLASS = "smarter-chat-code-copy";
+// a mermaid code block, which mermaid.ts displays as a diagram.
+export const MERMAID_BLOCK_CLASS = "smarter-chat-mermaid";
+const MERMAID_LANGUAGE = "mermaid";
 const COPY_LABEL = "Copy";
 const COPIED_LABEL = "Copied!";
 const COPIED_DURATION = 2000;
@@ -66,15 +69,17 @@ export function highlightCode(text: string, language: string): string {
 
 /**
  * Html for a fenced or indented code block: a header with its language and a copy button, and its
- * highlighted code.
+ * highlighted code. A mermaid block is also marked, so that it can be displayed as a diagram. See
+ * mermaid.ts.
  */
 export function codeBlockHtml(text: string, info?: string): string {
   const language = codeLanguage(info);
   const code = stripTrailingFence(text).replace(/\n$/, "");
   const known = !!language && !!hljs.getLanguage(language);
   const codeClass = known ? `hljs language-${escape(language)}` : "hljs";
+  const blockClass = language === MERMAID_LANGUAGE ? `${CODE_BLOCK_CLASS} ${MERMAID_BLOCK_CLASS}` : CODE_BLOCK_CLASS;
   return (
-    `<div class="${CODE_BLOCK_CLASS}">` +
+    `<div class="${blockClass}">` +
     `<div class="${CODE_BLOCK_CLASS}-header">` +
     `<span class="${CODE_BLOCK_CLASS}-language">${escape(language)}</span>` +
     `<button type="button" class="${COPY_BUTTON_CLASS}" aria-label="Copy code">${COPY_LABEL}</button>` +

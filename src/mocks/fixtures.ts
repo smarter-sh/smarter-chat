@@ -228,6 +228,23 @@ export const configWithMath = makeConfig({
   },
 });
 
+/** A configuration whose history has a mermaid code block, which is displayed as its diagram. */
+export const configWithDiagram = makeConfig({
+  history: {
+    ...config.history,
+    chat_history: [
+      { role: "system", content: "You are a helpful assistant. DO NOT GUESS." },
+      { role: "user", content: "How does enrollment work?" },
+      {
+        role: "assistant",
+        content:
+          "Like this:\n\n```mermaid\ngraph TD\n  A[Browse the catalogue] --> B{Prerequisites met?}\n" +
+          "  B -->|Yes| C[Enroll in CS210]\n  B -->|No| D[Take CS110 first]\n  D --> C\n```",
+      },
+    ],
+  },
+});
+
 /** The progress of a prompt that calls a tool and an MCP server, as the prompt api streams it. */
 export const progressEvents = [
   { type: "llm_request", message: "Sending the prompt to the LLM", iteration: 1 },

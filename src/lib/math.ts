@@ -50,8 +50,23 @@ function mathToken(type: MathToken["type"], raw: string, text: string, displayMo
   return { type, raw, text, displayMode };
 }
 
-/** The marked extension that tokenizes and renders math. See convertMarkdownToHTML in messages.ts. */
+/**
+ * The marked extension that tokenizes and renders math. See convertMarkdownToHTML in messages.ts.
+ *
+ * A display equation that follows a line of text, without a blank line between them, would be read
+ * as part of that paragraph, and a line of its own that is "=" or "-", e.g. between the two sides of
+ * an equation, would make the paragraph a setext heading, which splits the equation. So a setext
+ * heading that contains a display equation is not a heading: the paragraph then ends where the
+ * equation begins, and blockMath tokenizes it.
+ */
 export const mathExtension: MarkedExtension = {
+  tokenizer: {
+    lheading(src: string) {
+      const heading = /^(?:[^\n]+\n)+?(?: {0,3}(?:=+|-+) *(?:\n+|$))/.exec(src)?.[0] ?? "";
+      // undefined: not a heading. false: marked's own lheading tokenizer decides.
+      return BLOCK_MATH_START_REGEX.test(heading) ? undefined : false;
+    },
+  },
   extensions: [
     {
       name: "blockMath",

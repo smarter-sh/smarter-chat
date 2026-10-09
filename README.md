@@ -17,7 +17,9 @@ shows and hides the backend's own messages in the chat thread. While a prompt ru
 plugin and MCP server calls) is displayed in the thread, and a failed prompt is displayed with the LLM provider's error
 message. Responses are rendered as GitHub flavored markdown (headings, emphasis, lists, tables, block quotes, code,
 links and images), with raw html escaped, and images are scaled to fit their chat bubble. Math, written in LaTeX as
-`\( ... \)` inline, or `\[ ... \]` or `$$ ... $$` displayed, is typeset by [KaTeX](https://katex.org).
+`\( ... \)` inline, or `\[ ... \]` or `$$ ... $$` displayed, is typeset by [KaTeX](https://katex.org). A `mermaid` code block is drawn as a
+[Mermaid](https://mermaid.js.org) diagram, which is downloaded only when a message first has one, with a button that
+shows its code.
 
 It is also published to npm as [@smarter.sh/ui-chat](https://www.npmjs.com/package/@smarter.sh/ui-chat), so that
 any web page can use a Smarter LLMClient as its chat backend: a Wordpress or Squarespace site, a Salesforce portal,

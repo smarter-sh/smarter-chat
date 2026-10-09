@@ -4,6 +4,9 @@
  * The stream is the one that the Smarter web console's log viewer reads: its first event is a
  * "bulk" event with the recent history, and each later event is one log record, as JSON. See
  * smarter.apps.dashboard.views.terminal_emulator.api.streams.stream_user_logs.
+ *
+ * The stream sends the records at or above its "level" query parameter, or, without it, at or above
+ * the server's log level, smarter_settings.log_level. Sandbox mode asks for DEBUG.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -19,6 +22,20 @@ export interface LogEvent {
 
 /** The most records to keep. Older records are dropped. */
 export const MAX_LOG_EVENTS = 2000;
+
+/** The log level of the stream in sandbox mode. Production mode uses the server's log level. */
+export const SANDBOX_LOG_LEVEL = "DEBUG";
+
+/**
+ * The log stream's url, for the records at or above the given log level, e.g. "DEBUG". Without a
+ * level, the url is unchanged, and the stream sends the records at or above the server's log level.
+ */
+export function logStreamUrlForLevel(streamUrl: string | null, level: string | null = null): string | null {
+  if (!streamUrl || !level) return streamUrl;
+  const url = new URL(streamUrl, window.location.href);
+  url.searchParams.set("level", level);
+  return url.toString();
+}
 
 function parseLogEvent(data: string): LogEvent {
   try {

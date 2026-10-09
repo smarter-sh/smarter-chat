@@ -12,6 +12,7 @@ import {
   SESSION_KEY,
   config,
   configWithCode,
+  configWithDiagram,
   configWithImages,
   progressEvents,
   promptEventStream,
@@ -29,6 +30,8 @@ import {
 import { server } from "@test/server";
 
 import SmarterChat from "./Component";
+
+vi.mock("mermaid", async () => ({ default: (await import("@/mocks/mermaid")).fakeMermaid }));
 
 const WELCOME = "Welcome to Stackademy! How can I help you today?";
 
@@ -332,6 +335,20 @@ describe("SmarterChat", () => {
     await waitFor(() => expect(copy).toHaveTextContent("Copied!"));
   });
 
+  it("displays mermaid code blocks as diagrams, and shows their code", async () => {
+    server.use(http.post(CONFIG_URL, () => HttpResponse.json({ data: configWithDiagram })));
+    const user = userEvent.setup();
+    render(<SmarterChat {...props} />);
+    const diagram = await screen.findByRole("figure", { name: "Diagram" });
+    expect(screen.getByText("mermaid")).toHaveClass("smarter-chat-code-language");
+    expect(screen.getByText(/Browse the catalogue/, { selector: "pre code" })).not.toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Show the diagram's code" }));
+    expect(diagram).not.toBeVisible();
+    expect(screen.getByText(/Browse the catalogue/, { selector: "pre code" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Show the diagram" })).toHaveTextContent("Diagram");
+  });
+
   it("hides and shows the Console, and remembers it", async () => {
     server.use(...chatHandlers);
     const user = userEvent.setup();
@@ -401,7 +418,22 @@ describe("SmarterChat", () => {
     render(<SmarterChat {...props} logStreamUrl={LOG_STREAM_URL} />);
     await screen.findByText(WELCOME);
     expect(screen.getByRole("button", { name: "Server Logs" })).toHaveAttribute("aria-pressed", "true");
+    expect(FakeEventSource.latest().url).toBe(`${LOG_STREAM_URL}?level=DEBUG`);
+    vi.unstubAllGlobals();
+  });
+
+  it("streams DEBUG server logs in sandbox mode, and the server's log level in production mode", async () => {
+    installFakes();
+    server.use(...chatHandlers);
+    const user = userEvent.setup();
+    render(<SmarterChat {...props} logStreamUrl={LOG_STREAM_URL} />);
+    await screen.findByText(WELCOME);
+    expect(FakeEventSource.latest().url).toBe(`${LOG_STREAM_URL}?level=DEBUG`);
+
+    await user.click(screen.getByRole("button", { name: "Sandbox mode" }));
     expect(FakeEventSource.latest().url).toBe(LOG_STREAM_URL);
+    await user.click(screen.getByRole("button", { name: "Production mode" }));
+    expect(FakeEventSource.latest().url).toBe(`${LOG_STREAM_URL}?level=DEBUG`);
     vi.unstubAllGlobals();
   });
 });

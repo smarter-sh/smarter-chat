@@ -220,6 +220,14 @@ div.cs-message__html-content code {
   background-color: rgba(0, 0, 0, 0.08);
 }
 
+/* a message can be narrower than its widest line of code, which then scrolls sideways. Its content
+   is a flex item, whose minimum width would otherwise be that line's, so that the message, which
+   hides its overflow, would cut off the code block's right side, and its buttons. */
+section.cs-message .cs-message__content-wrapper {
+  min-width: 0;
+  max-width: 100%;
+}
+
 /* code blocks, as GitHub displays them in its dark theme: a header with the language and a copy
    button, and the highlighted code, which scrolls sideways rather than wrapping. See lib/code.ts. */
 div.cs-message__html-content .smarter-chat-code {

@@ -69,10 +69,11 @@
     "@chatscope/chat-ui-kit-react": "^2.1.1",
     "@chatscope/chat-ui-kit-styles": "^1.4.0",
     "@microlink/react-json-view": "^1.31.40",
-    "dompurify": "^3.2.7",
+    "dompurify": "^3.4.16",
     "highlight.js": "^11.12.0",
     "katex": "^0.18.7",
-    "marked": "^14.0.0"
+    "marked": "^14.0.0",
+    "mermaid": "^11.17.2"
   },
   "peerDependencies": {
     "react": "^19",
