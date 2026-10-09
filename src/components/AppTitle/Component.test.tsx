@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import AppTitle from "./Component";
+import AppTitle from "@/components/AppTitle/Component";
 
 describe("AppTitle", () => {
   it("shows a valid LLMClient in the sandbox", () => {

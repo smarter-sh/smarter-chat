@@ -14,7 +14,7 @@ import {
   streamingHandlers,
 } from "@/mocks/handlers";
 
-import SmarterChat from "./Component";
+import SmarterChat from "@/components/SmarterChat/Component";
 
 /** A chat with a Smarter LLMClient, with the Console beside it. */
 const meta = {

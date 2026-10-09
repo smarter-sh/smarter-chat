@@ -5,9 +5,9 @@ import { describe, expect, it, vi } from "vitest";
 import { FakeEventSource, installFakes } from "@/mocks/fakes";
 import { LOG_STREAM_URL, bulkLogs, config, configWithHistory, liveLog } from "@/mocks/fixtures";
 
-import Console from "./Component";
-import { consoleData } from "./data";
-import { MenuItems } from "./enums";
+import Console from "@/components/Console/Component";
+import { consoleData } from "@/components/Console/data";
+import { MenuItems } from "@/components/Console/enums";
 
 describe("Console", () => {
   it("displays the configuration, then each history that the user selects", async () => {

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { props } from "@/mocks/fixtures";
 import { chatHandlers, historyHandlers } from "@/mocks/handlers";
 
-import App from "./App";
+import App from "@/App";
 
 /** Smarter Chat, as the web console's LLMClient prompt workbench renders it, with its api mocked. */
 const meta = {

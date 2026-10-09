@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import AppTitle from "./Component";
+import AppTitle from "@/components/AppTitle/Component";
 
 /** The chat's title, with icons for the LLMClient's validity and deployment. */
 const meta = {

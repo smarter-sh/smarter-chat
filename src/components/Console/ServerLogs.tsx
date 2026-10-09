@@ -5,9 +5,9 @@
  * its ANSI colors, in the viewer's palette and font. Their text already has their time and level.
  * Long lines scroll horizontally, unless the user wraps them.
  */
-import { ansiCss, parseAnsi } from "../../lib/ansi";
-import { useLogWrap } from "../../lib/layout";
-import type { LogEvent } from "../../lib/logStream";
+import { ansiCss, parseAnsi } from "@/lib/ansi";
+import { useLogWrap } from "@/lib/layout";
+import type { LogEvent } from "@/lib/logStream";
 
 interface ServerLogsProps {
   logs: LogEvent[];
