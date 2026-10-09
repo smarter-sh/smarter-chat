@@ -212,6 +212,20 @@ describe("fetchPrompt, streaming its progress", () => {
     expect(result.error).toBeNull();
   });
 
+  it("treats a result event without a response as an error", async () => {
+    server.use(http.post(PROMPT_URL, () => eventStreamResponse("event: result\ndata: {}\n\n")));
+    const result = await fetchPrompt(config, [], cookies, context, () => {});
+    expect(result.error).toBeTruthy();
+    expect(result.messages).toEqual([expect.objectContaining({ role: "smarter_error" })]);
+  });
+
+  it("throws when the stream has no body", async () => {
+    server.use(
+      http.post(PROMPT_URL, () => new HttpResponse(null, { headers: { "Content-Type": "text/event-stream" } })),
+    );
+    await expect(fetchPrompt(config, [], cookies, context, () => {})).rejects.toThrow("empty event stream");
+  });
+
   it("throws when the stream ends without a result", async () => {
     server.use(http.post(PROMPT_URL, () => eventStreamResponse("event: progress\ndata: {}\n\n")));
     await expect(fetchPrompt(config, [], cookies, context, () => {})).rejects.toThrow("without a result");
@@ -264,6 +278,13 @@ describe("maxTokensMessage", () => {
     );
   });
 
+  it("explains an empty response, without its token counts", () => {
+    const completion = { choices: [{ finish_reason: "length", message: { content: null } }] };
+    expect(maxTokensMessage(completion)?.content).toBe(
+      "The LLM reached this LLMClient's max tokens, so its response is empty. Raise defaultMaxTokens in the LLMClient's manifest.",
+    );
+  });
+
   it("is null for a completion that finished, or that has no choices", () => {
     expect(maxTokensMessage({ choices: [{ finish_reason: "stop", message: { content: "Done." } }] })).toBeNull();
     expect(maxTokensMessage({})).toBeNull();
@@ -279,5 +300,8 @@ describe("errorMessage", () => {
     expect(errorMessage({ error: { description: "description" } }, response)).toBe("description");
     expect(errorMessage({ data: { error: "nested" } }, response)).toBe("nested");
     expect(errorMessage({}, response)).toBe("The Smarter api returned http 400 Bad Request");
+    expect(errorMessage({ error: { code: 1 } }, { status: 500, statusText: "" })).toBe(
+      "The Smarter api returned http 500",
+    );
   });
 });
