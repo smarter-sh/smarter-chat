@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.6.0-alpha.2](https://github.com/smarter-sh/smarter-chat/compare/v0.6.0-alpha.1...v0.6.0-alpha.2) (2026-10-09)
+
+### Features
+
+* typeset LaTeX math in responses with KaTeX ([3aaf694](https://github.com/smarter-sh/smarter-chat/commit/3aaf69421224b2f36ea13d08614e877d42de6215))
+
 ## [0.6.0-alpha.1](https://github.com/smarter-sh/smarter-chat/compare/v0.5.0...v0.6.0-alpha.1) (2026-10-08)
 
 ### Features
