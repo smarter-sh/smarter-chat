@@ -6,17 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
-## [0.6.0-alpha.3](https://github.com/smarter-sh/smarter-chat/compare/v0.6.0-alpha.2...v0.6.0-alpha.3) (2026-10-09)
+## [0.6.0](https://github.com/smarter-sh/smarter-chat/compare/v0.5.0...v0.6.0) (2026-10-08)
 
 ### Features
 
-* draw mermaid diagrams and tie server logs to chat mode ([1979b87](https://github.com/smarter-sh/smarter-chat/commit/1979b8740273c31fbf644f2d0d16409583da124a))
-
-## [0.6.0-alpha.2](https://github.com/smarter-sh/smarter-chat/compare/v0.6.0-alpha.1...v0.6.0-alpha.2) (2026-10-09)
-
-### Features
-
-* typeset LaTeX math in responses with KaTeX ([3aaf694](https://github.com/smarter-sh/smarter-chat/commit/3aaf69421224b2f36ea13d08614e877d42de6215))
+* highlight code blocks and explain max-token cutoffs ([8e625dd](https://github.com/smarter-sh/smarter-chat/commit/8e625dd5c7154026fd426aaff87f5e7c33d1e78c))
 
 ## [0.6.0-alpha.1](https://github.com/smarter-sh/smarter-chat/compare/v0.5.0...v0.6.0-alpha.1) (2026-10-08)
 
