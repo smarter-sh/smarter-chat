@@ -9,6 +9,7 @@ export { default as Console } from "./components/Console";
 export { MenuItems } from "./components/Console/enums";
 export { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum } from "./lib/enums";
 export { projectVersion as version } from "./const";
+export { CHAT_CONTRACT_V2_CAPABILITY, normalizeConfig } from "./lib/api";
 export type { PromptProgressEvent } from "./lib/api";
 export type {
   ApiMessage,
@@ -17,5 +18,7 @@ export type {
   ChatMessage,
   ChatMetaData,
   ChatbotConfig,
+  Contract,
+  LLMClientConfig,
   SmarterChatProps,
 } from "./types";

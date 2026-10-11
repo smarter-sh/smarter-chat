@@ -14,16 +14,14 @@ export function consoleData(config: ConsoleConfig, item: MenuItem): object[] {
   if (!isLoaded(config)) {
     return [];
   }
-  const history = config.history ?? {};
-  const list = (value: unknown, legacy?: unknown) =>
-    Array.isArray(value) ? value : Array.isArray(legacy) ? legacy : [];
+  const history = config.history;
   switch (item) {
     case MenuItems.LLMCLIENT_REQUEST_HISTORY:
-      return list(history.llmclient_request_history, history.chatbot_request_history);
+      return history.llmclient_request_history ?? [];
     case MenuItems.CHAT_TOOL_CALL_HISTORY:
-      return list(history.prompt_tool_call_history, history.chat_tool_call_history);
+      return history.prompt_tool_call_history ?? [];
     case MenuItems.CHAT_PLUGIN_USAGE_HISTORY:
-      return list(history.prompt_plugin_usage_history, history.chat_plugin_usage_history);
+      return history.prompt_plugin_usage_history ?? [];
     case MenuItems.SERVER_LOGS:
       // streamed. See ServerLogs.
       return [];

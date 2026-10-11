@@ -87,7 +87,9 @@ function SmarterChat({
   const [config, setConfig] = useState<ChatConfig | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [showMetadata, setShowMetadata] = useState(true);
+  // sandbox mode, which displays the backend's own messages, is where the mode toggle is. Without it,
+  // e.g. on a page that embeds the chat, the thread is the conversation, as the LLMClient's users see it.
+  const [showMetadata, setShowMetadata] = useState(toggleMetadata);
   const [isTyping, setIsTyping] = useState(false);
   const [progress, setProgress] = useState<PromptProgressEvent[]>([]);
   const [consoleVisible, setConsoleVisible] = useConsoleVisible();
@@ -140,23 +142,22 @@ function SmarterChat({
     try {
       setConfigError(null);
       const newConfig = await refreshConfig();
-      const chatbot = newConfig.chatbot;
-      setMessages(
-        chatInit(
-          chatbot.app_welcome_message,
-          chatbot.default_system_role,
-          chatbot.app_example_prompts,
-          newConfig.history?.chat_history,
-        ),
+      const llmclient = newConfig.llmclient;
+      const thread = chatInit(
+        llmclient.app_welcome_message ?? "",
+        llmclient.default_system_role ?? "",
+        llmclient.app_example_prompts,
+        newConfig.history?.chat_history,
       );
-      setShowMetadata(true);
+      setMessages(toggleMetadataMessages(thread, toggleMetadata, MetadataRolesEnum));
+      setShowMetadata(toggleMetadata);
       setIsTyping(false);
       debug("chat started", newConfig);
     } catch (error) {
       console.error(`${loggerPrefix} Failed to fetch the configuration:`, error);
       setConfigError(error instanceof Error ? error.message : String(error));
     }
-  }, [refreshConfig, debug]);
+  }, [refreshConfig, debug, toggleMetadata]);
 
   useEffect(() => {
     // the first render. startChat() sets state only once the configuration arrives.
@@ -249,17 +250,17 @@ function SmarterChat({
     event.target.value = "";
   };
 
-  const chatbot = config?.chatbot;
+  const llmclient = config?.llmclient;
   const isReady = !!config;
-  const title = chatbot ? `${chatbot.app_name} v${chatbot.version || "1.0.0"}` : "";
+  const title = llmclient ? `${llmclient.app_name} v${llmclient.version || "1.0.0"}` : "";
   const totalPlugins = config?.plugins?.meta_data?.total_plugins ?? 0;
-  const info = chatbot
-    ? `${chatbot.provider} ${chatbot.default_model}${totalPlugins > 0 ? ` with ${totalPlugins} additional plugins` : ""}`
+  const info = llmclient
+    ? `${llmclient.provider} ${llmclient.default_model}${totalPlugins > 0 ? ` with ${totalPlugins} additional plugins` : ""}`
     : "";
   const isValid = config?.meta_data?.is_valid ?? config?.meta_data?.ready ?? true;
-  const isDeployed = !!(config?.meta_data?.is_deployed ?? chatbot?.deployed);
+  const isDeployed = !!(config?.meta_data?.is_deployed ?? llmclient?.deployed);
 
-  const assistant = chatbot?.app_assistant ?? "Assistant";
+  const assistant = llmclient?.app_assistant ?? "Assistant";
   const currentStep = progress.at(-1)?.message;
   const typingText = currentStep ? `${assistant}: ${currentStep}` : `${assistant} is typing`;
 
@@ -371,10 +372,10 @@ function SmarterChat({
                       ))}
                   </MessageList>
                   <MessageInput
-                    placeholder={chatbot?.app_placeholder ?? ""}
+                    placeholder={llmclient?.app_placeholder ?? ""}
                     onSend={handleSend}
                     onAttachClick={() => fileInputRef.current?.click()}
-                    attachButton={!!chatbot?.app_file_attachment}
+                    attachButton={!!llmclient?.app_file_attachment}
                     disabled={!isReady}
                     fancyScroll={false}
                   />

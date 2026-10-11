@@ -5,23 +5,35 @@
  * console's session authenticates them. Each response wraps its payload in "data". See:
  *
  * - smarter.apps.prompt.views.detailviews.prompt_config_view.PromptConfigView: <apiUrl>config/
- * - smarter.apps.llmclient.api.v1.views.base: the LLMClient's prompt api, chatbot.url_chatbot. Its
- *   payload is an AWS Lambda style response, whose body is a JSON string of the completion, with
- *   Smarter's own messages in body.smarter.messages. A failed prompt has the LLM provider's status,
- *   and its body is {error: {status, message}, response: <the completion>}, whose messages include a
- *   "smarter_error" message.
+ * - smarter.apps.llmclient.api.v1.views.base: the LLMClient's prompt api, llmclient.url_llmclient.
+ *
+ * The contract is versioned (see smarter.apps.prompt.contract). Smarter Chat asks for version 2 with
+ * "X-Smarter-Capabilities: chat-contract-v2", and reads version 1 from older platforms, which ignore
+ * the header:
+ *
+ * - version 2: the configuration's LLMClient is "llmclient", and a prompt's response is
+ *   data: {contract: 2, status, messages, completion}, with "error" beside it if the prompt failed.
+ * - version 1: the LLMClient is "chatbot", with "url_chatbot", and a prompt's response is an AWS
+ *   Lambda style response, whose body is a JSON string of the completion, with Smarter's own messages
+ *   in body.smarter.messages. A failed prompt's body is {error: {status, message}, response}.
+ *
+ * Every other error is {error: {errorClass, description, status}}.
  *
  * A prompt can stream its progress, e.g. its tool calls and MCP server requests, as Server-Sent
  * Events: the request accepts text/event-stream, and the response is "progress" events, then a
  * "result" event with the same JSON as a non-streaming response. Servers that don't stream answer
  * with JSON, as before. See smarter.apps.prompt.progress.
  */
-import type { ApiMessage, ChatConfig, ChatCookies, ClientContext } from "../types";
+import type { ApiMessage, ChatConfig, ChatCookies, ClientContext, Contract, LLMClientConfig } from "../types";
 import { getCookie, setCookie } from "./cookie";
 import { SenderRoleEnum } from "./enums";
 
 const applicationJson = "application/json";
 const textEventStream = "text/event-stream";
+
+/** The capability with which Smarter Chat asks for version 2 of the contract. */
+export const CHAT_CONTRACT_V2_CAPABILITY = "chat-contract-v2";
+export const CHAT_CONTRACT_V2 = 2;
 
 export class SmarterApiError extends Error {
   status: number;
@@ -73,6 +85,7 @@ export function requestHeadersFactory(cookies: ChatCookies, context: ClientConte
     "X-Smarter-Client": context.smarterClient,
     "X-Smarter-ClientVersion": context.smarterClientVersion,
     "X-Smarter-ClientType": "react",
+    "X-Smarter-Capabilities": CHAT_CONTRACT_V2_CAPABILITY,
   };
   if (context.smarterRequestId) {
     headers["X-Smarter-RequestId"] = context.smarterRequestId;
@@ -121,6 +134,55 @@ export function errorMessage(json: Record<string, unknown>, response: ResponseSt
 }
 
 /**
+ * A configuration in version 2 of the contract: as is, or converted from version 1, whose keys are
+ * renamed at every depth ("chatbot" for "llmclient", e.g. "url_chatbot" for "url_llmclient"). Null if
+ * it has no LLMClient, or no prompt api url.
+ */
+export function normalizeConfig(data: unknown): ChatConfig | null {
+  if (!data || typeof data !== "object") return null;
+  const config = data as Record<string, unknown>;
+  if (config.contract === CHAT_CONTRACT_V2) {
+    const llmclient = config.llmclient as LLMClientConfig | undefined;
+    return llmclient?.url_llmclient ? withLegacyChatbot(config as Contract.PromptChatApiConfig) : null;
+  }
+  const chatbot = config.chatbot as Record<string, unknown> | undefined;
+  if (!chatbot || typeof chatbot.url_chatbot !== "string") return null;
+  return withLegacyChatbot(fromLegacyKeyNames(config) as Contract.PromptChatApiConfig);
+}
+
+/**
+ * A version 1 value with the key names of version 2, at every depth: the inverse of the backend's
+ * renames (smarter.apps.prompt.contract.models.LEGACY_KEY_RENAMES), "chatbot" to "llmclient" and
+ * "accountNumber" to "account_number". ("chat_history" is the same in both versions.)
+ */
+function fromLegacyKeyNames(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(fromLegacyKeyNames);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [
+      key.replaceAll("chatbot", "llmclient").replaceAll("accountNumber", "account_number"),
+      fromLegacyKeyNames(item),
+    ]),
+  );
+}
+
+/**
+ * A copy of a version 2 configuration, with the deprecated "chatbot", a read-only alias of its
+ * "llmclient", for code written for version 1. The alias is not enumerable, so it is never serialized,
+ * e.g. by the Console, which displays the configuration as JSON.
+ */
+export function withLegacyChatbot(config: Contract.PromptChatApiConfig): ChatConfig {
+  const copy = { ...config };
+  Object.defineProperty(copy, "chatbot", {
+    get(this: Contract.PromptChatApiConfig) {
+      return this.llmclient;
+    },
+    enumerable: false,
+  });
+  return copy as ChatConfig;
+}
+
+/**
  * The LLMClient's configuration. A new chat session's key, and the debug mode, are saved in their
  * cookies, for the next page load.
  */
@@ -133,8 +195,8 @@ export async function fetchConfig(apiUrl: string, cookies: ChatCookies, context:
   if (!response.ok) {
     throw new SmarterApiError(errorMessage(json, response), response.status);
   }
-  const config = json.data as ChatConfig | undefined;
-  if (!config || !config.chatbot) {
+  const config = normalizeConfig(json.data);
+  if (!config) {
     throw new SmarterApiError("The Smarter api returned an incomplete configuration.", response.status);
   }
   setCookie(cookies.sessionCookie, config.session_key);
@@ -252,8 +314,29 @@ export function maxTokensMessage(completion: Record<string, unknown> | null | un
   };
 }
 
-/** The result of a prompt, from the api's JSON and http status. */
-function promptResult(json: Record<string, unknown>, response: ResponseStatus): PromptResult {
+/** A failed prompt's messages, with a "smarter_error" message to display, if they have none. */
+function failedPrompt(messages: ApiMessage[], error: string): PromptResult {
+  const hasErrorMessage = messages.some((message) => message.role === SenderRoleEnum.SMARTER_ERROR);
+  return {
+    messages: hasErrorMessage ? messages : [...messages, { role: SenderRoleEnum.SMARTER_ERROR, content: error }],
+    error,
+  };
+}
+
+/** The result of a prompt, from a version 2 response. */
+function promptResultV2(json: Record<string, unknown>, response: ResponseStatus): PromptResult {
+  const data = json.data as { status?: number; messages?: ApiMessage[]; completion?: Record<string, unknown> | null };
+  const messages = Array.isArray(data.messages) ? data.messages : [];
+  const ok = response.status >= 200 && response.status < 300 && !json.error;
+  if (ok) {
+    const truncated = maxTokensMessage(data.completion);
+    return { messages: truncated ? [...messages, truncated] : messages, error: null };
+  }
+  return failedPrompt(messages, errorMessage(json, response));
+}
+
+/** The result of a prompt, from a version 1 response: a Lambda style response, whose body is a JSON string. */
+function promptResultV1(json: Record<string, unknown>, response: ResponseStatus): PromptResult {
   const body = parseBody(json);
   const statusCode = (json.data as Record<string, unknown> | undefined)?.statusCode;
   const ok = response.status >= 200 && response.status < 300;
@@ -266,12 +349,13 @@ function promptResult(json: Record<string, unknown>, response: ResponseStatus): 
   // a failed prompt: the provider's error, with the messages of the backend's response, if any.
   const bodyError = body?.error as { message?: string } | undefined;
   const error = bodyError?.message || errorMessage(json, response);
-  const returned = smarterMessages(body?.response as Record<string, unknown> | undefined);
-  const hasErrorMessage = returned.some((message) => message.role === SenderRoleEnum.SMARTER_ERROR);
-  return {
-    messages: hasErrorMessage ? returned : [...returned, { role: SenderRoleEnum.SMARTER_ERROR, content: error }],
-    error,
-  };
+  return failedPrompt(smarterMessages(body?.response as Record<string, unknown> | undefined), error);
+}
+
+/** The result of a prompt, from the api's JSON and http status, in either version of the contract. */
+function promptResult(json: Record<string, unknown>, response: ResponseStatus): PromptResult {
+  const data = json.data as Record<string, unknown> | undefined;
+  return data?.contract === CHAT_CONTRACT_V2 ? promptResultV2(json, response) : promptResultV1(json, response);
 }
 
 /**
@@ -294,7 +378,7 @@ export async function fetchPrompt(
     headers.Accept = `${textEventStream}, ${applicationJson}`;
   }
   const init = requestInitFactory(headers, { session_key: sessionKey, messages });
-  const response = await fetch(urlFactory(config.chatbot.url_chatbot, null, sessionKey), init);
+  const response = await fetch(urlFactory(config.llmclient.url_llmclient, null, sessionKey), init);
 
   const contentType = response.headers.get("content-type") ?? "";
   if (onProgress && contentType.includes(textEventStream)) {

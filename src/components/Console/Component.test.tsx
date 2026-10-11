@@ -3,7 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { FakeEventSource, installFakes } from "@/mocks/fakes";
-import { LOG_STREAM_URL, bulkLogs, config, configWithHistory, liveLog } from "@/mocks/fixtures";
+import { normalizeConfig } from "@/lib/api";
+import { LOG_STREAM_URL, bulkLogs, config, configV1, configWithHistory, liveLog } from "@/mocks/fixtures";
 
 import Console from "@/components/Console/Component";
 import { consoleData } from "@/components/Console/data";
@@ -137,18 +138,11 @@ describe("consoleData", () => {
     );
   });
 
-  it("reads the legacy history names", () => {
-    const legacy = {
-      ...config,
-      history: {
-        chat_tool_call_history: [{ id: 1 }],
-        chat_plugin_usage_history: [{ id: 2 }],
-        chatbot_request_history: [{ id: 3 }],
-      },
-    };
-    expect(consoleData(legacy, MenuItems.CHAT_TOOL_CALL_HISTORY)).toEqual([{ id: 1 }]);
-    expect(consoleData(legacy, MenuItems.CHAT_PLUGIN_USAGE_HISTORY)).toEqual([{ id: 2 }]);
-    expect(consoleData(legacy, MenuItems.LLMCLIENT_REQUEST_HISTORY)).toEqual([{ id: 3 }]);
+  it("reads a version 1 configuration's request history, once normalized", () => {
+    const normalized = normalizeConfig(configV1(configWithHistory));
+    expect(consoleData(normalized, MenuItems.LLMCLIENT_REQUEST_HISTORY)).toEqual(
+      configWithHistory.history.llmclient_request_history,
+    );
   });
 
   it("returns nothing for the server logs, which are streamed", () => {

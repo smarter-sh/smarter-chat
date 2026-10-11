@@ -7,6 +7,7 @@ import {
   CONFIG_URL,
   LOG_STREAM_URL,
   PROMPT_URL,
+  apiErrorResponse,
   bulkLogs,
   config,
   configWithHistory,
@@ -50,7 +51,7 @@ export const loadingHandlers = [
 
 /** The LLMClient doesn't exist, or the user may not use it. */
 export const configErrorHandlers = [
-  http.post(CONFIG_URL, () => HttpResponse.json({ error: "Not found" }, { status: 404 })),
+  http.post(CONFIG_URL, () => HttpResponse.json(apiErrorResponse(), { status: 404 })),
 ];
 
 /** A chat session whose assistant replied with markdown images. */

@@ -1,9 +1,13 @@
 /**
- * Example data for this package's stories and tests: what the Smarter api returns. The
- * configuration is a trimmed copy of a real response of the config api, for the stackademy_sql
- * LLMClient. See smarter.apps.prompt.views.detailviews.prompt_config_view.PromptConfigView.
+ * Example data for this package's stories and tests: what the Smarter api returns, in version 2 of
+ * the contract, and, for the tests of older platforms, in version 1. The configuration is a trimmed
+ * copy of a real response of the config api, for the stackademy_sql LLMClient. See
+ * smarter.apps.prompt.views.detailviews.prompt_config_view.PromptConfigView.
+ *
+ * src/contract.test.ts validates these against contract/chat-contract.schema.json.
  */
-import type { ApiMessage, ChatConfig, SmarterChatProps } from "@/types";
+import { withLegacyChatbot } from "@/lib/api";
+import type { ApiMessage, ChatConfig, Contract, SmarterChatProps } from "@/types";
 
 export const API_URL = "http://localhost:9357/workbench/llm-clients/rMTAwMDAwMQx/";
 export const CONFIG_URL = `${API_URL}config/`;
@@ -26,14 +30,15 @@ export const examplePrompts = [
   "I want to study programming. What do you suggest?",
 ];
 
-export function makeConfig(overrides: Partial<ChatConfig> = {}): ChatConfig {
-  return {
+export function makeConfig(overrides: Partial<Contract.PromptChatApiConfig> = {}): ChatConfig {
+  return withLegacyChatbot({
+    contract: 2,
     session_key: SESSION_KEY,
     sandbox_mode: true,
     debug_mode: false,
-    chatbot: {
+    llmclient: {
       id: 1,
-      url_chatbot: PROMPT_URL,
+      url_llmclient: PROMPT_URL,
       user_profile: {
         user: { username: "admin", email: "admin@smarter.sh" },
         account: { accountNumber: "3141-5926-5359" },
@@ -70,13 +75,48 @@ export function makeConfig(overrides: Partial<ChatConfig> = {}): ChatConfig {
     },
     plugins: {
       meta_data: { total_plugins: 1, plugins_returned: 1 },
-      plugins: [{ id: 1, plugin_meta: { name: "stackademy_sql", plugin_class: "sql", version: "0.1.0" }, chatbot: 1 }],
+      plugins: [
+        {
+          id: 1,
+          created_at: "2026-01-01T12:00:00Z",
+          updated_at: "2026-01-01T12:00:00Z",
+          llmclient: 1,
+          plugin_meta: {
+            id: 16,
+            created_at: "2026-01-01T12:00:00Z",
+            updated_at: "2026-01-01T12:00:00Z",
+            name: "stackademy_sql",
+            description: "Query the Stackademy course catalogue.",
+            version: "0.1.0",
+            tags: ["db", "sql"],
+            annotations: [],
+            plugin_class: "sql",
+          },
+        },
+      ],
     },
     ...overrides,
-  };
+  });
 }
 
 export const config = makeConfig();
+
+/**
+ * A configuration in version 1 of the contract, as older platforms return it: every key that contains
+ * "llmclient" is renamed to contain "chatbot", at every depth.
+ */
+export function configV1(chatConfig: ChatConfig = config): Record<string, unknown> {
+  const rename = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(rename);
+    if (!value || typeof value !== "object") return value;
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key.replaceAll("llmclient", "chatbot"), rename(item)]),
+    );
+  };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { contract, ...rest } = chatConfig;
+  return rename(rest) as Record<string, unknown>;
+}
 
 /** A chat session in progress, whose history the config api returns. */
 export const chatHistory: ApiMessage[] = [
@@ -100,9 +140,40 @@ export const configWithHistory = makeConfig({
   history: {
     ...config.history,
     chat_history: chatHistory,
-    prompt_tool_call_history: [{ id: 1, function_name: "stackademy_sql", function_args: "{}" }],
-    prompt_plugin_usage_history: [{ id: 1, input_text: "Do you offer any courses on AI?", plugin: 16 }],
-    llmclient_request_history: [{ id: 1, request: { session_key: SESSION_KEY, messages: chatHistory.slice(0, 3) } }],
+    prompt_tool_call_history: [
+      {
+        id: 1,
+        created_at: "2026-01-01T12:00:01Z",
+        updated_at: "2026-01-01T12:00:01Z",
+        prompt: 7,
+        plugin: 16,
+        function_name: "stackademy_sql",
+        function_args: "{}",
+        request: { inquiry_type: "courses" },
+        response: [{ course_code: "CS210", course_name: "Artificial Intelligence" }],
+      },
+    ],
+    prompt_plugin_usage_history: [
+      {
+        id: 1,
+        created_at: "2026-01-01T12:00:00Z",
+        updated_at: "2026-01-01T12:00:00Z",
+        prompt: 7,
+        plugin: 16,
+        input_text: "Do you offer any courses on AI?",
+      },
+    ],
+    llmclient_request_history: [
+      {
+        id: 1,
+        created_at: "2026-01-01T12:00:00Z",
+        updated_at: "2026-01-01T12:00:00Z",
+        llmclient: 1,
+        request: { session_key: SESSION_KEY, messages: chatHistory.slice(0, 3) },
+        session_key: SESSION_KEY,
+        is_aggregation: false,
+      },
+    ],
   },
 });
 
@@ -112,53 +183,104 @@ export const responseMessages: ApiMessage[] = [
   { role: "assistant", content: "We offer CS210 Artificial Intelligence, for $700.00." },
 ];
 
+const ENVELOPE = { api: "smarter.sh/v1", metadata: { command: "prompt", thing: "LLMClient" } };
+
+/** A chat completion, in the format of the OpenAI api, whose last message is the response. */
+function completion(messages: ApiMessage[], overrides: Record<string, unknown> = {}) {
+  return {
+    id: "chatcmpl-123",
+    object: "chat.completion",
+    choices: [{ index: 0, finish_reason: "stop", message: messages[messages.length - 1] }],
+    ...overrides,
+  };
+}
+
 /**
- * The prompt api's response: an AWS Lambda style response, whose body is a JSON string. The
- * completion's fields, e.g. its choices and usage, can be overridden.
+ * The prompt api's response, version 2: the messages that the prompt added to the thread, and the
+ * completion, whose fields, e.g. its choices and usage, can be overridden.
  */
 export function promptResponse(
+  messages: ApiMessage[] = responseMessages,
+  status = 200,
+  overrides: Record<string, unknown> = {},
+) {
+  return {
+    data: {
+      contract: 2,
+      status,
+      messages,
+      completion: completion(messages, overrides),
+      plugins: ["stackademy_sql"],
+      tools: ["smarter_plugin_0000000016"],
+    },
+    ...ENVELOPE,
+  };
+}
+
+/**
+ * The prompt api's response, version 1: an AWS Lambda style response, whose body is a JSON string,
+ * with Smarter's messages in body.smarter.messages.
+ */
+export function promptResponseV1(
   messages: ApiMessage[] = responseMessages,
   statusCode = 200,
   overrides: Record<string, unknown> = {},
 ) {
-  const completion = {
-    id: "chatcmpl-123",
-    object: "chat.completion",
-    choices: [{ index: 0, finish_reason: "stop", message: messages[messages.length - 1] }],
-    smarter: { plugins: ["stackademy_sql"], messages },
-    ...overrides,
-  };
+  const body = { ...completion(messages, overrides), smarter: { plugins: ["stackademy_sql"], messages } };
   return {
     data: {
       isBase64Encoded: false,
       statusCode,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(completion),
+      body: JSON.stringify(body),
     },
-    api: "smarter.sh/v1",
+    ...ENVELOPE,
   };
 }
+
+const MAX_TOKENS_MESSAGES: ApiMessage[] = [
+  { role: "assistant", content: "" },
+  {
+    role: "smarter",
+    content: "openai prompt charges: 3538 prompt tokens, 256 completion tokens = 3794 total tokens charged.",
+  },
+];
+const MAX_TOKENS_COMPLETION = {
+  choices: [{ index: 0, finish_reason: "length", message: { role: "assistant", content: "" } }],
+  usage: { completion_tokens: 256, completion_tokens_details: { reasoning_tokens: 256 } },
+};
 
 /**
  * The response of a prompt that a reasoning model stopped at the LLMClient's max tokens: it spent
  * them all reasoning, so its response is empty.
  */
 export function promptMaxTokensResponse() {
-  const messages: ApiMessage[] = [
-    { role: "assistant", content: "" },
-    {
-      role: "smarter",
-      content: "openai prompt charges: 3538 prompt tokens, 256 completion tokens = 3794 total tokens charged.",
-    },
-  ];
-  return promptResponse(messages, 200, {
-    choices: [{ index: 0, finish_reason: "length", message: { role: "assistant", content: "" } }],
-    usage: { completion_tokens: 256, completion_tokens_details: { reasoning_tokens: 256 } },
-  });
+  return promptResponse(MAX_TOKENS_MESSAGES, 200, MAX_TOKENS_COMPLETION);
 }
 
-/** A failed prompt's response: the provider's error, and the completion, with its smarter_error message. */
-export function promptErrorResponse(message = "Incorrect API key provided.", statusCode = 401) {
+/** The same, in version 1. */
+export function promptMaxTokensResponseV1() {
+  return promptResponseV1(MAX_TOKENS_MESSAGES, 200, MAX_TOKENS_COMPLETION);
+}
+
+/** A failed prompt's response, version 2: its messages, with a smarter_error message, and the error envelope. */
+export function promptErrorResponse(message = "Incorrect API key provided.", status = 401) {
+  return {
+    data: {
+      contract: 2,
+      status,
+      messages: [{ role: "smarter_error", content: `${status} error: ${message}` }],
+      completion: null,
+      plugins: [],
+      tools: [],
+    },
+    error: { errorClass: "PromptChatApiErrorLLMProvider", description: message, status },
+    ...ENVELOPE,
+  };
+}
+
+/** A failed prompt's response, version 1: the provider's error, and the completion, with its smarter_error message. */
+export function promptErrorResponseV1(message = "Incorrect API key provided.", statusCode = 401) {
   const response = {
     id: "chatcmpl-error",
     object: "chat.completion",
@@ -171,8 +293,17 @@ export function promptErrorResponse(message = "Incorrect API key provided.", sta
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ error: { status: statusCode, message }, response }),
     },
-    api: "smarter.sh/v1",
+    ...ENVELOPE,
   };
+}
+
+/** An error of the configuration or prompt apis, other than a failed prompt. */
+export function apiErrorResponse(
+  description = "LLMClient not found.",
+  status = 404,
+  errorClass = "PromptChatApiErrorNotFound",
+) {
+  return { error: { errorClass, description, status }, ...ENVELOPE };
 }
 
 /** A small png, as a data url, so that the stories' images need no network. */

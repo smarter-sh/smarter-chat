@@ -7,23 +7,31 @@ import {
   CONFIG_URL,
   PROMPT_URL,
   SESSION_KEY,
+  apiErrorResponse,
   config,
+  configV1,
+  configWithHistory,
   progressEvents,
   promptErrorResponse,
+  promptErrorResponseV1,
   promptMaxTokensResponse,
+  promptMaxTokensResponseV1,
   promptEventStream,
   promptResponse,
+  promptResponseV1,
   responseMessages,
 } from "@/mocks/fixtures";
 import type { ChatCookies, ClientContext } from "@/types";
 import { server } from "@test/server";
 
 import {
+  CHAT_CONTRACT_V2_CAPABILITY,
   SmarterApiError,
   errorMessage,
   fetchConfig,
   fetchPrompt,
   maxTokensMessage,
+  normalizeConfig,
   readEventStream,
   requestHeadersFactory,
   urlFactory,
@@ -65,6 +73,7 @@ describe("requestHeadersFactory", () => {
       "X-Smarter-Client": "@smarter.sh/ui-chat",
       "X-Smarter-ClientType": "react",
       "X-Smarter-RequestId": "request-1",
+      "X-Smarter-Capabilities": CHAT_CONTRACT_V2_CAPABILITY,
     });
     expect(headers.Authorization).toBeUndefined();
   });
@@ -84,14 +93,24 @@ describe("fetchConfig", () => {
       }),
     );
     const result = await fetchConfig(API_URL, cookies, context);
-    expect(result.chatbot.app_name).toBe("Stackademy");
+    expect(result.llmclient.app_name).toBe("Stackademy");
     expect(body).toEqual({ session_key: "" });
     expect(getCookie(cookies.sessionCookie)).toBe(SESSION_KEY);
   });
 
   it("throws the api's error", async () => {
-    server.use(http.post(CONFIG_URL, () => HttpResponse.json({ error: "Not found" }, { status: 404 })));
-    await expect(fetchConfig(API_URL, cookies, context)).rejects.toThrow("Not found");
+    server.use(http.post(CONFIG_URL, () => HttpResponse.json(apiErrorResponse(), { status: 404 })));
+    await expect(fetchConfig(API_URL, cookies, context)).rejects.toThrow("LLMClient not found.");
+  });
+
+  it("reads version 1 of the contract, from older platforms", async () => {
+    server.use(http.post(CONFIG_URL, () => HttpResponse.json({ data: configV1(configWithHistory) })));
+    const result = await fetchConfig(API_URL, cookies, context);
+    expect(result.llmclient.url_llmclient).toBe(PROMPT_URL);
+    expect(result.llmclient.app_name).toBe("Stackademy");
+    expect(result.history.llmclient_request_history).toEqual(configWithHistory.history.llmclient_request_history);
+    expect(Object.keys(result)).not.toContain("chatbot");
+    expect(result.chatbot.url_llmclient).toBe(PROMPT_URL);
   });
 
   it("throws when the api does not return JSON", async () => {
@@ -102,6 +121,48 @@ describe("fetchConfig", () => {
   it("throws when the configuration is incomplete", async () => {
     server.use(http.post(CONFIG_URL, () => HttpResponse.json({ data: {} })));
     await expect(fetchConfig(API_URL, cookies, context)).rejects.toThrow("incomplete");
+  });
+});
+
+describe("normalizeConfig", () => {
+  it("returns a version 2 configuration as is, with the deprecated chatbot alias", () => {
+    const normalized = normalizeConfig(JSON.parse(JSON.stringify(config)));
+    expect(normalized).toEqual(config);
+    expect(normalized?.chatbot).toBe(normalized?.llmclient);
+    // the alias is never serialized.
+    expect(JSON.stringify(normalized)).not.toContain('"chatbot"');
+  });
+
+  it("returns null for a configuration without an LLMClient or a prompt url", () => {
+    for (const data of [null, "text", {}, { contract: 2 }, { contract: 2, llmclient: { id: 1 } }, { chatbot: {} }]) {
+      expect(normalizeConfig(data)).toBeNull();
+    }
+  });
+
+  it("keeps a version 1 configuration's llmclient_request_history, if it has one", () => {
+    const v1 = configV1(configWithHistory) as { history: Record<string, unknown> };
+    v1.history.llmclient_request_history = [{ id: 9 }];
+    expect(normalizeConfig(v1)?.history.llmclient_request_history).toEqual([{ id: 9 }]);
+  });
+});
+
+describe("fetchPrompt with version 1 of the contract", () => {
+  it("returns the response's messages", async () => {
+    server.use(http.post(PROMPT_URL, () => HttpResponse.json(promptResponseV1())));
+    expect(await fetchPrompt(config, [], cookies, context)).toEqual({ messages: responseMessages, error: null });
+  });
+
+  it("returns a failed prompt's error, and its smarter_error message", async () => {
+    server.use(http.post(PROMPT_URL, () => HttpResponse.json(promptErrorResponseV1(), { status: 401 })));
+    const result = await fetchPrompt(config, [], cookies, context);
+    expect(result.error).toBe("Incorrect API key provided.");
+    expect(result.messages).toEqual([{ role: "smarter_error", content: "401 error: Incorrect API key provided." }]);
+  });
+
+  it("adds a smarter message when the LLM reached the max tokens", async () => {
+    server.use(http.post(PROMPT_URL, () => HttpResponse.json(promptMaxTokensResponseV1())));
+    const result = await fetchPrompt(config, [], cookies, context);
+    expect(result.messages.at(-1)?.role).toBe("smarter");
   });
 });
 
@@ -128,6 +189,17 @@ describe("fetchPrompt", () => {
     const result = await fetchPrompt(config, [], cookies, context);
     expect(result.error).toBe("Incorrect API key provided.");
     expect(result.messages).toEqual([{ role: "smarter_error", content: "401 error: Incorrect API key provided." }]);
+  });
+
+  it("returns a version 2 failure's error envelope, adding a smarter_error message if it has none", async () => {
+    const failure = { ...promptErrorResponse("Rate limit reached.", 429) };
+    failure.data = { ...failure.data, messages: [] };
+    server.use(http.post(PROMPT_URL, () => HttpResponse.json(failure, { status: 429 })));
+    const result = await fetchPrompt(config, [], cookies, context);
+    expect(result).toEqual({
+      messages: [{ role: "smarter_error", content: "Rate limit reached." }],
+      error: "Rate limit reached.",
+    });
   });
 
   it("adds a smarter_error message when the error response has none", async () => {

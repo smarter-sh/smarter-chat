@@ -142,7 +142,7 @@ export function messageHtml(content: string, sender: string): string {
  * so that they are sent back to the api, but are not displayed.
  */
 export function messageFactory(
-  content: string | null | undefined,
+  content: ApiMessage["content"],
   sender: string,
   originalMessage?: ApiMessage,
   direction: MessageDirection = directionOf(sender),

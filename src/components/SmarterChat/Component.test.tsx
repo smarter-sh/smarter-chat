@@ -150,14 +150,14 @@ describe("SmarterChat", () => {
     const user = userEvent.setup();
     render(<SmarterChat {...props} />);
     await screen.findByText(WELCOME);
-    expect(screen.getByText(config.chatbot.default_system_role.trim())).toBeInTheDocument();
+    expect(screen.getByText((config.llmclient.default_system_role ?? "").trim())).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Sandbox mode" }));
-    expect(screen.queryByText(config.chatbot.default_system_role.trim())).not.toBeInTheDocument();
+    expect(screen.queryByText((config.llmclient.default_system_role ?? "").trim())).not.toBeInTheDocument();
     expect(screen.getByText(WELCOME)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Production mode" }));
-    expect(screen.getByText(config.chatbot.default_system_role.trim())).toBeInTheDocument();
+    expect(screen.getByText((config.llmclient.default_system_role ?? "").trim())).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sandbox mode" })).toBeInTheDocument();
   });
 
@@ -166,6 +166,13 @@ describe("SmarterChat", () => {
     render(<SmarterChat {...props} toggleMetadata={false} />);
     await screen.findByText(WELCOME);
     expect(screen.queryByRole("button", { name: "Sandbox mode" })).not.toBeInTheDocument();
+  });
+
+  it("displays only the conversation, as in production mode, without the metadata toggle", async () => {
+    server.use(...chatHandlers);
+    render(<SmarterChat {...props} toggleMetadata={false} />);
+    await screen.findByText(WELCOME);
+    expect(screen.queryByText((config.llmclient.default_system_role ?? "").trim())).not.toBeInTheDocument();
   });
 
   it("starts a new chat session without the old session's key", async () => {
@@ -187,7 +194,7 @@ describe("SmarterChat", () => {
   it("explains why the chat is unavailable when its configuration fails", async () => {
     server.use(...configErrorHandlers);
     render(<SmarterChat {...props} />);
-    expect(await screen.findByText("Not found")).toBeInTheDocument();
+    expect(await screen.findByText("LLMClient not found.")).toBeInTheDocument();
     expect(screen.getByText("Smarter Chat is not available")).toBeInTheDocument();
   });
 
@@ -213,7 +220,7 @@ describe("SmarterChat", () => {
     let lastMessage = "";
     server.use(
       http.post(CONFIG_URL, () =>
-        HttpResponse.json({ data: { ...config, chatbot: { ...config.chatbot, app_file_attachment: true } } }),
+        HttpResponse.json({ data: { ...config, llmclient: { ...config.llmclient, app_file_attachment: true } } }),
       ),
       http.post(PROMPT_URL, async ({ request }) => {
         const body = (await request.json()) as { messages: { content: string }[] };

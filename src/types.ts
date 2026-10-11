@@ -1,25 +1,25 @@
 /**
  * Types for Smarter Chat: its props, its messages, and the data that the Smarter api returns.
  *
- * The api's types describe the fields that Smarter Chat reads. The api returns more, which the
- * Console displays as is. See smarter.apps.prompt.views.detailviews.prompt_config_view.PromptConfigView,
- * which returns the configuration with its legacy keys ("chatbot" for "llmclient").
+ * The api's types are generated from the contract's JSON Schema (contract/chat-contract.schema.json,
+ * which the Smarter backend generates from smarter.apps.prompt.contract.models) into contract.gen.ts.
+ * They describe the fields that Smarter Chat reads. The api returns more, which the Console displays
+ * as is.
  */
+import type * as Contract from "./contract.gen";
 import type { MessageDirection, SenderRole } from "./lib/enums";
 
+export type { Contract };
+
 /** A message in the format of the OpenAI chat completion api, as the backend stores and returns them. */
-export interface ApiMessage {
-  role: string;
-  content: string | null;
-  [key: string]: unknown;
-}
+export type ApiMessage = Contract.PromptChatApiMessage;
 
 /** A message in the chat thread. */
 export interface ChatMessage {
   /** The message's text, as html, for display. */
   message: string;
   /** The message's text, as sent to the api. */
-  content: string | null;
+  content: ApiMessage["content"];
   direction: MessageDirection;
   sender: SenderRole | string;
   sentTime: string;
@@ -29,60 +29,30 @@ export interface ChatMessage {
   originalMessage?: ApiMessage;
 }
 
-/** The LLMClient, which the config api calls "chatbot". */
-export interface ChatbotConfig {
-  id: number;
-  name: string;
-  version?: string;
-  provider: string;
-  default_model: string;
-  default_system_role: string;
-  app_name: string;
-  app_assistant: string;
-  app_welcome_message: string;
-  app_example_prompts: string[];
-  app_placeholder: string;
-  app_info_url?: string | null;
-  app_file_attachment: boolean;
-  /** The url of the LLMClient's prompt api. */
-  url_chatbot: string;
-  [key: string]: unknown;
-}
+/** The LLMClient, in the configuration. */
+export type LLMClientConfig = Contract.PromptChatApiLLMClient;
 
-export interface ChatHistory {
-  chat_history?: ApiMessage[];
-  prompt_tool_call_history?: unknown[];
-  prompt_plugin_usage_history?: unknown[];
-  llmclient_request_history?: unknown[];
-  plugin_selector_history?: unknown[];
-  /** Legacy names of prompt_tool_call_history, prompt_plugin_usage_history and llmclient_request_history. */
-  chat_tool_call_history?: unknown[];
-  chat_plugin_usage_history?: unknown[];
-  chatbot_request_history?: unknown[];
-  [key: string]: unknown;
-}
+/** @deprecated Use LLMClientConfig. Version 2 of the contract calls the LLMClient "llmclient", not "chatbot". */
+export type ChatbotConfig = LLMClientConfig;
 
-export interface ChatMetaData {
-  is_valid?: boolean;
-  ready?: boolean;
-  is_deployed?: boolean;
-  [key: string]: unknown;
-}
+/** The chat session's history. Only chat_history is returned to clients that can't read the LLMClient. */
+export type ChatHistory = Contract.PromptChatApiHistory;
 
-/** The LLMClient's configuration, from its config api. */
-export interface ChatConfig {
-  session_key: string;
-  sandbox_mode: boolean;
-  debug_mode: boolean;
-  chatbot: ChatbotConfig;
-  history: ChatHistory;
-  meta_data: ChatMetaData;
-  plugins: {
-    meta_data: { total_plugins: number; plugins_returned: number };
-    plugins: unknown[];
-  };
-  [key: string]: unknown;
-}
+/** The LLMClient's state. */
+export type ChatMetaData = Contract.PromptChatApiMetaData;
+
+/**
+ * The LLMClient's configuration, from its config api, in version 2 of the contract. A version 1
+ * configuration, from an older Smarter platform, is converted to it. See lib/api.ts.
+ */
+export type ChatConfig = Contract.PromptChatApiConfig & {
+  /**
+   * @deprecated Use llmclient. Version 2 of the contract calls the LLMClient "llmclient". This is a
+   * read-only alias of it, for code written for version 1, which is not enumerable, so it is never
+   * serialized or displayed.
+   */
+  readonly chatbot: LLMClientConfig;
+};
 
 /** A cookie that Smarter Chat reads, and possibly sets. */
 export interface CookieMeta {
