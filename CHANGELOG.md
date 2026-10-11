@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.7.1-alpha.1](https://github.com/smarter-sh/smarter-chat/compare/v0.7.0...v0.7.1-alpha.1) (2026-10-11)
+
+### Bug Fixes
+
+* **api:** enforce the chat api contract with generated types ([cd61f2e](https://github.com/smarter-sh/smarter-chat/commit/cd61f2ee783927b203ad5d08164189f1c4c895f8))
+
+### Refactoring
+
+* replace relative tsx imports with the @ alias ([de0239f](https://github.com/smarter-sh/smarter-chat/commit/de0239fd1c11093e65f73fa31cd2184224a62ffa))
+
 ## [0.7.0](https://github.com/smarter-sh/smarter-chat/compare/v0.6.0...v0.7.0) (2026-10-09)
 
 ### Features
