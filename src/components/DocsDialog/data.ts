@@ -58,6 +58,11 @@ export const SOFTWARE_ENGINEER_LINKS: DocLink[] = [
     url: "https://docs.smarter.sh/smarter-framework/developer-reference/react-integration.html",
     description: "How to host a Smarter chatbot in your own React application.",
   },
+  {
+    title: "Smarter on Kubernetes",
+    url: "https://docs.smarter.sh/smarter-framework/smarter-on-kubernetes.html",
+    description: "What deploying an LLMClient creates in Kubernetes, and how to operate it in production.",
+  },
 ];
 
 /** The tabs of the Docs dialog, from left to right. The first one is selected when it opens. */
