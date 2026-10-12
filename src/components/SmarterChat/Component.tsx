@@ -12,15 +12,20 @@
  * The user can resize the chat and the Console by dragging the separator between them, and can
  * hide the Console, which slides out to the right. In sandbox mode, the thread also displays
  * Smarter's system, tool and meta data messages. In production mode, it displays only the
- * conversation, as the LLMClient's users see it. The Console's server logs follow the mode: DEBUG
+ * conversation, as the LLMClient's users see it, and the Console and its toggle button are hidden. The Console's server logs follow the mode: DEBUG
  * and above in sandbox mode, and the server's own log level in production mode. A new chat also
- * clears the Console's server logs.
+ * clears the Console's server logs. Sandbox mode also has a Docs button, which opens a dialog of
+ * links to the technical references for prompt engineers and software engineers.
+ *
+ * The LLMClient's styles (its manifest's spec.config.styles) set its logo, which is displayed in
+ * the header, its avatars, its background image, its fonts and its colors. See lib/styles.ts.
  *
  * This is the component that the @smarter.sh/ui-chat npm package exports, and that the Smarter web
  * console's LLMClient prompt workbench renders. See main.tsx.
  */
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import {
+  Avatar,
   Button,
   ChatContainer,
   ConversationHeader,
@@ -40,6 +45,7 @@ import { cookieMetaFactory, setCookie } from "@/lib/cookie";
 import { MetadataRolesEnum, SenderRoleEnum } from "@/lib/enums";
 import { useChatWidth, useConsoleVisible } from "@/lib/layout";
 import { SANDBOX_LOG_LEVEL } from "@/lib/logStream";
+import { safeImageUrl, styleVariables, useGoogleFont } from "@/lib/styles";
 import {
   chatInit,
   chatMessages2RequestMessages,
@@ -50,8 +56,9 @@ import {
 import type { ChatConfig, ChatCookies, ChatMessage, ClientContext, SmarterChatProps } from "@/types";
 import AppTitle from "@/components/AppTitle";
 import Console from "@/components/Console";
+import DocsDialog from "@/components/DocsDialog";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { ConsoleIcon, NewChatIcon, ProductionIcon, SandboxIcon } from "@/components/SmarterChat/icons";
+import { ConsoleIcon, DocsIcon, NewChatIcon, ProductionIcon, SandboxIcon } from "@/components/SmarterChat/icons";
 import "@/components/SmarterChat/styles.css";
 
 /** The css class of a message, by its sender. */
@@ -90,16 +97,23 @@ function SmarterChat({
   // sandbox mode, which displays the backend's own messages, is where the mode toggle is. Without it,
   // e.g. on a page that embeds the chat, the thread is the conversation, as the LLMClient's users see it.
   const [showMetadata, setShowMetadata] = useState(toggleMetadata);
+  const [docsOpen, setDocsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [progress, setProgress] = useState<PromptProgressEvent[]>([]);
   const [consoleVisible, setConsoleVisible] = useConsoleVisible();
   // counts the new chats, which clear the Console's server logs.
   const [chatCount, setChatCount] = useState(0);
+  // the urls of the styles' logo and avatars that failed to load, which are then not displayed.
+  const [brokenImages, setBrokenImages] = useState<ReadonlySet<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatAppRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { chatWidth, separatorProps } = useChatWidth(containerRef);
-  const isSplit = showConsole && consoleVisible;
+  // production mode, switched to with the mode toggle, hides the Console and its toggle button. The
+  // browser's remembered visibility is kept, and restored on switching back to sandbox mode.
+  const isProduction = toggleMetadata && !showMetadata;
+  const consoleShown = consoleVisible && !isProduction;
+  const isSplit = showConsole && consoleShown;
 
   const cookies: ChatCookies = useMemo(
     () => ({
@@ -183,6 +197,20 @@ function SmarterChat({
     return () => chatApp?.removeEventListener("click", handleClick);
   }, []);
 
+  useEffect(() => {
+    // a logo or avatar whose image fails to load is hidden, rather than displayed as a broken image.
+    // Errors don't bubble, so they're listened to as they are captured.
+    const chatApp = chatAppRef.current;
+    const handleError = (event: Event) => {
+      const image = event.target;
+      if (!(image instanceof HTMLImageElement) || !image.closest(".cs-avatar")) return;
+      const src = image.getAttribute("src") ?? "";
+      setBrokenImages((previous) => (previous.has(src) ? previous : new Set(previous).add(src)));
+    };
+    chatApp?.addEventListener("error", handleError, true);
+    return () => chatApp?.removeEventListener("error", handleError, true);
+  }, []);
+
   useLayoutEffect(() => {
     // mermaid code blocks are displayed as diagrams once they are in the page. A diagram that was
     // displayed before is cached, and replaces its code before the browser paints. See lib/mermaid.ts.
@@ -252,6 +280,16 @@ function SmarterChat({
 
   const llmclient = config?.llmclient;
   const isReady = !!config;
+  const styles = llmclient?.styles;
+  const rootStyle = useMemo(() => styleVariables(styles), [styles]);
+  useGoogleFont(styles?.google_font);
+  const imageUrl = (url: string | null | undefined) => {
+    const safeUrl = safeImageUrl(url);
+    return safeUrl && !brokenImages.has(safeUrl) ? safeUrl : null;
+  };
+  const logoUrl = imageUrl(styles?.app_logo_url);
+  const assistantAvatarUrl = imageUrl(styles?.assistant_avatar_url);
+  const userAvatarUrl = imageUrl(styles?.user_avatar_url);
   const title = llmclient ? `${llmclient.app_name} v${llmclient.version || "1.0.0"}` : "";
   const totalPlugins = config?.plugins?.meta_data?.total_plugins ?? 0;
   const info = llmclient
@@ -261,6 +299,17 @@ function SmarterChat({
   const isDeployed = !!(config?.meta_data?.is_deployed ?? llmclient?.deployed);
 
   const assistant = llmclient?.app_assistant ?? "Assistant";
+
+  /** The avatar beside a message: the assistant's, or the user's, if the styles have one. */
+  function messageAvatar(message: ChatMessage) {
+    if (message.sender === SenderRoleEnum.ASSISTANT && assistantAvatarUrl) {
+      return <Avatar src={assistantAvatarUrl} name={assistant} />;
+    }
+    if (message.sender === SenderRoleEnum.USER && userAvatarUrl) {
+      return <Avatar src={userAvatarUrl} name="You" />;
+    }
+    return null;
+  }
   const currentStep = progress.at(-1)?.message;
   const typingText = currentStep ? `${assistant}: ${currentStep}` : `${assistant} is typing`;
 
@@ -274,7 +323,7 @@ function SmarterChat({
   }
 
   return (
-    <div id="smarter_chat_component_container" className="SmarterChat">
+    <div id="smarter_chat_component_container" className="SmarterChat" style={rootStyle}>
       <div className="smarter-chat-container" ref={containerRef}>
         <div
           role="region"
@@ -287,6 +336,9 @@ function SmarterChat({
               <MainContainer style={{ width: "100%", height: "100%" }}>
                 <ChatContainer className="smarter-chat-container-inner">
                   <ConversationHeader>
+                    {logoUrl && isReady && (
+                      <Avatar className="smarter-chat-logo" src={logoUrl} name={llmclient?.app_name ?? ""} />
+                    )}
                     <ConversationHeader.Content userName={headerName} info={isReady ? info : ""} />
                     <ConversationHeader.Actions>
                       {toggleMetadata && (
@@ -303,6 +355,17 @@ function SmarterChat({
                           {showMetadata ? "Sandbox mode" : "Production mode"}
                         </Button>
                       )}
+                      {showMetadata && (
+                        <Button
+                          className="smarter-chat-toolbar-button smarter-chat-docs-button"
+                          icon={<DocsIcon />}
+                          onClick={() => setDocsOpen(true)}
+                          title="Technical references for prompt engineers and software engineers"
+                          aria-haspopup="dialog"
+                        >
+                          Docs
+                        </Button>
+                      )}
                       <Button
                         className="smarter-chat-toolbar-button"
                         icon={<NewChatIcon />}
@@ -310,7 +373,7 @@ function SmarterChat({
                         title="Start a new chat"
                         aria-label="Start a new chat"
                       />
-                      {showConsole && (
+                      {showConsole && !isProduction && (
                         <Button
                           className="smarter-chat-toolbar-button smarter-chat-console-toggle"
                           icon={<ConsoleIcon visible={consoleVisible} />}
@@ -350,7 +413,9 @@ function SmarterChat({
                             direction: message.direction,
                             position: "single",
                           }}
-                        />
+                        >
+                          {messageAvatar(message)}
+                        </Message>
                       ) : null,
                     )}
                     {showMetadata &&
@@ -397,9 +462,9 @@ function SmarterChat({
             so that it can slide out of view, and back. See styles.css. */}
         {showConsole && (
           <div
-            className={`smarter-chat-console ${consoleVisible ? "" : "smarter-chat-console-hidden"}`}
-            aria-hidden={!consoleVisible}
-            inert={!consoleVisible}
+            className={`smarter-chat-console ${consoleShown ? "" : "smarter-chat-console-hidden"}`}
+            aria-hidden={!consoleShown}
+            inert={!consoleShown}
           >
             <ErrorBoundary>
               <Console
@@ -412,6 +477,7 @@ function SmarterChat({
           </div>
         )}
       </div>
+      {docsOpen && <DocsDialog onClose={() => setDocsOpen(false)} />}
     </div>
   );
 }

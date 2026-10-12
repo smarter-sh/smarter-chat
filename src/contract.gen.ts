@@ -62,10 +62,62 @@ export interface PromptChatApiChatbotV1 {
   name: string;
   provider?: string | null;
   /**
+   * The look of the chat: the manifest's spec.config.styles, with snake_case keys.
+   */
+  styles?: PromptChatApiStyles | null;
+  /**
    * The url of the LLMClient's prompt api.
    */
   url_chatbot: string;
   version?: string | null;
+  [k: string]: unknown;
+}
+/**
+ * The look of the LLMClient's chat: its manifest's ``spec.config.styles``, with snake_case keys.
+ *
+ * Smarter Chat applies it as css custom properties. Every setting is optional, and one that is
+ * left out keeps the chat's default.
+ *
+ * This interface was referenced by `SmarterChatAPIContract`'s JSON-Schema
+ * via the `definition` "PromptChatApiStyles".
+ */
+export interface PromptChatApiStyles {
+  app_background_image_size?: ("cover" | "contain" | "auto") | null;
+  app_background_image_url?: string | null;
+  app_logo_url?: string | null;
+  assistant_avatar_url?: string | null;
+  border_radius?: string | null;
+  buttons?: PromptChatApiStyleSection | null;
+  conversation_header?: PromptChatApiStyleSection | null;
+  font_family?: string | null;
+  font_size?: string | null;
+  google_font?: string | null;
+  incoming_message?: PromptChatApiStyleSection | null;
+  main_container?: PromptChatApiStyleSection | null;
+  message_input?: PromptChatApiStyleSection | null;
+  message_list?: PromptChatApiStyleSection | null;
+  outgoing_message?: PromptChatApiStyleSection | null;
+  typing_indicator?: PromptChatApiStyleSection | null;
+  user_avatar_url?: string | null;
+  [k: string]: unknown;
+}
+/**
+ * A section of the LLMClient's styles: the colors of one of chatscope's components.
+ *
+ * A section has only the settings that its component has, in the manifest's
+ * ``spec.config.styles``. See :mod:`smarter.apps.llmclient.manifest.models.llmclient.styles`.
+ *
+ * This interface was referenced by `SmarterChatAPIContract`'s JSON-Schema
+ * via the `definition` "PromptChatApiStyleSection".
+ */
+export interface PromptChatApiStyleSection {
+  background_color?: string | null;
+  border_color?: string | null;
+  color?: string | null;
+  editor_background_color?: string | null;
+  info_color?: string | null;
+  link_color?: string | null;
+  placeholder_color?: string | null;
   [k: string]: unknown;
 }
 /**
@@ -566,6 +618,10 @@ export interface PromptChatApiLLMClient {
   id: number;
   name: string;
   provider?: string | null;
+  /**
+   * The look of the chat: the manifest's spec.config.styles, with snake_case keys.
+   */
+  styles?: PromptChatApiStyles | null;
   /**
    * The url of the LLMClient's prompt api.
    */

@@ -325,6 +325,44 @@ export const configWithImages = makeConfig({
   },
 });
 
+/**
+ * The styles of an LLMClient (its manifest's spec.config.styles), as the config api returns them, with
+ * snake_case keys: Stackademy's colors, logo, avatars and font.
+ */
+export const chatStyles: Contract.PromptChatApiStyles = {
+  app_logo_url: "https://cdn.smarter.sh/images/logo/smarter-crop.png",
+  assistant_avatar_url: "https://cdn.smarter.sh/images/logo/smarter-crop.png",
+  user_avatar_url: "https://cdn.smarter.sh/images/user-avatar.png",
+  app_background_image_url: "https://cdn.smarter.sh/images/stackademy-background.png",
+  app_background_image_size: "cover",
+  google_font: "Nunito",
+  font_size: "15px",
+  border_radius: "16px",
+  conversation_header: { background_color: "#14213d", color: "#ffffff", info_color: "#fca311" },
+  message_list: { background_color: "rgba(255, 255, 255, 0.85)", color: "#14213d" },
+  incoming_message: { background_color: "#e5e5e5", color: "#14213d", link_color: "#0b57d0" },
+  outgoing_message: { background_color: "#fca311", color: "#14213d" },
+  message_input: { background_color: "#ffffff", editor_background_color: "#f1f1f1", placeholder_color: "#6c757d" },
+  buttons: { color: "#fca311" },
+  typing_indicator: { color: "#fca311" },
+};
+
+/** A chat session with an LLMClient that has styles, whose assistant has replied. */
+export const configWithStyles = makeConfig({
+  llmclient: { ...config.llmclient, styles: chatStyles },
+  history: {
+    ...config.history,
+    chat_history: [
+      { role: "system", content: "You are a helpful assistant. DO NOT GUESS." },
+      { role: "user", content: "Do you offer any courses on AI?" },
+      {
+        role: "assistant",
+        content: "Yes! **CS301 Applied AI** starts next month. See the [catalogue](https://stackademy.edu).",
+      },
+    ],
+  },
+});
+
 /** A configuration whose history has a code block, which is highlighted, with a copy button. */
 export const configWithCode = makeConfig({
   history: {

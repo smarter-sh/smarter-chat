@@ -14,6 +14,8 @@ import {
   configWithCode,
   configWithDiagram,
   configWithImages,
+  configWithStyles,
+  chatStyles,
   progressEvents,
   promptEventStream,
   promptMaxTokensResponse,
@@ -39,6 +41,11 @@ const WELCOME = "Welcome to Stackademy! How can I help you today?";
 async function send(user: ReturnType<typeof userEvent.setup>, text: string) {
   await user.click(screen.getByRole("textbox", { name: "Message" }));
   await user.keyboard(`${text}{Enter}`);
+}
+
+/** The chat's root element, whose style has the LLMClient's styles' css variables. */
+function chatRoot(): HTMLElement {
+  return screen.getByRole("region", { name: "Chat" }).closest(".SmarterChat") as HTMLElement;
 }
 
 describe("SmarterChat", () => {
@@ -159,6 +166,60 @@ describe("SmarterChat", () => {
     await user.click(screen.getByRole("button", { name: "Production mode" }));
     expect(screen.getByText((config.llmclient.default_system_role ?? "").trim())).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sandbox mode" })).toBeInTheDocument();
+  });
+
+  it("opens and closes the Docs dialog, whose button is only in sandbox mode", async () => {
+    server.use(...chatHandlers);
+    const user = userEvent.setup();
+    render(<SmarterChat {...props} />);
+    await screen.findByText(WELCOME);
+
+    await user.click(screen.getByRole("button", { name: "Docs" }));
+    const dialog = screen.getByRole("dialog", { name: "Docs" });
+    expect(dialog).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Prompt Engineer" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("link", { name: "LLMClient" })).toHaveAttribute(
+      "href",
+      "https://docs.smarter.sh/smarter-resources/smarter-llmclient.html",
+    );
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Sandbox mode" }));
+    expect(screen.queryByRole("button", { name: "Docs" })).not.toBeInTheDocument();
+  });
+
+  it("hides the Console and its toggle button in production mode", async () => {
+    server.use(...chatHandlers);
+    const user = userEvent.setup();
+    render(<SmarterChat {...props} />);
+    await screen.findByText(WELCOME);
+    expect(screen.getByRole("navigation", { name: "Console" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show the Console" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Sandbox mode" }));
+    expect(screen.queryByRole("navigation", { name: "Console" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Show the Console" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("separator")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Production mode" }));
+    expect(screen.getByRole("navigation", { name: "Console" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show the Console" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("keeps the Console without the metadata toggle", async () => {
+    server.use(...chatHandlers);
+    render(<SmarterChat {...props} toggleMetadata={false} />);
+    await screen.findByText(WELCOME);
+    expect(screen.getByRole("navigation", { name: "Console" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show the Console" })).toBeInTheDocument();
+  });
+
+  it("has no Docs button without the metadata toggle", async () => {
+    server.use(...chatHandlers);
+    render(<SmarterChat {...props} toggleMetadata={false} />);
+    await screen.findByText(WELCOME);
+    expect(screen.queryByRole("button", { name: "Docs" })).not.toBeInTheDocument();
   });
 
   it("has no metadata toggle unless asked for one", async () => {
@@ -326,6 +387,42 @@ describe("SmarterChat", () => {
     expect(screen.queryByRole("link", { name: "CS210 course banner" })).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: "the catalogue" })).toHaveClass("smarter-chat-image");
     expect(screen.getByRole("link", { name: "the catalogue" })).toHaveAttribute("href", "https://stackademy.edu");
+  });
+
+  it("applies the LLMClient's styles: its colors, font, logo and avatars", async () => {
+    server.use(http.post(CONFIG_URL, () => HttpResponse.json({ data: configWithStyles })));
+    render(<SmarterChat {...props} />);
+    await screen.findByText("CS301 Applied AI");
+    const root = chatRoot();
+    expect(root.style.getPropertyValue("--smarter-chat-header-bg")).toBe("#14213d");
+    expect(root.style.getPropertyValue("--smarter-chat-outgoing-bg")).toBe("#fca311");
+    expect(root.style.getPropertyValue("--smarter-chat-font-family")).toBe('"Nunito", system-ui, sans-serif');
+    // eslint-disable-next-line testing-library/no-node-access -- the font's stylesheet is a link in the page's head.
+    expect(document.getElementById("smarter-chat-google-font")).toHaveAttribute(
+      "href",
+      expect.stringContaining("family=Nunito"),
+    );
+    expect(screen.getByRole("img", { name: "Stackademy" })).toHaveAttribute("src", chatStyles.app_logo_url);
+    expect(screen.getAllByRole("img", { name: "Stanley" }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("img", { name: "You" })).toHaveAttribute("src", chatStyles.user_avatar_url);
+  });
+
+  it("hides a logo or avatar whose image fails to load", async () => {
+    server.use(http.post(CONFIG_URL, () => HttpResponse.json({ data: configWithStyles })));
+    render(<SmarterChat {...props} />);
+    await screen.findByText("CS301 Applied AI");
+    fireEvent.error(screen.getByRole("img", { name: "You" }));
+    await waitFor(() => expect(screen.queryByRole("img", { name: "You" })).not.toBeInTheDocument());
+    expect(screen.getByRole("img", { name: "Stackademy" })).toBeInTheDocument();
+  });
+
+  it("has no logo, avatars or style variables without styles", async () => {
+    server.use(...chatHandlers);
+    render(<SmarterChat {...props} />);
+    await screen.findByText(WELCOME);
+    expect(chatRoot().getAttribute("style")).toBeFalsy();
+    expect(screen.queryByRole("img", { name: "Stackademy" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Stanley" })).not.toBeInTheDocument();
   });
 
   it("highlights code blocks, and copies their code", async () => {

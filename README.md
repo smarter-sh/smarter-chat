@@ -110,9 +110,10 @@ The component talks directly to the Smarter platform from your visitors' browser
    ```yaml
    spec:
      config:
-       allowedOrigins:
-         - https://www.example.com
-         - http://localhost:5173
+       prompt:
+         allowedOrigins:
+           - https://www.example.com
+           - http://localhost:5173
    ```
 
 3. **The browser can authenticate, if the LLMClient requires it.** A deployed LLMClient without api keys is public:
@@ -130,23 +131,23 @@ details, including troubleshooting.
 
 Only `apiUrl` is required.
 
-| Prop                      | Type             | Default         | Description                                                                                                                                                                                                       |
-| ------------------------- | ---------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apiUrl`                  | `string`         | (required)      | The LLMClient's api url. The chat appends `config/` to it for its configuration.                                                                                                                                  |
-| `apiKey`                  | `string \| null` | `null`          | A Smarter api key, sent as `Authorization: Token <apiKey>`, for LLMClients that require authentication.                                                                                                           |
-| `showConsole`             | `boolean`        | `true`          | Show the developer Console beside the chat. It needs a wide container; set it to `false` for end-user pages.                                                                                                      |
-| `toggleMetadata`          | `boolean`        | `false`         | Show the Sandbox mode / Production mode button, which shows and hides the backend's own messages (system prompt, tool results, Smarter's), and start in sandbox mode. Without it, the chat is in production mode. |
-| `streamProgress`          | `boolean`        | `true`          | Display a running prompt's progress, which the prompt api streams as Server-Sent Events.                                                                                                                          |
-| `debugMode`               | `boolean`        | `false`         | Log to the browser console.                                                                                                                                                                                       |
-| `cookieDomain`            | `string`         | `""`            | The domain whose cookies the chat reads. Empty means the page's own domain.                                                                                                                                       |
-| `sessionCookieName`       | `string`         | `"session_key"` | The cookie in which the chat saves its session's key, for the page's path.                                                                                                                                        |
-| `sessionCookieExpiration` | `number`         | one day         | The session cookie's lifetime, in milliseconds.                                                                                                                                                                   |
-| `csrfCookieName`          | `string`         | `"csrftoken"`   | The name of Django's CSRF cookie, whose value is sent as the `X-CSRFToken` header.                                                                                                                                |
-| `csrftoken`               | `string \| null` | `null`          | The CSRF token, when the page cannot read the CSRF cookie.                                                                                                                                                        |
-| `debugCookieName`         | `string`         | `"debug"`       | The cookie in which the chat saves the LLMClient's debug mode.                                                                                                                                                    |
-| `debugCookieExpiration`   | `number`         | one day         | The debug cookie's lifetime, in milliseconds.                                                                                                                                                                     |
-| `smarterRequestId`        | `string`         | `""`            | A unique id of the page request, sent as the `X-Smarter-RequestId` header, for tracing.                                                                                                                           |
-| `logStreamUrl`            | `string \| null` | `null`          | The url of a server log stream (Server-Sent Events), for the Console's Server Logs tab.                                                                                                                           |
+| Prop                      | Type             | Default         | Description                                                                                                                                                                                                                                                                                  |
+| ------------------------- | ---------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apiUrl`                  | `string`         | (required)      | The LLMClient's api url. The chat appends `config/` to it for its configuration.                                                                                                                                                                                                             |
+| `apiKey`                  | `string \| null` | `null`          | A Smarter api key, sent as `Authorization: Token <apiKey>`, for LLMClients that require authentication.                                                                                                                                                                                      |
+| `showConsole`             | `boolean`        | `true`          | Show the developer Console beside the chat. It needs a wide container; set it to `false` for end-user pages.                                                                                                                                                                                 |
+| `toggleMetadata`          | `boolean`        | `false`         | Show the Sandbox mode / Production mode button, which shows and hides the backend's own messages (system prompt, tool results, Smarter's), and start in sandbox mode. Sandbox mode also shows the Docs button, a dialog of technical references. Without it, the chat is in production mode. |
+| `streamProgress`          | `boolean`        | `true`          | Display a running prompt's progress, which the prompt api streams as Server-Sent Events.                                                                                                                                                                                                     |
+| `debugMode`               | `boolean`        | `false`         | Log to the browser console.                                                                                                                                                                                                                                                                  |
+| `cookieDomain`            | `string`         | `""`            | The domain whose cookies the chat reads. Empty means the page's own domain.                                                                                                                                                                                                                  |
+| `sessionCookieName`       | `string`         | `"session_key"` | The cookie in which the chat saves its session's key, for the page's path.                                                                                                                                                                                                                   |
+| `sessionCookieExpiration` | `number`         | one day         | The session cookie's lifetime, in milliseconds.                                                                                                                                                                                                                                              |
+| `csrfCookieName`          | `string`         | `"csrftoken"`   | The name of Django's CSRF cookie, whose value is sent as the `X-CSRFToken` header.                                                                                                                                                                                                           |
+| `csrftoken`               | `string \| null` | `null`          | The CSRF token, when the page cannot read the CSRF cookie.                                                                                                                                                                                                                                   |
+| `debugCookieName`         | `string`         | `"debug"`       | The cookie in which the chat saves the LLMClient's debug mode.                                                                                                                                                                                                                               |
+| `debugCookieExpiration`   | `number`         | one day         | The debug cookie's lifetime, in milliseconds.                                                                                                                                                                                                                                                |
+| `smarterRequestId`        | `string`         | `""`            | A unique id of the page request, sent as the `X-Smarter-RequestId` header, for tracing.                                                                                                                                                                                                      |
+| `logStreamUrl`            | `string \| null` | `null`          | The url of a server log stream (Server-Sent Events), for the Console's Server Logs tab.                                                                                                                                                                                                      |
 
 ## Examples
 
@@ -220,6 +221,29 @@ import "katex/dist/katex.min.css";
   [chatscope](https://github.com/chatscope/chat-ui-kit-react)'s chat styles, which it is built on.
 - **`katex/dist/katex.min.css`** is the stylesheet of math in responses. It's left out of `ui-chat.css` so that pages
   without math don't pay for KaTeX's fonts. Without it, math is displayed twice: as text, and as unstyled MathML.
+
+### The LLMClient's styles
+
+The chat takes its look from the LLMClient's manifest, so most pages need no css of their own. Its
+`spec.config.styles` sets the logo in the header, avatars beside the messages, a background image, a Google font, and
+the colors of each part of the chat, which are chatscope's components:
+
+```yaml
+spec:
+  config:
+    styles:
+      appLogoUrl: https://cdn.example.com/logo.png
+      googleFont: Nunito
+      conversationHeader: { backgroundColor: "#14213d", color: "#ffffff" }
+      outgoingMessage: { backgroundColor: "#fca311", color: "#14213d" }
+```
+
+The chat sets them as css custom properties on its root `.SmarterChat` element, e.g. `--smarter-chat-header-bg` and
+`--smarter-chat-outgoing-bg`, whose fallbacks are chatscope's own colors. Your stylesheet can set the same properties.
+See [Styling Your LLMClient's Chat](https://docs.smarter.sh/en/latest/smarter-resources/llmclient/styles.html) for every
+setting.
+
+### Your own css
 
 The component's elements have stable class names, prefixed `smarter-chat-` (for example `.smarter-chat-message-list`,
 `.smarter-chat-code`, `.smarter-chat-image`), under a root `.SmarterChat` element, so you can override their styles
