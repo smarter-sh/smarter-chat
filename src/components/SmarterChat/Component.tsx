@@ -12,7 +12,7 @@
  * The user can resize the chat and the Console by dragging the separator between them, and can
  * hide the Console, which slides out to the right. In sandbox mode, the thread also displays
  * Smarter's system, tool and meta data messages. In production mode, it displays only the
- * conversation, as the LLMClient's users see it. The Console's server logs follow the mode: DEBUG
+ * conversation, as the LLMClient's users see it, and the Console and its toggle button are hidden. The Console's server logs follow the mode: DEBUG
  * and above in sandbox mode, and the server's own log level in production mode. A new chat also
  * clears the Console's server logs. Sandbox mode also has a Docs button, which opens a dialog of
  * links to the technical references for prompt engineers and software engineers.
@@ -109,7 +109,11 @@ function SmarterChat({
   const chatAppRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { chatWidth, separatorProps } = useChatWidth(containerRef);
-  const isSplit = showConsole && consoleVisible;
+  // production mode, switched to with the mode toggle, hides the Console and its toggle button. The
+  // browser's remembered visibility is kept, and restored on switching back to sandbox mode.
+  const isProduction = toggleMetadata && !showMetadata;
+  const consoleShown = consoleVisible && !isProduction;
+  const isSplit = showConsole && consoleShown;
 
   const cookies: ChatCookies = useMemo(
     () => ({
@@ -369,7 +373,7 @@ function SmarterChat({
                         title="Start a new chat"
                         aria-label="Start a new chat"
                       />
-                      {showConsole && (
+                      {showConsole && !isProduction && (
                         <Button
                           className="smarter-chat-toolbar-button smarter-chat-console-toggle"
                           icon={<ConsoleIcon visible={consoleVisible} />}
@@ -458,9 +462,9 @@ function SmarterChat({
             so that it can slide out of view, and back. See styles.css. */}
         {showConsole && (
           <div
-            className={`smarter-chat-console ${consoleVisible ? "" : "smarter-chat-console-hidden"}`}
-            aria-hidden={!consoleVisible}
-            inert={!consoleVisible}
+            className={`smarter-chat-console ${consoleShown ? "" : "smarter-chat-console-hidden"}`}
+            aria-hidden={!consoleShown}
+            inert={!consoleShown}
           >
             <ErrorBoundary>
               <Console

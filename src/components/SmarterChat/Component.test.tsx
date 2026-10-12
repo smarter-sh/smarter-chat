@@ -189,6 +189,32 @@ describe("SmarterChat", () => {
     expect(screen.queryByRole("button", { name: "Docs" })).not.toBeInTheDocument();
   });
 
+  it("hides the Console and its toggle button in production mode", async () => {
+    server.use(...chatHandlers);
+    const user = userEvent.setup();
+    render(<SmarterChat {...props} />);
+    await screen.findByText(WELCOME);
+    expect(screen.getByRole("navigation", { name: "Console" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show the Console" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Sandbox mode" }));
+    expect(screen.queryByRole("navigation", { name: "Console" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Show the Console" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("separator")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Production mode" }));
+    expect(screen.getByRole("navigation", { name: "Console" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show the Console" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("keeps the Console without the metadata toggle", async () => {
+    server.use(...chatHandlers);
+    render(<SmarterChat {...props} toggleMetadata={false} />);
+    await screen.findByText(WELCOME);
+    expect(screen.getByRole("navigation", { name: "Console" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show the Console" })).toBeInTheDocument();
+  });
+
   it("has no Docs button without the metadata toggle", async () => {
     server.use(...chatHandlers);
     render(<SmarterChat {...props} toggleMetadata={false} />);
