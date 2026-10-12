@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.8.0-alpha.1](https://github.com/smarter-sh/smarter-chat/compare/v0.7.1...v0.8.0-alpha.1) (2026-10-12)
+
+### Features
+
+* **chat:** add a sandbox-mode Docs button with technical references ([beab9cb](https://github.com/smarter-sh/smarter-chat/commit/beab9cbf97401cb7eefb3a98fbc60b7570c3239f))
+
 ## [0.7.1](https://github.com/smarter-sh/smarter-chat/compare/v0.7.0...v0.7.1) (2026-10-11)
 
 ### Bug Fixes
