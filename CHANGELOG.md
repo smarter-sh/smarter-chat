@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.8.0](https://github.com/smarter-sh/smarter-chat/compare/v0.7.1...v0.8.0) (2026-10-12)
+
+### Features
+
+* **chat:** add a sandbox-mode Docs button with technical references ([beab9cb](https://github.com/smarter-sh/smarter-chat/commit/beab9cbf97401cb7eefb3a98fbc60b7570c3239f))
+* **chat:** apply the LLMClient's styles to the chat ([afb1b5e](https://github.com/smarter-sh/smarter-chat/commit/afb1b5e637e97e629b24b50cb98ec0adfb985528))
+* **chat:** hide the console and its toggle in production mode ([8eb2b1b](https://github.com/smarter-sh/smarter-chat/commit/8eb2b1b13fdc318d193ecc8cd248fdfd599b7594))
+
 ## [0.8.0-alpha.3](https://github.com/smarter-sh/smarter-chat/compare/v0.8.0-alpha.2...v0.8.0-alpha.3) (2026-10-12)
 
 ### Features
