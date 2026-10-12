@@ -14,7 +14,8 @@
  * Smarter's system, tool and meta data messages. In production mode, it displays only the
  * conversation, as the LLMClient's users see it. The Console's server logs follow the mode: DEBUG
  * and above in sandbox mode, and the server's own log level in production mode. A new chat also
- * clears the Console's server logs.
+ * clears the Console's server logs. Sandbox mode also has a Docs button, which opens a dialog of
+ * links to the technical references for prompt engineers and software engineers.
  *
  * This is the component that the @smarter.sh/ui-chat npm package exports, and that the Smarter web
  * console's LLMClient prompt workbench renders. See main.tsx.
@@ -50,8 +51,9 @@ import {
 import type { ChatConfig, ChatCookies, ChatMessage, ClientContext, SmarterChatProps } from "@/types";
 import AppTitle from "@/components/AppTitle";
 import Console from "@/components/Console";
+import DocsDialog from "@/components/DocsDialog";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { ConsoleIcon, NewChatIcon, ProductionIcon, SandboxIcon } from "@/components/SmarterChat/icons";
+import { ConsoleIcon, DocsIcon, NewChatIcon, ProductionIcon, SandboxIcon } from "@/components/SmarterChat/icons";
 import "@/components/SmarterChat/styles.css";
 
 /** The css class of a message, by its sender. */
@@ -90,6 +92,7 @@ function SmarterChat({
   // sandbox mode, which displays the backend's own messages, is where the mode toggle is. Without it,
   // e.g. on a page that embeds the chat, the thread is the conversation, as the LLMClient's users see it.
   const [showMetadata, setShowMetadata] = useState(toggleMetadata);
+  const [docsOpen, setDocsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [progress, setProgress] = useState<PromptProgressEvent[]>([]);
   const [consoleVisible, setConsoleVisible] = useConsoleVisible();
@@ -303,6 +306,17 @@ function SmarterChat({
                           {showMetadata ? "Sandbox mode" : "Production mode"}
                         </Button>
                       )}
+                      {showMetadata && (
+                        <Button
+                          className="smarter-chat-toolbar-button smarter-chat-docs-button"
+                          icon={<DocsIcon />}
+                          onClick={() => setDocsOpen(true)}
+                          title="Technical references for prompt engineers and software engineers"
+                          aria-haspopup="dialog"
+                        >
+                          Docs
+                        </Button>
+                      )}
                       <Button
                         className="smarter-chat-toolbar-button"
                         icon={<NewChatIcon />}
@@ -412,6 +426,7 @@ function SmarterChat({
           </div>
         )}
       </div>
+      {docsOpen && <DocsDialog onClose={() => setDocsOpen(false)} />}
     </div>
   );
 }

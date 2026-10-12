@@ -161,6 +161,33 @@ describe("SmarterChat", () => {
     expect(screen.getByRole("button", { name: "Sandbox mode" })).toBeInTheDocument();
   });
 
+  it("opens and closes the Docs dialog, whose button is only in sandbox mode", async () => {
+    server.use(...chatHandlers);
+    const user = userEvent.setup();
+    render(<SmarterChat {...props} />);
+    await screen.findByText(WELCOME);
+
+    await user.click(screen.getByRole("button", { name: "Docs" }));
+    const dialog = screen.getByRole("dialog", { name: "Docs" });
+    expect(dialog).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "@smarter.sh/ui-chat" })).toHaveAttribute(
+      "href",
+      "https://www.npmjs.com/package/@smarter.sh/ui-chat",
+    );
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Sandbox mode" }));
+    expect(screen.queryByRole("button", { name: "Docs" })).not.toBeInTheDocument();
+  });
+
+  it("has no Docs button without the metadata toggle", async () => {
+    server.use(...chatHandlers);
+    render(<SmarterChat {...props} toggleMetadata={false} />);
+    await screen.findByText(WELCOME);
+    expect(screen.queryByRole("button", { name: "Docs" })).not.toBeInTheDocument();
+  });
+
   it("has no metadata toggle unless asked for one", async () => {
     server.use(...chatHandlers);
     render(<SmarterChat {...props} toggleMetadata={false} />);

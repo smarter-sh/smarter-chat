@@ -140,7 +140,8 @@
   text-align: center;
 }
 
-/* the toolbar: new chat, show or hide the Console, and sandbox or production mode. */
+/* the toolbar: new chat, show or hide the Console, sandbox or production mode, and, in sandbox
+   mode, the Docs dialog. */
 .cs-conversation-header__actions .cs-button.smarter-chat-toolbar-button {
   display: inline-flex;
   align-items: center;
@@ -163,7 +164,13 @@
   border: 1px solid rgba(110, 169, 215, 0.6);
 }
 
-.cs-conversation-header__actions .cs-button.smarter-chat-mode-toggle svg {
+.cs-conversation-header__actions .cs-button.smarter-chat-docs-button {
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.cs-conversation-header__actions .cs-button.smarter-chat-mode-toggle svg,
+.cs-conversation-header__actions .cs-button.smarter-chat-docs-button svg {
   font-size: 1.2em;
 }
 
