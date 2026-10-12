@@ -1,7 +1,8 @@
 # @smarter.sh/ui-chat
 
-> A drop-in React chat component for [Smarter](https://smarter.sh) LLMClients: streaming tool-call progress, GitHub
-> flavored markdown, syntax-highlighted code, LaTeX math and Mermaid diagrams, out of the box.
+> The official chat UI for [Smarter](https://smarter.sh) LLMClients. Drop it into any website, whether React, Next.js,
+> WordPress, Django, Flask, Node.js or plain HTML, and it gets its behavior and its look from the LLMClient's YAML
+> manifest.
 
 [![GitHub](https://img.shields.io/badge/github-smarter--sh%2Fsmarter--chat-181717?logo=github)](https://github.com/smarter-sh/smarter-chat)
 [![npm version](https://img.shields.io/npm/v/@smarter.sh/ui-chat?logo=npm)](https://www.npmjs.com/package/@smarter.sh/ui-chat)
@@ -15,49 +16,114 @@
 
 ![Smarter Chat](https://cdn.smarter.sh/images/smarter-chat-ui-example.png)
 
-Smarter Chat is the chat UI of the Smarter web console's prompt engineering workbench, published as a React component
-so that any web page can use a Smarter LLMClient as its chat backend: a marketing site, a customer portal, a storefront,
-an intranet, or your own application.
+Smarter Chat is the chat window of the Smarter web console's prompt engineering workbench, published on npm so you can
+put the same chat on your own website: a marketing site, a customer portal, a storefront, an intranet or an application.
+You build and run the chatbot on Smarter, and this package displays it on your pages. The complete guide is at
+[docs.smarter.sh](https://docs.smarter.sh/smarter-framework/smarter-chat.html).
 
-**[Documentation](https://docs.smarter.sh/en/latest/smarter-framework/smarter-chat.html)** ·
+**[Documentation](https://docs.smarter.sh/smarter-framework/smarter-chat.html)** ·
 **[Storybook](#development)** · **[Changelog](https://github.com/smarter-sh/smarter-chat/blob/main/CHANGELOG.md)** ·
 **[Issues](https://github.com/smarter-sh/smarter-chat/issues)**
 
 ## Contents
 
+- [How it works](#how-it-works)
 - [Features](#features)
 - [Installation](#installation)
-- [Quick start](#quick-start)
+- [Quick start (React)](#quick-start-react)
+- [Embedding in any website](#embedding-in-any-website)
 - [Requirements on the Smarter side](#requirements-on-the-smarter-side)
+- [Behavior: `spec.config.prompt`](#behavior-specconfigprompt)
+- [Styling: `spec.config.styles`](#styling-specconfigstyles)
 - [Props](#props)
-- [Examples](#examples)
-- [Styling](#styling)
+- [More examples](#more-examples)
 - [TypeScript](#typescript)
-- [How it works](#how-it-works)
+- [The api contract](#the-api-contract)
 - [Browser support](#browser-support)
 - [Development](#development)
 - [License](#license)
 
+## How it works
+
+Smarter Chat isn't a general-purpose chat UI. It works only with a Smarter
+[LLMClient](https://docs.smarter.sh/smarter-resources/smarter-llmclient.html), which is a chatbot that you declare in a
+YAML manifest and apply to a Smarter platform with the `smarter` CLI or the REST API. The platform runs the
+chatbot, and this component is its front end. It can't call OpenAI, Anthropic or any other LLM provider directly.
+
+The `SmarterChat` component has a single required prop, `apiUrl`, which is the url of a deployed LLMClient. Everything
+else comes from the LLMClient's manifest, so you change the chat by applying a new manifest, not by redeploying your
+website:
+
+| You want to change                                                                                                                                                                        | Where it's set                                                                                                |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| What the chatbot says and does: its LLM, model, system prompt, name, welcome message and examples                                                                                         | The manifest's [`spec.config.prompt`](#behavior-specconfigprompt)                                             |
+| Its tools and safety: [Plugins](https://docs.smarter.sh/smarter-resources/smarter-plugin.html), Functions, [Guardrails](https://docs.smarter.sh/smarter-resources/smarter-guardrail.html) | The manifest's `spec.plugins`, `spec.functions` and `spec.guardrails`                                         |
+| How it looks: its logo, avatars, background image, font and colors                                                                                                                        | The manifest's [`spec.config.styles`](#styling-specconfigstyles)                                              |
+| Where it appears on your page and its size, plus any extra CSS                                                                                                                            | Your page: the component's [props](#props) and your [stylesheet](#your-own-css)                               |
+| The data exchanged between browser and server                                                                                                                                             | [The api contract](#the-api-contract), generated from Smarter's Pydantic models. You don't change it yourself |
+
+```yaml
+apiVersion: smarter.sh/v1
+kind: LLMClient
+metadata:
+  name: support
+  description: Customer support for example.com
+  version: 1.0.0
+spec:
+  config:
+    prompt: # behavior: what the chatbot is and does
+      deployed: true
+      provider: openai
+      defaultModel: gpt-4o-mini
+      defaultSystemRole: You are a friendly support agent for example.com. Answer briefly.
+      appName: Example Support
+      appAssistant: Sam
+      appWelcomeMessage: Hi, I'm Sam. How can I help?
+      appExamplePrompts:
+        - How do I reset my password?
+        - What is your return policy?
+      appPlaceholder: Ask me anything...
+      allowedOrigins:
+        - https://www.example.com
+    styles: # look: how the chat is displayed, on every page that embeds it
+      appLogoUrl: https://cdn.example.com/logo.png
+      googleFont: Nunito
+      conversationHeader: { backgroundColor: "#14213d", color: "#ffffff" }
+      outgoingMessage: { backgroundColor: "#fca311", color: "#14213d" }
+  plugins:
+    - order-status
+```
+
+```tsx
+<SmarterChat apiUrl="https://support.3141-5926-5359.api.example.com/" showConsole={false} />
+```
+
 ## Features
 
-- **One component, one prop.** Give it the url of a deployed LLMClient, and it loads the LLMClient's name, welcome
-  message, example prompts and placeholder from Smarter.
+- **Configured by its manifest.** You give it the url of a deployed LLMClient, and it loads the LLMClient's name,
+  welcome message, example prompts, placeholder and styles from Smarter.
+- **Embed it anywhere.** You can use it as a React component, or build it once into a small script that WordPress,
+  Django, Flask, Express or a plain HTML page includes.
+- **Themeable without CSS.** The logo, avatars, background image, Google font, font size, corner radius and the colors
+  of every part of the chat are set in the manifest and validated by Smarter.
 - **Persistent chat sessions.** The conversation survives page reloads, and each LLMClient on a site keeps its own
   session.
-- **Live progress.** While a prompt runs, the chat shows each LLM request, tool, plugin and MCP server call, streamed
-  as Server-Sent Events.
-- **Rich responses.** GitHub flavored markdown (tables, lists, block quotes, images, links), syntax-highlighted code
-  blocks with a copy button, LaTeX math typeset by [KaTeX](https://katex.org), and
+- **Live progress.** While a prompt runs, the chat shows each LLM request and each tool, Plugin and MCP server call,
+  streamed as Server-Sent Events.
+- **Rich responses.** It renders GitHub flavored markdown (tables, lists, block quotes, images, links),
+  syntax-highlighted code blocks with a copy button, LaTeX math typeset by [KaTeX](https://katex.org), and
   [Mermaid](https://mermaid.js.org) diagrams.
-- **Safe by default.** Raw html is displayed as text, links and images are restricted to `http(s)`, relative and raster
-  `data:` urls, and the rendered html and Mermaid's svg are sanitized with
+- **Safe by default.** Raw HTML is displayed as text. Links and images are restricted to `http(s)`, relative and
+  raster `data:` urls. The rendered HTML and Mermaid's SVG are sanitized with
   [DOMPurify](https://github.com/cure53/DOMPurify).
-- **Lightweight where it counts.** React is a peer dependency, Mermaid is loaded only when a message first has a
+- **Lightweight where it counts.** React is a peer dependency. Mermaid is loaded only when a message first has a
   diagram, and KaTeX's fonts are downloaded only when an equation uses them.
-- **Optional developer Console.** A resizable side panel with the LLMClient's configuration, the session's api calls,
-  tool calls and plugin usage, and a live server log stream, as in the Smarter workbench.
-- **Accessible.** Labeled regions and controls, keyboard-resizable panels, and MathML for screen readers.
-- **Typed.** Written in TypeScript, with type declarations for its props and for the Smarter api's data.
+- **Optional developer Console.** As in the Smarter workbench, a resizable side panel can show the LLMClient's
+  configuration, the session's api calls, tool calls and Plugin usage, and a live server log stream.
+- **Accessible.** It has labeled regions and controls, keyboard-resizable panels, and MathML for screen readers.
+- **Typed.** It's written in TypeScript, and its types are generated from Smarter's api contract.
+
+See [Features](https://docs.smarter.sh/smarter-framework/smarter-chat/features.html) for details.
 
 ## Installation
 
@@ -74,9 +140,10 @@ pnpm add @smarter.sh/ui-chat
 ```
 
 `react` and `react-dom` 19 are peer dependencies. The package is published as ES and UMD bundles, and is meant to be
-used with a bundler such as Vite, webpack, Rollup or Next.js.
+used with a bundler such as Vite, webpack, Rollup or Next.js. If your site isn't built with React, see
+[Embedding in any website](#embedding-in-any-website).
 
-## Quick start
+## Quick start (React)
 
 ```tsx
 import { createRoot } from "react-dom/client";
@@ -95,17 +162,155 @@ createRoot(document.getElementById("chat")!).render(
 );
 ```
 
-The chat fills the height of its parent element, so give the parent a height.
+The chat fills the height of its parent element, so give the parent a height. Before it can connect, the LLMClient
+must be deployed and must allow your page's origin. See
+[Requirements on the Smarter side](#requirements-on-the-smarter-side).
+
+## Embedding in any website
+
+If your site isn't built with React, such as a WordPress theme, a Django or Flask template, an Express app or a static
+HTML page, build Smarter Chat once into a script and a stylesheet, and include them like any other front-end asset.
+The script mounts a chat in every element that has a `data-smarter-chat-api-url` attribute.
+
+### 1. Build the embed script
+
+Create a small project, outside your website, for the build:
+
+```console
+mkdir smarter-chat-embed && cd smarter-chat-embed
+npm init -y
+npm install @smarter.sh/ui-chat react react-dom
+npm install --save-dev vite @vitejs/plugin-react
+```
+
+`src/smarter-chat-embed.tsx`:
+
+```tsx
+import { createRoot } from "react-dom/client";
+import { SmarterChat } from "@smarter.sh/ui-chat";
+import "@smarter.sh/ui-chat/dist/ui-chat.css";
+import "katex/dist/katex.min.css";
+
+// Mount a chat in every <div data-smarter-chat-api-url="..."> on the page.
+document.querySelectorAll<HTMLElement>("[data-smarter-chat-api-url]").forEach((el) => {
+  createRoot(el).render(
+    <SmarterChat
+      apiUrl={el.dataset.smarterChatApiUrl!}
+      apiKey={el.dataset.smarterChatApiKey || null}
+      showConsole={false}
+    />,
+  );
+});
+```
+
+`vite.config.ts`:
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+// dist/smarter-chat-embed.js and .css, plus chunks and fonts that are downloaded only when a message
+// needs them (Mermaid diagrams, KaTeX math).
+export default defineConfig({
+  plugins: [react()],
+  base: "./",
+  build: {
+    outDir: "dist",
+    rollupOptions: {
+      input: "src/smarter-chat-embed.tsx",
+      output: {
+        entryFileNames: "smarter-chat-embed.js",
+        assetFileNames: (asset) =>
+          asset.names?.[0]?.endsWith(".css") ? "smarter-chat-embed.css" : "assets/[name]-[hash][extname]",
+      },
+    },
+  },
+});
+```
+
+```console
+npx vite build
+```
+
+Copy the whole `dist/` directory, including `assets/`, to your site's static files or to a CDN. The script loads its
+chunks relative to its own url, so you can host the directory anywhere.
+
+### 2. Add it to your pages
+
+Each page needs the stylesheet, the script as a module, and an element with a height to hold the chat. The examples
+below assume that `dist/` was copied to a `smarter-chat` directory of your static files.
+
+**Plain HTML**
+
+```html
+<link rel="stylesheet" href="/static/smarter-chat/smarter-chat-embed.css" />
+<div data-smarter-chat-api-url="https://support.3141-5926-5359.api.example.com/" style="height: 600px"></div>
+<script type="module" src="/static/smarter-chat/smarter-chat-embed.js"></script>
+```
+
+**WordPress** (copy `dist/` to your theme's `smarter-chat/` directory, then add this to `functions.php`. Pages then use
+the `[smarter_chat]` shortcode):
+
+```php
+add_action('wp_enqueue_scripts', function () {
+    $dir = get_stylesheet_directory_uri() . '/smarter-chat';
+    wp_enqueue_style('smarter-chat', "$dir/smarter-chat-embed.css");
+    wp_enqueue_script_module('smarter-chat', "$dir/smarter-chat-embed.js"); // WordPress 6.5+
+});
+
+add_shortcode('smarter_chat', function ($atts) {
+    $atts = shortcode_atts(['url' => '', 'height' => '600px'], $atts);
+    return sprintf(
+        '<div data-smarter-chat-api-url="%s" style="height: %s"></div>',
+        esc_url($atts['url']),
+        esc_attr($atts['height'])
+    );
+});
+```
+
+```text
+[smarter_chat url="https://support.3141-5926-5359.api.example.com/"]
+```
+
+**Django** (copy `dist/` to `static/smarter-chat/` in one of your apps):
+
+```django
+{% load static %}
+<link rel="stylesheet" href="{% static 'smarter-chat/smarter-chat-embed.css' %}" />
+<div data-smarter-chat-api-url="{{ smarter_chat_api_url }}" style="height: 600px"></div>
+<script type="module" src="{% static 'smarter-chat/smarter-chat-embed.js' %}"></script>
+```
+
+**Flask** (copy `dist/` to `static/smarter-chat/`):
+
+```jinja
+<link rel="stylesheet" href="{{ url_for('static', filename='smarter-chat/smarter-chat-embed.css') }}" />
+<div data-smarter-chat-api-url="{{ smarter_chat_api_url }}" style="height: 600px"></div>
+<script type="module" src="{{ url_for('static', filename='smarter-chat/smarter-chat-embed.js') }}"></script>
+```
+
+**Node.js / Express**
+
+```js
+app.use("/smarter-chat", express.static("smarter-chat-embed/dist"));
+```
+
+Then use the plain HTML snippet above in your templates, with `/smarter-chat/` paths.
+
+If the LLMClient requires an api key, add a `data-smarter-chat-api-key` attribute. A server-rendered template can
+fill it in from an environment variable, but it still ends up in the page's HTML, where any visitor can read it. See
+[Requirements on the Smarter side](#requirements-on-the-smarter-side).
 
 ## Requirements on the Smarter side
 
-The component talks directly to the Smarter platform from your visitors' browsers, so three things must be true:
+The component calls the Smarter platform directly from your visitors' browsers, so three things must be true:
 
-1. **The LLMClient is deployed.** `apiUrl` is its url, for example
-   `https://<name>.<account-number>.api.<your-smarter-domain>/`, or its verified custom domain. The chat calls that
-   host only.
-2. **Your page's origin is allowed.** Requests from your page are cross-origin, with credentials. List your origins in
-   the LLMClient's manifest, and apply it:
+1. **The LLMClient is deployed** (`spec.config.prompt.deployed: true`). `apiUrl` is its url, for example
+   `https://<name>.<account-number>.api.<your-smarter-domain>/`, or its verified
+   [custom domain](https://docs.smarter.sh/smarter-resources/smarter-custom-domain.html). The chat calls only
+   that host.
+2. **Your page's origin is allowed.** Requests from your page are cross-origin and include credentials, so list your
+   site's origins in the LLMClient's manifest and apply it:
 
    ```yaml
    spec:
@@ -116,16 +321,114 @@ The component talks directly to the Smarter platform from your visitors' browser
            - http://localhost:5173
    ```
 
-3. **The browser can authenticate, if the LLMClient requires it.** A deployed LLMClient without api keys is public:
-   pass no `apiKey`, and every prompt is charged to the LLMClient's owner. For one with an api key, pass a Smarter api
-   key as `apiKey`, which is sent as `Authorization: Token <apiKey>`. Anyone who can view your page can read it, so use
-   a key dedicated to the page.
+3. **The browser can authenticate, if the LLMClient requires it.** A deployed LLMClient without api keys is public.
+   Pass no `apiKey`, and every prompt is charged to the LLMClient's owner. If the LLMClient has an api key, pass a
+   [Smarter api key](https://docs.smarter.sh/smarter-resources/smarter-authtoken.html) as `apiKey`, which is sent as `Authorization: Token <apiKey>`. Anyone who can view your page can
+   read it, so create a key just for that page.
 
-The page receives the LLMClient's public configuration (its name, welcome message, example prompts, model and system
-prompt), never, for example, its owner's profile or the session's diagnostic histories.
+The page receives only the LLMClient's public configuration (its name, welcome message, example prompts, model,
+system prompt and styles). It never receives, for example, its owner's profile or the session's diagnostic history.
 
-See [Embedding Smarter Chat](https://docs.smarter.sh/en/latest/smarter-framework/smarter-chat/embedding.html) for
-details, including troubleshooting.
+For details and troubleshooting, see
+[Embedding Smarter Chat](https://docs.smarter.sh/smarter-framework/smarter-chat/embedding.html).
+
+## Behavior: `spec.config.prompt`
+
+You configure the chatbot's behavior in its manifest, not in this package. The section is validated on the platform by
+the Pydantic model
+[`SAMLLMClientSpecConfigPrompt`](https://docs.smarter.sh/smarter-resources/llmclient/sam.html)
+(`smarter.apps.llmclient.manifest.models.llmclient.spec`). The settings fall into three groups: what Smarter sends to the
+LLM, what the chat displays, and who may use it.
+
+| Setting                                  | Effect in the chat                                                                                                           |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `provider`, `defaultModel`               | The LLM that answers. They're also shown under the name in the header, as in "openai gpt-4o-mini with 2 additional plugins". |
+| `defaultSystemRole`                      | The system prompt that starts every new session. It's visible in sandbox mode (`toggleMetadata`).                            |
+| `defaultTemperature`, `defaultMaxTokens` | Sent to the LLM with each prompt.                                                                                            |
+| `appName`                                | The title in the header, followed by the manifest's `metadata.version`.                                                      |
+| `appAssistant`                           | The sender name on the assistant's messages. The default is "Assistant".                                                     |
+| `appWelcomeMessage`                      | The first assistant message of a new session.                                                                                |
+| `appExamplePrompts`                      | A second assistant message that lists them: "Some example prompts to get you started".                                       |
+| `appPlaceholder`                         | The hint in the empty message box.                                                                                           |
+| `appFileAttachment`                      | Shows the attach button in the message box.                                                                                  |
+| `deployed`, `subdomain`, `customDomain`  | Whether the LLMClient has a public url, and what that url is, which you pass as `apiUrl`.                                    |
+| `allowedOrigins`                         | The websites that may embed the chat.                                                                                        |
+
+The chatbot's tools are set beside `config`: `spec.plugins`, `spec.functions` and `spec.guardrails` are run by the
+platform. The chat displays their calls as progress while a prompt runs.
+
+Apply a changed manifest with `smarter apply -f llmclient.yaml`. A new chat session picks up the change without any
+change to your website.
+
+## Styling: `spec.config.styles`
+
+### The LLMClient's styles
+
+The chat takes its look from the LLMClient's manifest, so most pages need no CSS of their own. `spec.config.styles` is
+validated on the platform by the Pydantic model
+[`SAMLLMClientSpecConfigStyles`](https://docs.smarter.sh/smarter-resources/llmclient/sam.html)
+(`smarter.apps.llmclient.manifest.models.llmclient.styles`). Every setting is optional, and a setting that is left out
+keeps the default. Colors, lengths and font names must be plain CSS values, and images must be `https` urls that
+Smarter can fetch when the manifest is applied.
+
+```yaml
+spec:
+  config:
+    styles:
+      # images
+      appLogoUrl: https://cdn.example.com/logo.png # in a circle at the left of the header
+      assistantAvatarUrl: https://cdn.example.com/assistant.png
+      userAvatarUrl: https://cdn.example.com/user.png
+      appBackgroundImageUrl: https://cdn.example.com/background.jpg
+      appBackgroundImageSize: cover # cover | contain | auto
+      # typography and shape
+      googleFont: Nunito # downloaded from fonts.google.com
+      fontFamily: '"Nunito", system-ui, sans-serif' # overrides googleFont's stack
+      fontSize: 16px
+      borderRadius: 0.7em
+      # colors, one section per part of the chat
+      mainContainer: { backgroundColor: "#ffffff", color: "#212121", borderColor: "#d1dbe3" }
+      conversationHeader: { backgroundColor: "#14213d", color: "#ffffff", infoColor: "#c0c4e0", borderColor: "#14213d" }
+      messageList: { backgroundColor: "rgba(255, 255, 255, 0.6)", color: "#212121" } # tints the background image
+      incomingMessage: { backgroundColor: "#e5e5e5", color: "#14213d", borderColor: "#d1dbe3", linkColor: "#0b57d0" }
+      outgoingMessage: { backgroundColor: "#fca311", color: "#14213d", linkColor: "#14213d" }
+      messageInput:
+        backgroundColor: "#ffffff"
+        editorBackgroundColor: "#f6fbff"
+        color: "#212121"
+        placeholderColor: "#9e9e9e"
+        borderColor: "#d1dbe3"
+      buttons: { color: "#fca311" }
+      typingIndicator: { color: "#fca311" }
+```
+
+The sections correspond to the [chatscope](https://github.com/chatscope/chat-ui-kit-react) components that the chat is
+built on: `MainContainer`, `ConversationHeader`, `MessageList`, `Message`, `MessageInput`, `Button` and
+`TypingIndicator`. The same styles apply in the Smarter workbench and on every page that embeds the LLMClient.
+
+The chat sets the styles as CSS custom properties on its root `.SmarterChat` element, such as
+`--smarter-chat-header-bg` and `--smarter-chat-outgoing-bg`. Their fallbacks are chatscope's own colors. See
+[Styling Your LLMClient's Chat](https://docs.smarter.sh/smarter-resources/llmclient/styles.html) for every
+setting.
+
+### Your own CSS
+
+Import the stylesheets once, anywhere in your app:
+
+```ts
+import "@smarter.sh/ui-chat/dist/ui-chat.css"; // or "@smarter.sh/ui-chat/style.css"
+import "katex/dist/katex.min.css";
+```
+
+- **`ui-chat.css`** is the component's own CSS, including chatscope's chat styles.
+- **`katex/dist/katex.min.css`** styles math in responses. It's kept out of `ui-chat.css` so that pages without math
+  don't download KaTeX's fonts. Without it, each equation is displayed twice, once as text and once as unstyled
+  MathML.
+
+The component's elements have stable class names prefixed `smarter-chat-` (for example `.smarter-chat-message-list`,
+`.smarter-chat-code`, `.smarter-chat-image`), under a root `.SmarterChat` element. Your stylesheet can override them,
+or set the `--smarter-chat-*` properties, for anything the manifest doesn't cover. If a setting is in the manifest,
+prefer setting it there, so that it applies everywhere the LLMClient is embedded.
 
 ## Props
 
@@ -149,7 +452,10 @@ Only `apiUrl` is required.
 | `smarterRequestId`        | `string`         | `""`            | A unique id of the page request, sent as the `X-Smarter-RequestId` header, for tracing.                                                                                                                                                                                                      |
 | `logStreamUrl`            | `string \| null` | `null`          | The url of a server log stream (Server-Sent Events), for the Console's Server Logs tab.                                                                                                                                                                                                      |
 
-## Examples
+The props control where and how the chat runs on your page. Its content and look come from the manifest, so there is
+no prop for the welcome message, the colors or the model.
+
+## More examples
 
 ### A chat widget in a corner of the page
 
@@ -196,7 +502,7 @@ export default function Chat() {
 
 ### A prompt engineering workbench
 
-The full workbench, as in the Smarter web console: the Console, the mode toggle, and your server logs.
+This is the full workbench, as in the Smarter web console, with the Console, the mode toggle and your server logs:
 
 ```tsx
 <SmarterChat
@@ -208,84 +514,56 @@ The full workbench, as in the Smarter web console: the Console, the mode toggle,
 />
 ```
 
-## Styling
-
-Import the stylesheet once, anywhere in your app:
-
-```ts
-import "@smarter.sh/ui-chat/dist/ui-chat.css"; // or "@smarter.sh/ui-chat/style.css"
-import "katex/dist/katex.min.css";
-```
-
-- **`ui-chat.css`** is the component's own css, including
-  [chatscope](https://github.com/chatscope/chat-ui-kit-react)'s chat styles, which it is built on.
-- **`katex/dist/katex.min.css`** is the stylesheet of math in responses. It's left out of `ui-chat.css` so that pages
-  without math don't pay for KaTeX's fonts. Without it, math is displayed twice: as text, and as unstyled MathML.
-
-### The LLMClient's styles
-
-The chat takes its look from the LLMClient's manifest, so most pages need no css of their own. Its
-`spec.config.styles` sets the logo in the header, avatars beside the messages, a background image, a Google font, and
-the colors of each part of the chat, which are chatscope's components:
-
-```yaml
-spec:
-  config:
-    styles:
-      appLogoUrl: https://cdn.example.com/logo.png
-      googleFont: Nunito
-      conversationHeader: { backgroundColor: "#14213d", color: "#ffffff" }
-      outgoingMessage: { backgroundColor: "#fca311", color: "#14213d" }
-```
-
-The chat sets them as css custom properties on its root `.SmarterChat` element, e.g. `--smarter-chat-header-bg` and
-`--smarter-chat-outgoing-bg`, whose fallbacks are chatscope's own colors. Your stylesheet can set the same properties.
-See [Styling Your LLMClient's Chat](https://docs.smarter.sh/en/latest/smarter-resources/llmclient/styles.html) for every
-setting.
-
-### Your own css
-
-The component's elements have stable class names, prefixed `smarter-chat-` (for example `.smarter-chat-message-list`,
-`.smarter-chat-code`, `.smarter-chat-image`), under a root `.SmarterChat` element, so you can override their styles
-from your own stylesheet.
-
 ## TypeScript
 
 Type declarations are included. Besides the components, the package exports:
 
-| Export                                                                         | What it is                                                       |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| `SmarterChat`                                                                  | The chat component.                                              |
-| `Console`                                                                      | The developer Console, on its own.                               |
-| `SmarterChatProps`                                                             | The chat's props.                                                |
-| `ChatConfig`, `LLMClientConfig`, `ChatHistory`, `ChatMetaData`                 | The LLMClient configuration that the Smarter config api returns. |
-| `Contract`                                                                     | Every type of the api contract, generated from its JSON Schema.  |
-| `normalizeConfig`, `CHAT_CONTRACT_V2_CAPABILITY`                               | Converts an older platform's configuration to the current one.   |
-| `ApiMessage`, `ChatMessage`                                                    | A message as the api sends it, and as the chat thread holds it.  |
-| `PromptProgressEvent`                                                          | A step of a running prompt, as the prompt api streams it.        |
-| `MessageDirectionEnum`, `SenderRoleEnum`, `ValidMessageRolesEnum`, `MenuItems` | Message directions and roles, and the Console's tabs.            |
-| `version`                                                                      | The package's version.                                           |
+| Export                                                                         | What it is                                                         |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `SmarterChat`                                                                  | The chat component.                                                |
+| `Console`                                                                      | The developer Console, on its own.                                 |
+| `SmarterChatProps`                                                             | The chat's props.                                                  |
+| `ChatConfig`, `LLMClientConfig`, `ChatHistory`, `ChatMetaData`                 | The LLMClient configuration that the Smarter config api returns.   |
+| `Contract`                                                                     | Every type of the api contract, generated from its JSON Schema.    |
+| `normalizeConfig`, `CHAT_CONTRACT_V2_CAPABILITY`                               | Converts an older platform's configuration to the current version. |
+| `ApiMessage`, `ChatMessage`                                                    | A message as the api sends it, and as the chat thread holds it.    |
+| `PromptProgressEvent`                                                          | A step of a running prompt, as the prompt api streams it.          |
+| `MessageDirectionEnum`, `SenderRoleEnum`, `ValidMessageRolesEnum`, `MenuItems` | Message directions and roles, and the Console's tabs.              |
+| `version`                                                                      | The package's version.                                             |
 
-## How it works
+## The api contract
+
+The component and the Smarter platform share a single, versioned api contract. The contract is defined by Pydantic
+models in the Smarter backend, in
+[`smarter.apps.prompt.contract`](https://docs.smarter.sh/smarter-framework/smarter-chat/technical-reference/contract.html):
+
+1. The platform builds its responses from those models.
+2. `manage.py export_chat_contract_schema` exports the models as a JSON Schema, `chat-contract.schema.json`.
+3. This package keeps a copy of the schema in `contract/`, generates its TypeScript types from it (`src/contract.gen.ts`,
+   exported as `Contract`), and validates its test fixtures against it.
+
+A change to the backend's models therefore reaches the component's types, and a test on each side fails if its copy of
+the schema is out of date. This is why the component works only with a Smarter backend.
 
 The component makes two kinds of POST requests to Smarter, with the browser's cookies:
 
-1. **`<apiUrl>config/`** returns the LLMClient's configuration and the chat session's history, which restores the
-   thread when the page reloads. A new session's key is saved in a cookie.
+1. **`<apiUrl>config/`** returns the LLMClient's public configuration, including its `spec.config.prompt` settings and
+   its `styles`, plus the chat session's history, which restores the thread when the page reloads. A new session's key
+   is saved in a cookie.
 2. **The LLMClient's prompt api** (`llmclient.url_llmclient` in the configuration) receives the thread with each new
-   message, and returns the messages to add to it. With `streamProgress`, it answers with Server-Sent Events: progress
+   message, and returns the messages to add to it. With `streamProgress`, it responds with Server-Sent Events: progress
    events while the prompt runs, then the result.
 
-The api contract is versioned, and generated from the backend's Pydantic models: the component asks for the current
-version, with `X-Smarter-Capabilities: chat-contract-v2`, and reads the previous one from older Smarter platforms.
+The component asks for version 2 of the contract with the `X-Smarter-Capabilities: chat-contract-v2` header. It also
+reads version 1 from older Smarter platforms, and converts it with `normalizeConfig`.
 
 The complete contract, with every request, response, header, cookie and event, is in
-[The Chat API Contract](https://docs.smarter.sh/en/latest/smarter-framework/smarter-chat/api-contract.html).
+[The Chat API Contract](https://docs.smarter.sh/smarter-framework/smarter-chat/api-contract.html).
 
 ## Browser support
 
-Current versions of Chrome, Edge, Firefox and Safari. The component uses `fetch` response streams, `EventSource`,
-`localStorage` and the `inert` attribute.
+Smarter Chat supports current versions of Chrome, Edge, Firefox and Safari. It uses `fetch` response streams,
+`EventSource`, `localStorage` and the `inert` attribute.
 
 ## Development
 
@@ -297,10 +575,11 @@ make serve   # Storybook at http://localhost:6006, with the Smarter api mocked
 make test    # Vitest; every story is also rendered as a test
 ```
 
-No Smarter backend is needed: the stories mock the api with [MSW](https://mswjs.io/). See
+You don't need a Smarter backend: the stories mock the api with [MSW](https://mswjs.io/), using fixtures that are
+validated against the contract's schema. See
 [CONTRIBUTING.md](https://github.com/smarter-sh/smarter-chat/blob/main/.github/CONTRIBUTING.md) for the rest of the
 workflow (every `make` target, working inside the Smarter repository, commits and releases), and the
-[developer guide](https://docs.smarter.sh/en/latest/smarter-framework/smarter-chat/development.html) for the
+[developer guide](https://docs.smarter.sh/smarter-framework/smarter-chat/development.html) for the
 architecture.
 
 ## License
