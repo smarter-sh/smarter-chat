@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.8.0-alpha.2](https://github.com/smarter-sh/smarter-chat/compare/v0.8.0-alpha.1...v0.8.0-alpha.2) (2026-10-12)
+
+### Features
+
+* **chat:** apply the LLMClient's styles to the chat ([afb1b5e](https://github.com/smarter-sh/smarter-chat/commit/afb1b5e637e97e629b24b50cb98ec0adfb985528))
+
 ## [0.8.0-alpha.1](https://github.com/smarter-sh/smarter-chat/compare/v0.7.1...v0.8.0-alpha.1) (2026-10-12)
 
 ### Features
