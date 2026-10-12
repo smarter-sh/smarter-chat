@@ -14,6 +14,7 @@ import {
   configWithDiagram,
   configWithImages,
   configWithMath,
+  configWithStyles,
   liveLog,
   promptErrorResponse,
   promptEventStream,
@@ -57,6 +58,12 @@ export const configErrorHandlers = [
 /** A chat session whose assistant replied with markdown images. */
 export const imageHandlers = [
   configHandler(configWithImages),
+  http.post(PROMPT_URL, () => HttpResponse.json(promptResponse())),
+];
+
+/** A chat session with an LLMClient that has styles: a logo, avatars, a background image, a font and colors. */
+export const stylesHandlers = [
+  configHandler(configWithStyles),
   http.post(PROMPT_URL, () => HttpResponse.json(promptResponse())),
 ];
 

@@ -125,8 +125,149 @@
 .smarter-chat-container-inner,
 .smarter-chat-message-list {
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.1) !important;
-  color: lightgray;
+}
+
+/* ------------------------- the LLMClient's styles -------------------------
+
+   The LLMClient's manifest's spec.config.styles are css variables on the .SmarterChat element (see
+   lib/styles.ts), which these rules apply to chatscope's components. Each variable's fallback is
+   chatscope's own value, or Smarter's, so a setting that is left out changes nothing. The rules are
+   prefixed with .SmarterChat, so that they win over chatscope's. */
+
+.SmarterChat .cs-main-container {
+  font-family: var(--smarter-chat-font-family, Helvetica Neue, Segoe UI, Helvetica, Arial, sans-serif);
+  font-size: var(--smarter-chat-font-size, 1rem);
+  color: var(--smarter-chat-main-container-color, rgba(0, 0, 0, 0.87));
+  background-color: var(--smarter-chat-main-container-bg, #fff);
+  border-color: var(--smarter-chat-main-container-border-color, #d1dbe3);
+}
+
+.SmarterChat .smarter-chat-container-inner {
+  color: var(--smarter-chat-message-list-color, lightgray);
+  background-color: var(--smarter-chat-chat-container-bg, rgba(0, 0, 0, 0.1)) !important;
+}
+
+.SmarterChat .smarter-chat-message-list {
+  color: var(--smarter-chat-message-list-color, lightgray);
+  background-color: var(--smarter-chat-message-list-bg, rgba(0, 0, 0, 0.1)) !important;
+  background-image: var(--smarter-chat-background-image, none);
+  background-size: var(--smarter-chat-background-size, cover);
+  background-repeat: var(--smarter-chat-background-repeat, no-repeat);
+  background-position: center;
+}
+
+.SmarterChat .cs-conversation-header {
+  font-family: var(--smarter-chat-font-family, Helvetica Neue, Segoe UI, Helvetica, Arial, sans-serif);
+  background-color: var(--smarter-chat-header-bg, #f6fbff);
+  border-bottom-color: var(--smarter-chat-header-border-color, #d1dbe3);
+}
+
+.SmarterChat .cs-conversation-header__content .cs-conversation-header__user-name {
+  color: var(--smarter-chat-header-color, rgba(0, 0, 0, 0.87));
+  background-color: transparent;
+}
+
+.SmarterChat .cs-conversation-header__content .cs-conversation-header__info {
+  color: var(--smarter-chat-header-info-color, rgba(0, 0, 0, 0.6));
+  background-color: transparent;
+}
+
+/* the LLMClient's logo, in the header. chatscope displays avatars as circles, so the whole logo is
+   fitted into a white circle. */
+.SmarterChat .cs-conversation-header__avatar .smarter-chat-logo img {
+  box-sizing: border-box;
+  padding: 3px;
+  object-fit: contain;
+  background-color: #fff;
+}
+
+/* Smarter's own messages (sandbox mode's system, tool and progress messages, and errors) keep their
+   look. */
+.SmarterChat .cs-message__content {
+  font-family: var(--smarter-chat-font-family, Helvetica Neue, Segoe UI, Helvetica, Arial, sans-serif);
+}
+
+.SmarterChat
+  .cs-message.cs-message--incoming.cs-message--single:not(
+    .smarter-message,
+    .smarter-error-message,
+    .smarter-progress-message,
+    .system-message
+  )
+  .cs-message__content {
+  color: var(--smarter-chat-incoming-color, rgba(0, 0, 0, 0.87));
+  background-color: var(--smarter-chat-incoming-bg, #c6e3fa);
+  border: 1px solid var(--smarter-chat-incoming-border-color, transparent);
+  border-radius: 0 var(--smarter-chat-border-radius, 0.7em) var(--smarter-chat-border-radius, 0.7em)
+    var(--smarter-chat-border-radius, 0.7em);
+}
+
+.SmarterChat
+  .cs-message.cs-message--outgoing.cs-message--single:not(
+    .smarter-message,
+    .smarter-error-message,
+    .smarter-progress-message,
+    .system-message
+  )
+  .cs-message__content {
+  color: var(--smarter-chat-outgoing-color, rgba(0, 0, 0, 0.87));
+  background-color: var(--smarter-chat-outgoing-bg, #6ea9d7);
+  border: 1px solid var(--smarter-chat-outgoing-border-color, transparent);
+  border-radius: var(--smarter-chat-border-radius, 0.7em) var(--smarter-chat-border-radius, 0.7em) 0
+    var(--smarter-chat-border-radius, 0.7em);
+}
+
+.SmarterChat .cs-message--incoming div.cs-message__html-content a {
+  color: var(--smarter-chat-incoming-link-color, inherit);
+  filter: var(--smarter-chat-incoming-link-filter, invert(1) contrast(2));
+}
+
+.SmarterChat .cs-message--outgoing div.cs-message__html-content a {
+  color: var(--smarter-chat-outgoing-link-color, inherit);
+  filter: var(--smarter-chat-outgoing-link-filter, invert(1) contrast(2));
+}
+
+.SmarterChat .cs-chat-container .cs-message-input {
+  color: var(--smarter-chat-input-color, rgba(0, 0, 0, 0.87));
+  background-color: var(--smarter-chat-input-bg, #fff);
+  border-top-color: var(--smarter-chat-input-border-color, #d1dbe3);
+}
+
+.SmarterChat .cs-message-input__content-editor-wrapper,
+.SmarterChat .cs-message-input__content-editor-container,
+.SmarterChat .cs-message-input__content-editor {
+  background-color: var(--smarter-chat-input-editor-bg, #c6e3fa);
+}
+
+.SmarterChat .cs-message-input__content-editor-wrapper {
+  border-radius: var(--smarter-chat-border-radius, 0.7em);
+}
+
+.SmarterChat .cs-message-input__content-editor {
+  font-family: var(--smarter-chat-font-family, Helvetica Neue, Segoe UI, Helvetica, Arial, sans-serif);
+  color: var(--smarter-chat-input-color, rgba(0, 0, 0, 0.87));
+}
+
+.SmarterChat .cs-message-input__content-editor[data-placeholder]:empty:before {
+  color: var(--smarter-chat-input-placeholder-color, rgba(0, 0, 0, 0.38));
+}
+
+.SmarterChat .cs-button--send,
+.SmarterChat .cs-button--attachment {
+  color: var(--smarter-chat-button-color, #6ea9d7);
+}
+
+.SmarterChat .cs-typing-indicator__text {
+  color: var(--smarter-chat-typing-color, #6ea9d7);
+}
+
+.SmarterChat .cs-typing-indicator__dot {
+  background-color: var(--smarter-chat-typing-color, #6ea9d7);
+}
+
+/* the avatars beside messages. */
+.SmarterChat .cs-message__avatar .cs-avatar img {
+  object-fit: cover;
 }
 
 /* ------------------------- messages ------------------------- */
@@ -148,7 +289,7 @@
   gap: 0.35em;
   padding: 0.2em 0.4em;
   font-size: 1.3em;
-  color: #6ea9d7;
+  color: var(--smarter-chat-button-color, #6ea9d7);
   background-color: transparent;
   border-radius: 0.4em;
 }
@@ -409,7 +550,6 @@ div.cs-message__html-content hr {
 
 div.cs-message__html-content a {
   text-decoration: underline !important;
-  filter: invert(1) contrast(2);
 }
 div.cs-message__html-content a:hover {
   text-decoration: underline;
@@ -530,7 +670,7 @@ div.cs-message__html-content img.smarter-chat-image {
   border-radius: 6px;
 }
 
-div.cs-message__html-content a:has(> img.smarter-chat-image) {
+.SmarterChat div.cs-message__html-content a:has(> img.smarter-chat-image) {
   filter: none;
 }
 

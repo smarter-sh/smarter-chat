@@ -17,11 +17,15 @@
  * clears the Console's server logs. Sandbox mode also has a Docs button, which opens a dialog of
  * links to the technical references for prompt engineers and software engineers.
  *
+ * The LLMClient's styles (its manifest's spec.config.styles) set its logo, which is displayed in
+ * the header, its avatars, its background image, its fonts and its colors. See lib/styles.ts.
+ *
  * This is the component that the @smarter.sh/ui-chat npm package exports, and that the Smarter web
  * console's LLMClient prompt workbench renders. See main.tsx.
  */
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import {
+  Avatar,
   Button,
   ChatContainer,
   ConversationHeader,
@@ -41,6 +45,7 @@ import { cookieMetaFactory, setCookie } from "@/lib/cookie";
 import { MetadataRolesEnum, SenderRoleEnum } from "@/lib/enums";
 import { useChatWidth, useConsoleVisible } from "@/lib/layout";
 import { SANDBOX_LOG_LEVEL } from "@/lib/logStream";
+import { safeImageUrl, styleVariables, useGoogleFont } from "@/lib/styles";
 import {
   chatInit,
   chatMessages2RequestMessages,
@@ -98,6 +103,8 @@ function SmarterChat({
   const [consoleVisible, setConsoleVisible] = useConsoleVisible();
   // counts the new chats, which clear the Console's server logs.
   const [chatCount, setChatCount] = useState(0);
+  // the urls of the styles' logo and avatars that failed to load, which are then not displayed.
+  const [brokenImages, setBrokenImages] = useState<ReadonlySet<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatAppRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -186,6 +193,20 @@ function SmarterChat({
     return () => chatApp?.removeEventListener("click", handleClick);
   }, []);
 
+  useEffect(() => {
+    // a logo or avatar whose image fails to load is hidden, rather than displayed as a broken image.
+    // Errors don't bubble, so they're listened to as they are captured.
+    const chatApp = chatAppRef.current;
+    const handleError = (event: Event) => {
+      const image = event.target;
+      if (!(image instanceof HTMLImageElement) || !image.closest(".cs-avatar")) return;
+      const src = image.getAttribute("src") ?? "";
+      setBrokenImages((previous) => (previous.has(src) ? previous : new Set(previous).add(src)));
+    };
+    chatApp?.addEventListener("error", handleError, true);
+    return () => chatApp?.removeEventListener("error", handleError, true);
+  }, []);
+
   useLayoutEffect(() => {
     // mermaid code blocks are displayed as diagrams once they are in the page. A diagram that was
     // displayed before is cached, and replaces its code before the browser paints. See lib/mermaid.ts.
@@ -255,6 +276,16 @@ function SmarterChat({
 
   const llmclient = config?.llmclient;
   const isReady = !!config;
+  const styles = llmclient?.styles;
+  const rootStyle = useMemo(() => styleVariables(styles), [styles]);
+  useGoogleFont(styles?.google_font);
+  const imageUrl = (url: string | null | undefined) => {
+    const safeUrl = safeImageUrl(url);
+    return safeUrl && !brokenImages.has(safeUrl) ? safeUrl : null;
+  };
+  const logoUrl = imageUrl(styles?.app_logo_url);
+  const assistantAvatarUrl = imageUrl(styles?.assistant_avatar_url);
+  const userAvatarUrl = imageUrl(styles?.user_avatar_url);
   const title = llmclient ? `${llmclient.app_name} v${llmclient.version || "1.0.0"}` : "";
   const totalPlugins = config?.plugins?.meta_data?.total_plugins ?? 0;
   const info = llmclient
@@ -264,6 +295,17 @@ function SmarterChat({
   const isDeployed = !!(config?.meta_data?.is_deployed ?? llmclient?.deployed);
 
   const assistant = llmclient?.app_assistant ?? "Assistant";
+
+  /** The avatar beside a message: the assistant's, or the user's, if the styles have one. */
+  function messageAvatar(message: ChatMessage) {
+    if (message.sender === SenderRoleEnum.ASSISTANT && assistantAvatarUrl) {
+      return <Avatar src={assistantAvatarUrl} name={assistant} />;
+    }
+    if (message.sender === SenderRoleEnum.USER && userAvatarUrl) {
+      return <Avatar src={userAvatarUrl} name="You" />;
+    }
+    return null;
+  }
   const currentStep = progress.at(-1)?.message;
   const typingText = currentStep ? `${assistant}: ${currentStep}` : `${assistant} is typing`;
 
@@ -277,7 +319,7 @@ function SmarterChat({
   }
 
   return (
-    <div id="smarter_chat_component_container" className="SmarterChat">
+    <div id="smarter_chat_component_container" className="SmarterChat" style={rootStyle}>
       <div className="smarter-chat-container" ref={containerRef}>
         <div
           role="region"
@@ -290,6 +332,9 @@ function SmarterChat({
               <MainContainer style={{ width: "100%", height: "100%" }}>
                 <ChatContainer className="smarter-chat-container-inner">
                   <ConversationHeader>
+                    {logoUrl && isReady && (
+                      <Avatar className="smarter-chat-logo" src={logoUrl} name={llmclient?.app_name ?? ""} />
+                    )}
                     <ConversationHeader.Content userName={headerName} info={isReady ? info : ""} />
                     <ConversationHeader.Actions>
                       {toggleMetadata && (
@@ -364,7 +409,9 @@ function SmarterChat({
                             direction: message.direction,
                             position: "single",
                           }}
-                        />
+                        >
+                          {messageAvatar(message)}
+                        </Message>
                       ) : null,
                     )}
                     {showMetadata &&

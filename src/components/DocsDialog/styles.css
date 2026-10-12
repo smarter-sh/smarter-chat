@@ -58,6 +58,42 @@
   color: #666;
 }
 
+.smarter-chat-docs-tabs {
+  display: flex;
+  gap: 0.25em;
+  border-bottom: 1px solid #ddd;
+}
+
+.smarter-chat-docs-tab {
+  margin-bottom: -1px;
+  padding: 0.45em 0.9em;
+  border: 1px solid transparent;
+  border-radius: 0.4em 0.4em 0 0;
+  background: transparent;
+  color: #1a73c9;
+  font: inherit;
+  font-size: 0.9em;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.smarter-chat-docs-tab:hover,
+.smarter-chat-docs-tab:focus-visible {
+  background-color: rgba(110, 169, 215, 0.15);
+}
+
+.smarter-chat-docs-tab[aria-selected="true"] {
+  border-color: #ddd #ddd #fff;
+  background-color: #fff;
+  color: #333;
+}
+
+.smarter-chat-docs-section-description {
+  margin: 0.75em 0 0.4em;
+  font-size: 0.85em;
+  color: #666;
+}
+
 .smarter-chat-docs-list {
   margin: 0;
   padding: 0;

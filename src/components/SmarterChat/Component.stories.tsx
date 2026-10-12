@@ -12,6 +12,7 @@ import {
   mathHandlers,
   promptErrorHandlers,
   streamingHandlers,
+  stylesHandlers,
 } from "@/mocks/handlers";
 
 import SmarterChat from "@/components/SmarterChat/Component";
@@ -108,6 +109,19 @@ export const WithImages: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(await canvas.findByRole("img", { name: "CS210 course banner" })).toBeInTheDocument();
+  },
+};
+
+/**
+ * An LLMClient with styles (its manifest's spec.config.styles): a logo in the header, avatars beside
+ * the messages, a background image, a Google font, and its own colors.
+ */
+export const WithStyles: Story = {
+  args: { showConsole: false },
+  parameters: { msw: { handlers: stylesHandlers } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByText("CS301 Applied AI")).toBeInTheDocument();
   },
 };
 

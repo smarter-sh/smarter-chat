@@ -14,6 +14,8 @@ import {
   configWithCode,
   configWithDiagram,
   configWithImages,
+  configWithStyles,
+  chatStyles,
   progressEvents,
   promptEventStream,
   promptMaxTokensResponse,
@@ -39,6 +41,11 @@ const WELCOME = "Welcome to Stackademy! How can I help you today?";
 async function send(user: ReturnType<typeof userEvent.setup>, text: string) {
   await user.click(screen.getByRole("textbox", { name: "Message" }));
   await user.keyboard(`${text}{Enter}`);
+}
+
+/** The chat's root element, whose style has the LLMClient's styles' css variables. */
+function chatRoot(): HTMLElement {
+  return screen.getByRole("region", { name: "Chat" }).closest(".SmarterChat") as HTMLElement;
 }
 
 describe("SmarterChat", () => {
@@ -170,9 +177,10 @@ describe("SmarterChat", () => {
     await user.click(screen.getByRole("button", { name: "Docs" }));
     const dialog = screen.getByRole("dialog", { name: "Docs" });
     expect(dialog).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "@smarter.sh/ui-chat" })).toHaveAttribute(
+    expect(screen.getByRole("tab", { name: "Prompt Engineer" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("link", { name: "LLMClient" })).toHaveAttribute(
       "href",
-      "https://www.npmjs.com/package/@smarter.sh/ui-chat",
+      "https://docs.smarter.sh/smarter-resources/smarter-llmclient.html",
     );
     await user.click(screen.getByRole("button", { name: "Close" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -353,6 +361,42 @@ describe("SmarterChat", () => {
     expect(screen.queryByRole("link", { name: "CS210 course banner" })).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: "the catalogue" })).toHaveClass("smarter-chat-image");
     expect(screen.getByRole("link", { name: "the catalogue" })).toHaveAttribute("href", "https://stackademy.edu");
+  });
+
+  it("applies the LLMClient's styles: its colors, font, logo and avatars", async () => {
+    server.use(http.post(CONFIG_URL, () => HttpResponse.json({ data: configWithStyles })));
+    render(<SmarterChat {...props} />);
+    await screen.findByText("CS301 Applied AI");
+    const root = chatRoot();
+    expect(root.style.getPropertyValue("--smarter-chat-header-bg")).toBe("#14213d");
+    expect(root.style.getPropertyValue("--smarter-chat-outgoing-bg")).toBe("#fca311");
+    expect(root.style.getPropertyValue("--smarter-chat-font-family")).toBe('"Nunito", system-ui, sans-serif');
+    // eslint-disable-next-line testing-library/no-node-access -- the font's stylesheet is a link in the page's head.
+    expect(document.getElementById("smarter-chat-google-font")).toHaveAttribute(
+      "href",
+      expect.stringContaining("family=Nunito"),
+    );
+    expect(screen.getByRole("img", { name: "Stackademy" })).toHaveAttribute("src", chatStyles.app_logo_url);
+    expect(screen.getAllByRole("img", { name: "Stanley" }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("img", { name: "You" })).toHaveAttribute("src", chatStyles.user_avatar_url);
+  });
+
+  it("hides a logo or avatar whose image fails to load", async () => {
+    server.use(http.post(CONFIG_URL, () => HttpResponse.json({ data: configWithStyles })));
+    render(<SmarterChat {...props} />);
+    await screen.findByText("CS301 Applied AI");
+    fireEvent.error(screen.getByRole("img", { name: "You" }));
+    await waitFor(() => expect(screen.queryByRole("img", { name: "You" })).not.toBeInTheDocument());
+    expect(screen.getByRole("img", { name: "Stackademy" })).toBeInTheDocument();
+  });
+
+  it("has no logo, avatars or style variables without styles", async () => {
+    server.use(...chatHandlers);
+    render(<SmarterChat {...props} />);
+    await screen.findByText(WELCOME);
+    expect(chatRoot().getAttribute("style")).toBeFalsy();
+    expect(screen.queryByRole("img", { name: "Stackademy" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Stanley" })).not.toBeInTheDocument();
   });
 
   it("highlights code blocks, and copies their code", async () => {

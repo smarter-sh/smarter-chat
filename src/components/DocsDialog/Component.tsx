@@ -3,22 +3,25 @@
  * who build LLMClients, and the applications that host them. SmarterChat opens it from its Docs
  * button, which is displayed only in sandbox mode.
  *
- * It is a modal: Escape, the close button, and a click outside of it all close it. The links open
+ * The links are grouped into a tab for each audience, and the first tab, Prompt Engineer, is
+ * selected when it opens. The arrow, Home and End keys move between the tabs. It is a modal: Escape, the close button, and a click outside of it all close it. The links open
  * in a new tab.
  */
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 
-import { DOC_LINKS, type DocLink } from "@/components/DocsDialog/data";
+import { DOC_SECTIONS, type DocSection } from "@/components/DocsDialog/data";
 import "@/components/DocsDialog/styles.css";
 
 interface DocsDialogProps {
   onClose: () => void;
-  links?: DocLink[];
+  sections?: DocSection[];
 }
 
-function DocsDialog({ onClose, links = DOC_LINKS }: DocsDialogProps) {
+function DocsDialog({ onClose, sections = DOC_SECTIONS }: DocsDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [selected, setSelected] = useState(0);
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -36,6 +39,27 @@ function DocsDialog({ onClose, links = DOC_LINKS }: DocsDialogProps) {
       document.removeEventListener("mousedown", handleMouseDown);
     };
   }, [onClose]);
+
+  const selectTab = (index: number) => {
+    setSelected(index);
+    tabRefs.current[index]?.focus();
+  };
+
+  const handleTabKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    const last = sections.length - 1;
+    const moves: Record<string, number> = {
+      ArrowLeft: selected === 0 ? last : selected - 1,
+      ArrowRight: selected === last ? 0 : selected + 1,
+      Home: 0,
+      End: last,
+    };
+    if (event.key in moves) {
+      event.preventDefault();
+      selectTab(moves[event.key]);
+    }
+  };
+
+  const section = sections[selected];
 
   return (
     <div className="smarter-chat-docs-backdrop">
@@ -62,17 +86,48 @@ function DocsDialog({ onClose, links = DOC_LINKS }: DocsDialogProps) {
         <p className="smarter-chat-docs-intro">
           Technical references for building LLMClients, and the applications that host them.
         </p>
-        <ul className="smarter-chat-docs-list">
-          {links.map((link) => (
-            <li key={link.url}>
-              <a href={link.url} target="_blank" rel="noopener noreferrer">
-                {link.title}
-              </a>
-              <span className="smarter-chat-docs-description">{link.description}</span>
-              <span className="smarter-chat-docs-url">{link.url}</span>
-            </li>
+        <div className="smarter-chat-docs-tabs" role="tablist" aria-label="Audience">
+          {sections.map((tab, index) => (
+            <button
+              key={tab.title}
+              ref={(element) => {
+                tabRefs.current[index] = element;
+              }}
+              type="button"
+              role="tab"
+              id={`smarter-chat-docs-tab-${index}`}
+              className="smarter-chat-docs-tab"
+              aria-selected={index === selected}
+              aria-controls="smarter-chat-docs-panel"
+              tabIndex={index === selected ? 0 : -1}
+              onClick={() => setSelected(index)}
+              onKeyDown={handleTabKeyDown}
+            >
+              {tab.title}
+            </button>
           ))}
-        </ul>
+        </div>
+        {section && (
+          <div
+            className="smarter-chat-docs-panel"
+            role="tabpanel"
+            id="smarter-chat-docs-panel"
+            aria-labelledby={`smarter-chat-docs-tab-${selected}`}
+          >
+            <p className="smarter-chat-docs-section-description">{section.description}</p>
+            <ul className="smarter-chat-docs-list">
+              {section.links.map((link) => (
+                <li key={link.url}>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer">
+                    {link.title}
+                  </a>
+                  <span className="smarter-chat-docs-description">{link.description}</span>
+                  <span className="smarter-chat-docs-url">{link.url}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
