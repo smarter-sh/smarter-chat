@@ -3,6 +3,7 @@
 > A drop-in React chat component for [Smarter](https://smarter.sh) LLMClients: streaming tool-call progress, GitHub
 > flavored markdown, syntax-highlighted code, LaTeX math and Mermaid diagrams, out of the box.
 
+[![GitHub](https://img.shields.io/badge/github-smarter--sh%2Fsmarter--chat-181717?logo=github)](https://github.com/smarter-sh/smarter-chat)
 [![npm version](https://img.shields.io/npm/v/@smarter.sh/ui-chat?logo=npm)](https://www.npmjs.com/package/@smarter.sh/ui-chat)
 [![npm downloads](https://img.shields.io/npm/dm/@smarter.sh/ui-chat)](https://www.npmjs.com/package/@smarter.sh/ui-chat)
 [![Test Status](https://github.com/smarter-sh/smarter-chat/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/smarter-sh/smarter-chat/actions/workflows/test.yml)
