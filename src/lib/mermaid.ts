@@ -8,7 +8,8 @@
  * whenever its messages change. Diagrams are cached by their source, so that a message that is
  * displayed again, e.g. when the backend's messages are shown or hidden, is not rendered again.
  *
- * Mermaid is large, so it is imported only when a message first has a diagram. A diagram that
+ * Mermaid is large, so it is imported only when a message first has a diagram (see mermaidImport.ts,
+ * which the embed script replaces with its own). A diagram that
  * mermaid cannot render, e.g. because the LLM wrote invalid syntax, stays as its code block.
  *
  * Mermaid runs with its "strict" security level, and with svg text labels rather than html ones,
@@ -19,6 +20,7 @@
 import DOMPurify from "dompurify";
 
 import { CODE_BLOCK_CLASS, COPY_BUTTON_CLASS, MERMAID_BLOCK_CLASS } from "./code";
+import { importMermaid } from "./mermaidImport";
 import "./mermaid.css";
 
 export const DIAGRAM_CLASS = "smarter-chat-mermaid-diagram";
@@ -26,7 +28,7 @@ export const TOGGLE_BUTTON_CLASS = "smarter-chat-mermaid-toggle";
 const SHOW_CODE = { label: "Code", name: "Show the diagram's code" };
 const SHOW_DIAGRAM = { label: "Diagram", name: "Show the diagram" };
 
-type Mermaid = (typeof import("mermaid"))["default"];
+type Mermaid = Awaited<ReturnType<typeof importMermaid>>["default"];
 
 // distinct, saturated colors for the lines and bars of charts, and the slices of pie charts. The
 // neutral theme's own are shades of gray, and its xychart lines are almost invisible.
@@ -43,7 +45,7 @@ const diagrams = new Map<string, Promise<string | null>>();
 
 /** Mermaid, imported and initialized the first time that it is needed. */
 function loadMermaid(): Promise<Mermaid> {
-  mermaidPromise ??= import("mermaid")
+  mermaidPromise ??= importMermaid()
     .then(({ default: mermaid }) => {
       mermaid.initialize({
         startOnLoad: false,

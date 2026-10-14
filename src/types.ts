@@ -63,6 +63,8 @@ export interface CookieMeta {
   domain: string;
   /** A value to use instead of the cookie's. */
   value: string | null;
+  /** The path that Smarter Chat sets the cookie for. Empty or missing means the page's path. */
+  path?: string | null;
 }
 
 export interface ChatCookies {
@@ -99,6 +101,11 @@ export interface SmarterChatProps {
   /** The name of the cookie in which Smarter Chat saves the chat session's key. */
   sessionCookieName?: string;
   sessionCookieExpiration?: number;
+  /**
+   * The path of the session and debug cookies. By default, the page's path, so that each page has its own chat
+   * session. "/" keeps one chat session as the visitor moves from page to page of a website.
+   */
+  cookiePath?: string | null;
   /** @deprecated Not used. Django's session cookie is sent with each request, as is. */
   authSessionCookieName?: string;
   /** Show the Console, which displays the chat's configuration and history. */

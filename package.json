@@ -7,6 +7,8 @@
   "main": "./dist/smarter-chat-library.umd.js",
   "module": "./dist/smarter-chat-library.es.js",
   "types": "./dist/types/src/index.d.ts",
+  "jsdelivr": "./dist/embed.js",
+  "unpkg": "./dist/embed.js",
   "exports": {
     ".": {
       "types": "./dist/types/src/index.d.ts",
@@ -14,7 +16,9 @@
       "require": "./dist/smarter-chat-library.umd.js"
     },
     "./dist/ui-chat.css": "./dist/ui-chat.css",
-    "./style.css": "./dist/ui-chat.css"
+    "./style.css": "./dist/ui-chat.css",
+    "./embed": "./dist/embed.js",
+    "./dist/embed.js": "./dist/embed.js"
   },
   "files": [
     "dist"
@@ -61,10 +65,11 @@
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build:lib",
+    "prepublishOnly": "npm run build:lib && npm run build:embed",
     "coverage": "vitest run --coverage --config vitest.coverage.config.ts",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:embed": "vite build --mode embed && vite build --mode embed-mermaid"
   },
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^2.1.1",

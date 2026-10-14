@@ -1,7 +1,8 @@
 /**
  * Cookie management for Smarter Chat: the Django CSRF cookie, which it reads, and the chat
  * session and debug cookies, which it sets for the page's path, so that each LLMClient's
- * workbench has its own chat session.
+ * workbench has its own chat session, or for the path that the cookie names, e.g. "/" for a chat
+ * that follows the visitor across a website.
  */
 import type { CookieMeta } from "../types";
 
@@ -35,9 +36,9 @@ export function getCookie(cookie: CookieMeta, defaultValue: string | null = null
   return defaultValue;
 }
 
-/** Sets the cookie for the page's path, or deletes it when value is empty. */
+/** Sets the cookie for its path (by default, the page's), or deletes it when value is empty. */
 export function setCookie(cookie: CookieMeta, value: string | boolean | null | undefined): void {
-  const path = window.location.pathname;
+  const path = cookie.path || window.location.pathname;
   if (value === null || value === undefined || value === "") {
     document.cookie = `${cookie.name}=; path=${path}; SameSite=Lax; expires=${new Date(0).toUTCString()}`;
     return;
@@ -51,6 +52,7 @@ export function cookieMetaFactory(
   expiration: number | null,
   domain: string | undefined,
   value: string | null = null,
+  path: string | null = null,
 ): CookieMeta {
-  return { name, expiration, domain: domain ?? "", value };
+  return { name, expiration, domain: domain ?? "", value, path };
 }

@@ -168,138 +168,80 @@ must be deployed and must allow your page's origin. See
 
 ## Embedding in any website
 
-If your site isn't built with React, such as a WordPress theme, a Django or Flask template, an Express app or a static
-HTML page, build Smarter Chat once into a script and a stylesheet, and include them like any other front-end asset.
-The script mounts a chat in every element that has a `data-smarter-chat-api-url` attribute.
-
-### 1. Build the embed script
-
-Create a small project, outside your website, for the build:
-
-```console
-mkdir smarter-chat-embed && cd smarter-chat-embed
-npm init -y
-npm install @smarter.sh/ui-chat react react-dom
-npm install --save-dev vite @vitejs/plugin-react
-```
-
-`src/smarter-chat-embed.tsx`:
-
-```tsx
-import { createRoot } from "react-dom/client";
-import { SmarterChat } from "@smarter.sh/ui-chat";
-import "@smarter.sh/ui-chat/dist/ui-chat.css";
-import "katex/dist/katex.min.css";
-
-// Mount a chat in every <div data-smarter-chat-api-url="..."> on the page.
-document.querySelectorAll<HTMLElement>("[data-smarter-chat-api-url]").forEach((el) => {
-  createRoot(el).render(
-    <SmarterChat
-      apiUrl={el.dataset.smarterChatApiUrl!}
-      apiKey={el.dataset.smarterChatApiKey || null}
-      showConsole={false}
-    />,
-  );
-});
-```
-
-`vite.config.ts`:
-
-```ts
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-
-// dist/smarter-chat-embed.js and .css, plus chunks and fonts that are downloaded only when a message
-// needs them (Mermaid diagrams, KaTeX math).
-export default defineConfig({
-  plugins: [react()],
-  base: "./",
-  build: {
-    outDir: "dist",
-    rollupOptions: {
-      input: "src/smarter-chat-embed.tsx",
-      output: {
-        entryFileNames: "smarter-chat-embed.js",
-        assetFileNames: (asset) =>
-          asset.names?.[0]?.endsWith(".css") ? "smarter-chat-embed.css" : "assets/[name]-[hash][extname]",
-      },
-    },
-  },
-});
-```
-
-```console
-npx vite build
-```
-
-Copy the whole `dist/` directory, including `assets/`, to your site's static files or to a CDN. The script loads its
-chunks relative to its own url, so you can host the directory anywhere.
-
-### 2. Add it to your pages
-
-Each page needs the stylesheet, the script as a module, and an element with a height to hold the chat. The examples
-below assume that `dist/` was copied to a `smarter-chat` directory of your static files.
-
-**Plain HTML**
+If your site isn't built with React, such as a WordPress, Drupal, Shopify, Squarespace or SharePoint site, a
+documentation site, or a server-rendered or plain HTML page, add the **embed script**. It's one prebuilt file,
+`dist/embed.js`, that includes React and Smarter Chat, so your page needs nothing else, and it renders the chat in a
+[Shadow DOM](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM), so your site's theme
+can't break it, and it can't change your site.
 
 ```html
-<link rel="stylesheet" href="/static/smarter-chat/smarter-chat-embed.css" />
-<div data-smarter-chat-api-url="https://support.3141-5926-5359.api.example.com/" style="height: 600px"></div>
-<script type="module" src="/static/smarter-chat/smarter-chat-embed.js"></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/@smarter.sh/ui-chat@0/dist/embed.js"
+  data-chatbot="https://support.3141-5926-5359.api.example.com/"
+  async
+></script>
 ```
 
-**WordPress** (copy `dist/` to your theme's `smarter-chat/` directory, then add this to `functions.php`. Pages then use
-the `[smarter_chat]` shortcode):
+That adds a chat button to the bottom right corner of every page that has the tag. The button opens the chat, which
+loads only then, and the conversation follows the visitor from page to page. To put the chat in the page instead, use
+the `<smarter-chat>` element, wherever the script is loaded:
 
-```php
-add_action('wp_enqueue_scripts', function () {
-    $dir = get_stylesheet_directory_uri() . '/smarter-chat';
-    wp_enqueue_style('smarter-chat', "$dir/smarter-chat-embed.css");
-    wp_enqueue_script_module('smarter-chat', "$dir/smarter-chat-embed.js"); // WordPress 6.5+
-});
-
-add_shortcode('smarter_chat', function ($atts) {
-    $atts = shortcode_atts(['url' => '', 'height' => '600px'], $atts);
-    return sprintf(
-        '<div data-smarter-chat-api-url="%s" style="height: %s"></div>',
-        esc_url($atts['url']),
-        esc_attr($atts['height'])
-    );
-});
+```html
+<smarter-chat chatbot="https://support.3141-5926-5359.api.example.com/" height="600px"></smarter-chat>
 ```
 
-```text
-[smarter_chat url="https://support.3141-5926-5359.api.example.com/"]
+### Options
+
+The element's attributes, the script tag's `data-` attributes and the properties of `window.SmarterChatConfig` (in
+camelCase, e.g. `apiKey`) are the same options. Only `chatbot` is required.
+
+| Option                | Default               | Description                                                                           |
+| --------------------- | --------------------- | ------------------------------------------------------------------------------------- |
+| `chatbot`             | (required)            | The deployed LLMClient's url.                                                         |
+| `api-key`             |                       | A Smarter api key, for LLMClients that require one. It's public in the page.          |
+| `mode`                | `launcher` / `inline` | `launcher` (the script tag's default) or `inline` (the element's default).            |
+| `position`            | `bottom-right`        | The launcher's corner: `bottom-right` or `bottom-left`.                               |
+| `open`                | `false`               | Start with the launcher open.                                                         |
+| `label`               | `Chat`                | The launcher's accessible name.                                                       |
+| `color`               | `#ff5733`             | The launcher button's color.                                                          |
+| `width`, `height`     | `400px`, `600px`      | The launcher's panel, or the inline chat (`100%`, `600px`). Any css length.           |
+| `z-index`             | `2147483000`          | The launcher's stacking order.                                                        |
+| `session-cookie-name` | one per chatbot host  | The cookie that keeps the chat session.                                               |
+| `cookie-path`         | `/`                   | The session cookie's path. `/` keeps one conversation across the whole site.          |
+| `stream-progress`     | `true`                | Show a running prompt's steps, e.g. its tool calls.                                   |
+| `debug`               | `false`               | Log to the browser console.                                                           |
+| `target`              |                       | Script tag and `SmarterChatConfig` only: a css selector to render the chat inline in. |
+
+Where you can't set a script tag's attributes, as in Google Tag Manager, set `window.SmarterChatConfig` (an object, or
+an array of them) before the script runs:
+
+```html
+<script>
+  window.SmarterChatConfig = { chatbot: "https://support.3141-5926-5359.api.example.com/", position: "bottom-left" };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@smarter.sh/ui-chat@0/dist/embed.js" async></script>
 ```
 
-**Django** (copy `dist/` to `static/smarter-chat/` in one of your apps):
+Your own buttons can open the launcher with `SmarterChat.open()`, `SmarterChat.close()` and `SmarterChat.toggle()`,
+and the element dispatches a `smarter-chat-toggle` event, with `event.detail.open`, when it opens or closes. Style the
+launcher from your css with `smarter-chat::part(launcher)`, `::part(panel)` and `::part(chat)`.
 
-```django
-{% load static %}
-<link rel="stylesheet" href="{% static 'smarter-chat/smarter-chat-embed.css' %}" />
-<div data-smarter-chat-api-url="{{ smarter_chat_api_url }}" style="height: 600px"></div>
-<script type="module" src="{% static 'smarter-chat/smarter-chat-embed.js' %}"></script>
-```
+### Hosting the script yourself
 
-**Flask** (copy `dist/` to `static/smarter-chat/`):
+`embed.js` loads its other files from an `embed/` directory beside it: Mermaid, which is downloaded only when a
+message has a diagram, and KaTeX's fonts, only when one has math. To serve it from your own site, copy `dist/embed.js`
+and `dist/embed/` together, e.g. from `npm pack @smarter.sh/ui-chat`. Pin a version (`@0.9.0`) on a CDN url if you want
+to review changes before your visitors see them; `@0` follows the latest 0.x release.
 
-```jinja
-<link rel="stylesheet" href="{{ url_for('static', filename='smarter-chat/smarter-chat-embed.css') }}" />
-<div data-smarter-chat-api-url="{{ smarter_chat_api_url }}" style="height: 600px"></div>
-<script type="module" src="{{ url_for('static', filename='smarter-chat/smarter-chat-embed.js') }}"></script>
-```
+### Platforms
 
-**Node.js / Express**
-
-```js
-app.use("/smarter-chat", express.static("smarter-chat-embed/dist"));
-```
-
-Then use the plain HTML snippet above in your templates, with `/smarter-chat/` paths.
-
-If the LLMClient requires an api key, add a `data-smarter-chat-api-key` attribute. A server-rendered template can
-fill it in from an environment variable, but it still ends up in the page's HTML, where any visitor can read it. See
-[Requirements on the Smarter side](#requirements-on-the-smarter-side).
+Plugins that write the tag for you, with a settings screen:
+[WordPress](https://github.com/smarter-sh/smarter-wordpress), [Drupal](https://github.com/smarter-sh/smarter-drupal),
+[Shopify](https://github.com/smarter-sh/smarter-shopify),
+[Google Tag Manager](https://github.com/smarter-sh/smarter-gtm-template), and Docusaurus, MkDocs, Sphinx and VitePress
+([smarter-docs-site-generators](https://github.com/smarter-sh/smarter-docs-site-generators)). Every other platform that
+lets you add a script to its pages needs only the tag above. See
+[Embedding Smarter Chat](https://docs.smarter.sh/smarter-framework/smarter-chat/embedding.html).
 
 ## Requirements on the Smarter side
 

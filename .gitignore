@@ -1,6 +1,6 @@
-# smarter-chat is developed inside the npm workspace of
-# https://github.com/smarter-sh/smarter (smarter/react/packages/smarter-chat),
-# which owns package-lock.json and node_modules.
+
+# ReactJS
+.npmrc
 package-lock.json
 node_modules
 .yalc

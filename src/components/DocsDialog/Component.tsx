@@ -28,9 +28,11 @@ function DocsDialog({ onClose, sections = DOC_SECTIONS }: DocsDialogProps) {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
-    // a click outside of the dialog, e.g. on its backdrop, closes it.
+    // a click outside of the dialog, e.g. on its backdrop, closes it. The event's path, rather than its target,
+    // because a document listener sees a click in a shadow root, e.g. the embed script's, as a click on its host.
     const handleMouseDown = (event: MouseEvent) => {
-      if (!dialogRef.current?.contains(event.target as Node)) onClose();
+      const dialog = dialogRef.current;
+      if (dialog && !event.composedPath().includes(dialog)) onClose();
     };
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("mousedown", handleMouseDown);

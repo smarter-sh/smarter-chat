@@ -42,10 +42,11 @@ serve:
 run:
 	npm run dev
 
-# The app, and the npm package into dist/.
+# The app, and the npm package into dist/: the library, and the embed script (dist/embed.js and dist/embed/).
 build:
 	npm run build
 	npm run build:lib
+	npm run build:embed
 
 test:
 	npm test
@@ -90,7 +91,7 @@ help:
 	@echo 'init             - npm install (in the Smarter React workspace, if inside one)'
 	@echo 'serve            - Browse the component in Storybook. No Smarter backend needed'
 	@echo 'run              - Run the app against the Smarter dev server (localhost:9357)'
-	@echo 'build            - Build the app, and the npm package into dist/'
+	@echo 'build            - Build the app, and the npm package (library and embed script) into dist/'
 	@echo 'test             - Run the unit tests'
 	@echo 'coverage         - Run the unit tests with a coverage report in coverage/'
 	@echo 'lint             - Lint, type-check and check formatting'

@@ -85,6 +85,7 @@ function SmarterChat({
   debugMode = false,
   sessionCookieName = "session_key",
   sessionCookieExpiration = DEFAULT_COOKIE_EXPIRATION,
+  cookiePath = null,
   showConsole = true,
   cookieDomain = "",
   smarterRequestId = "",
@@ -119,9 +120,9 @@ function SmarterChat({
     () => ({
       // Django's CSRF cookie. Read, never set.
       csrfCookie: cookieMetaFactory(csrfCookieName, null, cookieDomain, csrftoken),
-      // the chat session's key, per page path, so that each LLMClient has its own chat session.
-      sessionCookie: cookieMetaFactory(sessionCookieName, sessionCookieExpiration, cookieDomain),
-      debugCookie: cookieMetaFactory(debugCookieName, debugCookieExpiration, cookieDomain),
+      // the chat session's key, per page path (or cookiePath), so that each LLMClient has its own chat session.
+      sessionCookie: cookieMetaFactory(sessionCookieName, sessionCookieExpiration, cookieDomain, null, cookiePath),
+      debugCookie: cookieMetaFactory(debugCookieName, debugCookieExpiration, cookieDomain, null, cookiePath),
     }),
     [
       csrfCookieName,
@@ -129,6 +130,7 @@ function SmarterChat({
       cookieDomain,
       sessionCookieName,
       sessionCookieExpiration,
+      cookiePath,
       debugCookieName,
       debugCookieExpiration,
     ],
