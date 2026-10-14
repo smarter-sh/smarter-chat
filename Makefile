@@ -63,7 +63,11 @@ format:
 
 # Publish the npm package, @smarter.sh/ui-chat, by hand, once the tests pass. Releases are
 # normally published by .github/workflows/release.yml. prepublishOnly builds it first.
-release: test
+#
+# manually authenticating:
+# - Delete the _authToken line from smarter-chat/.npmrc. The file is gitignored and that is its only line.
+# - npm login
+release:
 	npm run build:lib && npm run build:embed && npm run check:dist
 	npm publish --ignore-scripts --access public
 
