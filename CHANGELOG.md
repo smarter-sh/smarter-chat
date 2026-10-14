@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.9.0](https://github.com/smarter-sh/smarter-chat/compare/v0.8.0...v0.9.0) (2026-10-14)
+
+### Features
+
+* **embed:** add a self-contained embed script for any web page ([83c7e47](https://github.com/smarter-sh/smarter-chat/commit/83c7e47e83b33731dd149a1384fdc7b0c5cc9acd))
+
 ## [0.9.0-alpha.1](https://github.com/smarter-sh/smarter-chat/compare/v0.8.0...v0.9.0-alpha.1) (2026-10-14)
 
 ### Features
