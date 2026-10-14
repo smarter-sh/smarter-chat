@@ -21,7 +21,7 @@ The contract is **versioned**. The chat asks for version 2 with `X-Smarter-Capab
 ## Alternatives Considered
 
 - **Types written by hand in this repository.** That is what drifted.
-- **OpenAPI and a generated client.** The chat's two endpoints, with their event stream, don't need a client; the types and the fixture checks are what was missing. The platform's OpenAPI document covers its REST api, not the chat's endpoints.
+- **OpenAPI and a generated client.** The chat's two endpoints, with their event stream, don't need a client; the types and the fixture checks are what was missing. The platform's OpenAPI document (`smarter.apps.api.v1.contract`) also describes the two endpoints (`/api/v1/llm-clients/{id}/config/` and `prompt/`), with the chat contract's schemas as their bodies, but the chat contract's own JSON Schema is the narrower, versioned source the chat's types are generated from. The Smarter SDKs and cli pin a copy of the OpenAPI document instead, because they call many of its routes (their ADR-022).
 - **Breaking changes in place, with the package and the platform released together.** Embedded copies are pinned and cached on sites that nobody updates.
 
 ## Consequences
