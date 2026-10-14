@@ -53,7 +53,11 @@ module.exports = {
       "@semantic-release/git",
       {
         assets: ["CHANGELOG.md", "package.json"],
-        message: "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
+        // No "[skip ci]": GitHub skips every push workflow when the pushed head commit's message has it,
+        // so a branch fast-forwarded to a release commit, e.g. main to alpha after `git merge alpha`,
+        // would never be released. Without it, the release commit's own push runs semantic-release
+        // again, which finds no releasable commit since the new tag, and does nothing.
+        message: "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}",
       },
     ],
   ],
