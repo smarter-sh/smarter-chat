@@ -61,10 +61,11 @@ lint:
 format:
 	npm run format
 
-# Publish the npm package, @smarter.sh/ui-chat, once the tests pass.
-# prepublishOnly builds it first.
+# Publish the npm package, @smarter.sh/ui-chat, by hand, once the tests pass. Releases are
+# normally published by .github/workflows/release.yml. prepublishOnly builds it first.
 release: test
-	npm publish --access public
+	npm run build:lib && npm run build:embed && npm run check:dist
+	npm publish --ignore-scripts --access public
 
 # Installs the pre-commit and commit-msg hooks. See .pre-commit-config.yaml.
 pre-commit-init:

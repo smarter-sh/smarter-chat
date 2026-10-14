@@ -4,8 +4,8 @@
  * .github/workflows/pushMain.yml. alpha and beta are prerelease branches.
  *
  * @semantic-release/npm writes the new version to package.json. It does not publish to npm
- * (npmPublish: false). Publish with `make release`. To publish automatically instead, set
- * npmPublish to true, and add an NPM_TOKEN secret to the repository.
+ * (npmPublish: false): the GitHub release that it creates triggers .github/workflows/release.yml,
+ * which builds, checks and publishes the package with npm's trusted publishing.
  */
 module.exports = {
   branches: ["main", "next", { name: "beta", prerelease: true }, { name: "alpha", prerelease: true }],

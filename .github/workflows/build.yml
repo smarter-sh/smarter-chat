@@ -1,0 +1,49 @@
+---
+#------------------------------------------------------------------------------
+# Build the npm package, @smarter.sh/ui-chat: the app, the library and the
+# embed script (dist/embed.js and dist/embed/), check it the way a release
+# would (scripts/check-dist.mjs: the exported files, the embed script's files
+# and size, and the embed script running in a page), and keep the packed
+# tarball as an artifact, for review or for testing in another repository,
+# e.g. with `npm install ./smarter.sh-ui-chat-<version>.tgz`.
+#
+# The unit tests and lint are test.yml's. This workflow publishes nothing:
+# see release.yml.
+#------------------------------------------------------------------------------
+name: Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - alpha
+      - beta
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Build and check
+        id: build
+        uses: ./.github/actions/build-package
+        with:
+          run-tests: "false"
+
+      - name: Upload the package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-chat-${{ steps.build.outputs.version }}
+          path: ${{ steps.build.outputs.tarball }}
+          if-no-files-found: error
+          retention-days: 14

@@ -69,7 +69,8 @@
     "coverage": "vitest run --coverage --config vitest.coverage.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "build:embed": "vite build --mode embed && vite build --mode embed-mermaid"
+    "build:embed": "vite build --mode embed && vite build --mode embed-mermaid",
+    "check:dist": "node scripts/check-dist.mjs"
   },
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^2.1.1",

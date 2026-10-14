@@ -1,0 +1,70 @@
+---
+#------------------------------------------------------------------------------
+# Build and check @smarter.sh/ui-chat: the app (for the Smarter web console),
+# the library and the embed script, into dist/, then check the package that
+# would be published (scripts/check-dist.mjs), and pack it into build/.
+#
+# Used by .github/workflows/build.yml, on every push and pull request, and by
+# .github/workflows/release.yml, before it publishes the same dist/ to npm.
+#------------------------------------------------------------------------------
+name: Build
+description: "Build, check and pack the npm package"
+branding:
+  icon: "package"
+  color: "orange"
+inputs:
+  node-version:
+    description: "The Node.js version"
+    required: false
+    default: "24"
+  run-tests:
+    description: "Run the unit tests before building"
+    required: false
+    default: "true"
+outputs:
+  tarball:
+    description: "The packed package, in build/"
+    value: ${{ steps.pack.outputs.tarball }}
+  version:
+    description: "The package's version, from package.json"
+    value: ${{ steps.pack.outputs.version }}
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    # npm install rather than npm ci: package-lock.json belongs to the Smarter
+    # workspace, and is not committed to this repository.
+    - name: Install dependencies
+      shell: bash
+      run: make init
+
+    - name: Unit tests
+      if: inputs.run-tests == 'true'
+      shell: bash
+      run: npm test
+
+    # make build: the app, the library (with its type declarations) and the
+    # embed script, which build:embed adds to the library's dist/.
+    - name: Build
+      shell: bash
+      env:
+        NODE_ENV: production
+      run: make build
+
+    - name: Check the package
+      shell: bash
+      run: npm run check:dist
+
+    - name: Pack
+      id: pack
+      shell: bash
+      run: |
+        mkdir -p build
+        tarball=$(npm pack --ignore-scripts --pack-destination build | tail -1)
+        echo "tarball=build/$tarball" >> "$GITHUB_OUTPUT"
+        echo "version=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+        echo "Packed build/$tarball ($(du -h "build/$tarball" | cut -f1))"

@@ -83,8 +83,13 @@ it to `package.json`, adds the release notes to `CHANGELOG.md`, tags the commit 
 on `main` is then merged back into `alpha`. `feat` commits are minor releases, `fix` and `perf` commits are patches, and
 a `BREAKING CHANGE:` footer is a major release. See `release.config.cjs`.
 
-semantic-release does not publish to npm. After a release on `main`, publish it with `make release`. npm displays the
-README of the published version, so README changes appear on npmjs.com only after the next release.
+semantic-release does not publish to npm itself. The GitHub release that it creates triggers
+`.github/workflows/release.yml`, which checks out the release's tag, runs the tests, builds the library and the embed
+script, checks the package (`npm run check:dist`), and publishes it with npm's trusted publishing and a provenance
+statement: releases from `main` with the `latest` dist-tag, and prereleases with `alpha` or `beta`. `make release`
+publishes by hand, if the workflow can't. `.github/workflows/build.yml` builds and checks the same package on every push
+and pull request, and keeps the tarball as an artifact. npm displays the README of the published version, so README
+changes appear on npmjs.com only after the next release.
 
 ## Code of Conduct
 
