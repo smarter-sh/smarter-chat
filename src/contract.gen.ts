@@ -355,7 +355,7 @@ export interface PromptChatApiConfig {
    * The ENABLE_REACTAPP_DEBUG_MODE waffle switch.
    */
   debug_mode: boolean;
-  functions?: PromptChatApiFunctionList | null;
+  extensions?: PromptChatApiExtensionList | null;
   history: PromptChatApiHistory;
   llmclient: PromptChatApiLLMClient;
   meta_data: PromptChatApiMetaData;
@@ -371,56 +371,68 @@ export interface PromptChatApiConfig {
   [k: string]: unknown;
 }
 /**
- * The LLMClient's built-in functions.
+ * The LLMClient's extensions.
  *
  * The list itself is returned only in the complete configuration.
  *
  * This interface was referenced by `SmarterChatAPIContract`'s JSON-Schema
- * via the `definition` "PromptChatApiFunctionList".
+ * via the `definition` "PromptChatApiExtensionList".
  */
-export interface PromptChatApiFunctionList {
-  functions?: PromptChatApiLLMClientFunction[];
+export interface PromptChatApiExtensionList {
+  extensions?: PromptChatApiLLMClientExtension[];
   meta_data: PromptChatApiListMetaData;
   [k: string]: unknown;
 }
 /**
- * A built-in function of the LLMClient: a :class:`smarter.apps.llmclient.models.LLMClientFunctions`.
+ * An extension of the LLMClient: a :class:`smarter.apps.llmclient.models.LLMClientExtensions`.
  *
  * This interface was referenced by `SmarterChatAPIContract`'s JSON-Schema
- * via the `definition` "PromptChatApiLLMClientFunction".
+ * via the `definition` "PromptChatApiLLMClientExtension".
  */
-export interface PromptChatApiLLMClientFunction {
+export interface PromptChatApiLLMClientExtension {
   /**
    * TimestampedModel.created_at.
    */
   created_at?: string | null;
   /**
+   * Whether the Extension is enabled, so that its tools are offered.
+   */
+  enabled: boolean;
+  /**
+   * LLMClientExtensions.extension: the Extension's id.
+   */
+  extension: number;
+  /**
    * The row's primary key.
    */
   id: number;
   /**
-   * LLMClientFunctions.llmclient: the LLMClient's id.
+   * LLMClientExtensions.llmclient: the LLMClient's id.
    */
   llmclient: number;
   /**
-   * LLMClientFunctions.name.
+   * The Extension's slug, e.g. weather.
    */
-  name?: ("get_current_weather" | "date_calculator" | "calculator") | null;
+  name: string;
   /**
    * TimestampedModel.updated_at.
    */
   updated_at?: string | null;
+  /**
+   * The Extension's installed version, e.g. 1.0.0.
+   */
+  version?: string | null;
 }
 /**
- * The counts of a list of the LLMClient's plugins or functions.
+ * The counts of a list of the LLMClient's plugins or extensions.
  *
  * This interface was referenced by `SmarterChatAPIContract`'s JSON-Schema
  * via the `definition` "PromptChatApiListMetaData".
  */
 export interface PromptChatApiListMetaData {
-  functions_returned?: number | null;
+  extensions_returned?: number | null;
   plugins_returned?: number | null;
-  total_functions?: number | null;
+  total_extensions?: number | null;
   total_plugins?: number | null;
   [k: string]: unknown;
 }
@@ -490,7 +502,7 @@ export interface PromptChatApiPromptRequest {
   [k: string]: unknown;
 }
 /**
- * A plugin selector's activation: a :class:`smarter.apps.plugin.models.PluginSelectorHistory`.
+ * A plugin selector's activation: a :class:`smarter.apps.llmtool.models.PluginSelectorHistory`.
  *
  * This interface was referenced by `SmarterChatAPIContract`'s JSON-Schema
  * via the `definition` "PromptChatApiPluginSelection".
@@ -798,7 +810,7 @@ export interface PromptChatApiConfigV1 {
    * The ENABLE_REACTAPP_DEBUG_MODE waffle switch.
    */
   debug_mode: boolean;
-  functions?: PromptChatApiFunctionListV1 | null;
+  extensions?: PromptChatApiExtensionListV1 | null;
   history: PromptChatApiHistoryV1;
   meta_data: PromptChatApiMetaData;
   plugins: PromptChatApiPluginListV1;
@@ -814,41 +826,44 @@ export interface PromptChatApiConfigV1 {
 }
 /**
  * @deprecated
- * The LLMClient's built-in functions, in version 1.
+ * The LLMClient's extensions, in version 1.
  *
  * This interface was referenced by `SmarterChatAPIContract`'s JSON-Schema
- * via the `definition` "PromptChatApiFunctionListV1".
+ * via the `definition` "PromptChatApiExtensionListV1".
  */
-export interface PromptChatApiFunctionListV1 {
-  functions?: PromptChatApiLLMClientFunctionV1[];
+export interface PromptChatApiExtensionListV1 {
+  extensions?: PromptChatApiLLMClientExtensionV1[];
   meta_data: PromptChatApiListMetaData;
   [k: string]: unknown;
 }
 /**
  * @deprecated
- * A built-in function of the LLMClient, in version 1, whose ``llmclient`` is renamed ``chatbot``.
+ * An extension of the LLMClient, in version 1, whose ``llmclient`` is renamed ``chatbot``.
  *
  * This interface was referenced by `SmarterChatAPIContract`'s JSON-Schema
- * via the `definition` "PromptChatApiLLMClientFunctionV1".
+ * via the `definition` "PromptChatApiLLMClientExtensionV1".
  */
-export interface PromptChatApiLLMClientFunctionV1 {
+export interface PromptChatApiLLMClientExtensionV1 {
   /**
-   * LLMClientFunctions.llmclient: the LLMClient's id.
+   * LLMClientExtensions.llmclient: the LLMClient's id.
    */
   chatbot: number;
   /**
    * TimestampedModel.created_at.
    */
   created_at?: string | null;
+  enabled: boolean;
+  extension: number;
   /**
    * The row's primary key.
    */
   id: number;
-  name?: ("get_current_weather" | "date_calculator" | "calculator") | null;
+  name: string;
   /**
    * TimestampedModel.updated_at.
    */
   updated_at?: string | null;
+  version?: string | null;
 }
 /**
  * @deprecated
@@ -934,7 +949,7 @@ export interface PromptChatApiLLMClientPluginV1 {
   updated_at?: string | null;
 }
 /**
- * A plugin's metadata: a :class:`smarter.apps.plugin.models.PluginMeta`.
+ * A plugin's metadata: a :class:`smarter.apps.llmtool.models.PluginMeta`.
  *
  * Its owner is left out: the configuration never includes a user's profile.
  *

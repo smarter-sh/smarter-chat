@@ -27,17 +27,50 @@ jobs:
       new_release_published: ${{ steps.semantic.outputs.new_release_published }}
 
     steps:
+      # A release commit has no "[skip ci]" (see release.config.cjs), so its
+      # own push runs this workflow again. Skip that run: if a release fails
+      # after @semantic-release/git has pushed its commit, e.g. on pushing the
+      # tag's git note, semantic-release would not recognize the tag, would
+      # make the same release again and push another commit, endlessly. A
+      # release commit pushed to another branch, e.g. main fast-forwarded to
+      # an alpha release commit, still releases.
+      - name: Skip this branch's own release commit
+        id: guard
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          subject="${MESSAGE%%$'\n'*}"
+          skip=false
+          if [[ "$EVENT_NAME" == "push" && "$subject" =~ ^chore\(release\):\ ([^ ]+) ]]; then
+            version="${BASH_REMATCH[1]}"
+            channel=""
+            if [[ "$version" == *-* ]]; then
+              channel="${version#*-}"
+              channel="${channel%%.*}"
+            fi
+            if [[ "$channel" == "$GITHUB_REF_NAME" || ( -z "$channel" && ! "$GITHUB_REF_NAME" =~ ^(alpha|beta)$ ) ]]; then
+              skip=true
+              echo "$GITHUB_REF_NAME's own release commit, $version: nothing to release."
+            fi
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v6
         id: checkout
+        if: steps.guard.outputs.skip != 'true'
         with:
           persist-credentials: false
 
       - name: Setup Node.js
+        if: steps.guard.outputs.skip != 'true'
         uses: actions/setup-node@v6
 
       # The package's own dependencies are installed by the Smarter React
       # workspace, so only semantic-release's plugins are installed here.
       - name: Semantic Release
+        if: steps.guard.outputs.skip != 'true'
         uses: cycjimmy/semantic-release-action@v5
         id: semantic
         with:

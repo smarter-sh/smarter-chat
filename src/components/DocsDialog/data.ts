@@ -25,9 +25,9 @@ export const PROMPT_ENGINEER_LINKS: DocLink[] = [
     description: "The LLMClient class, which is the main interface to the Smarter API.",
   },
   {
-    title: "Plugin",
-    url: "https://docs.smarter.sh/smarter-resources/smarter-plugin.html",
-    description: "How to create and use plugins with the Smarter API.",
+    title: "LLMTool Plugin",
+    url: "https://docs.smarter.sh/smarter-resources/smarter-llmtool.html",
+    description: "How to create and use LLMTool plugins with the Smarter API.",
   },
   {
     title: "Guardrail",
