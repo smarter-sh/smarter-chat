@@ -55,8 +55,9 @@ module.exports = {
         assets: ["CHANGELOG.md", "package.json"],
         // No "[skip ci]": GitHub skips every push workflow when the pushed head commit's message has it,
         // so a branch fast-forwarded to a release commit, e.g. main to alpha after `git merge alpha`,
-        // would never be released. Without it, the release commit's own push runs semantic-release
-        // again, which finds no releasable commit since the new tag, and does nothing.
+        // would never be released. Without it, the release commit's own push runs pushMain.yml again,
+        // which skips its own branch's release commit: a release that failed after pushing its
+        // commit would otherwise be made, and its commit pushed, again and again.
         message: "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}",
       },
     ],
