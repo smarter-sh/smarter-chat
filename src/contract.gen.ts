@@ -66,7 +66,7 @@ export interface PromptChatApiChatbotV1 {
    */
   styles?: PromptChatApiStyles | null;
   /**
-   * The number of the LLMClient's extensions, plugins, MCPClients and guardrails.
+   * The number of the LLMClient's extensions, plugins and MCPClients.
    */
   total_tools?: number | null;
   /**
@@ -639,7 +639,7 @@ export interface PromptChatApiLLMClient {
    */
   styles?: PromptChatApiStyles | null;
   /**
-   * The number of the LLMClient's extensions, plugins, MCPClients and guardrails.
+   * The number of the LLMClient's extensions, plugins and MCPClients.
    */
   total_tools?: number | null;
   /**

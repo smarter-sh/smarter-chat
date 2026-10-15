@@ -192,7 +192,7 @@
             }
           ],
           "default": null,
-          "description": "The number of the LLMClient's extensions, plugins, MCPClients and guardrails.",
+          "description": "The number of the LLMClient's extensions, plugins and MCPClients.",
           "title": "Total Tools"
         },
         "url_chatbot": {
@@ -1204,7 +1204,7 @@
             }
           ],
           "default": null,
-          "description": "The number of the LLMClient's extensions, plugins, MCPClients and guardrails.",
+          "description": "The number of the LLMClient's extensions, plugins and MCPClients.",
           "title": "Total Tools"
         },
         "url_llmclient": {
