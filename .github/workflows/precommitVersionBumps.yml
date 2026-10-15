@@ -64,5 +64,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .pre-commit-config.yaml
-          git commit -m "chore: [gh] version bumps in .pre-commit-config.yaml [skip ci]"
+          # No "[skip ci]": main may be fast-forwarded to this commit, and GitHub would then skip its
+          # release. A chore commit releases nothing anyway. See release.config.cjs.
+          git commit -m "chore: [gh] version bumps in .pre-commit-config.yaml"
           git push https://${{ secrets.PAT }}@github.com/${{ github.repository }}.git HEAD:alpha
