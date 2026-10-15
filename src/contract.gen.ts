@@ -66,6 +66,10 @@ export interface PromptChatApiChatbotV1 {
    */
   styles?: PromptChatApiStyles | null;
   /**
+   * The number of the LLMClient's extensions, plugins, MCPClients and guardrails.
+   */
+  total_tools?: number | null;
+  /**
    * The url of the LLMClient's prompt api.
    */
   url_chatbot: string;
@@ -634,6 +638,10 @@ export interface PromptChatApiLLMClient {
    * The look of the chat: the manifest's spec.config.styles, with snake_case keys.
    */
   styles?: PromptChatApiStyles | null;
+  /**
+   * The number of the LLMClient's extensions, plugins, MCPClients and guardrails.
+   */
+  total_tools?: number | null;
   /**
    * The url of the LLMClient's prompt api.
    */

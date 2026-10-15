@@ -62,7 +62,7 @@ describe("SmarterChat", () => {
     expect(screen.getByText("Some example prompts to get you started:")).toBeInTheDocument();
     expect(screen.getByText("Do you offer any courses on AI?", { selector: "li" })).toBeInTheDocument();
     expect(screen.getByText("Stackademy v1.0.0")).toBeInTheDocument();
-    expect(screen.getByText("openai gpt-4o-mini with 1 additional plugins")).toBeInTheDocument();
+    expect(screen.getByText("openai gpt-4o-mini with 2 additional tools")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "valid" })).toBeInTheDocument();
     expect(screen.getByText("(sandbox)")).toBeInTheDocument();
   });

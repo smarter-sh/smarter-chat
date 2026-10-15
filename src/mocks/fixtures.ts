@@ -59,6 +59,7 @@ export function makeConfig(overrides: Partial<Contract.PromptChatApiConfig> = {}
       app_placeholder: "Ask me anything about Stackademy courses...",
       app_info_url: "https://stackademy.edu/online-courses",
       app_file_attachment: false,
+      total_tools: 2,
     },
     history: {
       chat_history: [],
