@@ -282,27 +282,31 @@
 }
 
 /* the toolbar: new chat, show or hide the Console, sandbox or production mode, and, in sandbox
-   mode, the Docs dialog. */
+   mode, the Docs dialog. The buttons are on the header, so they take the header's text color,
+   which an LLMClient's styles choose to contrast with the header's background. The buttons color
+   is for the send and attach buttons, on the message input, whose background is usually the
+   opposite of the header's: used here, it made the toolbar invisible on a header of the same
+   color. Without a header color, the buttons color is still used. */
 .cs-conversation-header__actions .cs-button.smarter-chat-toolbar-button {
   display: inline-flex;
   align-items: center;
   gap: 0.35em;
   padding: 0.2em 0.4em;
   font-size: 1.3em;
-  color: var(--smarter-chat-button-color, #6ea9d7);
+  color: var(--smarter-chat-header-color, var(--smarter-chat-button-color, #6ea9d7));
   background-color: transparent;
   border-radius: 0.4em;
 }
 
 .cs-conversation-header__actions .cs-button.smarter-chat-toolbar-button:hover,
 .cs-conversation-header__actions .cs-button.smarter-chat-toolbar-button:focus-visible {
-  background-color: rgba(110, 169, 215, 0.15);
+  background-color: color-mix(in srgb, currentColor 15%, transparent);
 }
 
 .cs-conversation-header__actions .cs-button.smarter-chat-mode-toggle {
   font-size: 0.85em;
   white-space: nowrap;
-  border: 1px solid rgba(110, 169, 215, 0.6);
+  border: 1px solid color-mix(in srgb, currentColor 60%, transparent);
 }
 
 .cs-conversation-header__actions .cs-button.smarter-chat-docs-button {
