@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.10.0](https://github.com/smarter-sh/smarter-chat/compare/v0.9.1...v0.10.0) (2026-10-15)
+
+### Features
+
+* **chat:** count every tool of the llmclient, not only its plugins ([96840ef](https://github.com/smarter-sh/smarter-chat/commit/96840ef5341b6eb0daf0c8cd0b1dcaa2cfc090a4))
+
 ## [0.9.1](https://github.com/smarter-sh/smarter-chat/compare/v0.9.0...v0.9.1) (2026-10-15)
 
 ### Bug Fixes
