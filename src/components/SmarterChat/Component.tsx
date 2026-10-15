@@ -293,9 +293,9 @@ function SmarterChat({
   const assistantAvatarUrl = imageUrl(styles?.assistant_avatar_url);
   const userAvatarUrl = imageUrl(styles?.user_avatar_url);
   const title = llmclient ? `${llmclient.app_name} v${llmclient.version || "1.0.0"}` : "";
-  const totalPlugins = config?.plugins?.meta_data?.total_plugins ?? 0;
+  const totalTools = llmclient?.total_tools ?? 0;
   const info = llmclient
-    ? `${llmclient.provider} ${llmclient.default_model}${totalPlugins > 0 ? ` with ${totalPlugins} additional plugins` : ""}`
+    ? `${llmclient.provider} ${llmclient.default_model}${totalTools > 0 ? ` with ${totalTools} additional tools` : ""}`
     : "";
   const isValid = config?.meta_data?.is_valid ?? config?.meta_data?.ready ?? true;
   const isDeployed = !!(config?.meta_data?.is_deployed ?? llmclient?.deployed);
