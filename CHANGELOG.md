@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.9.0-alpha.2](https://github.com/smarter-sh/smarter-chat/compare/v0.9.0-alpha.1...v0.9.0-alpha.2) (2026-10-15)
+
+### Bug Fixes
+
+* **chat:** show toolbar buttons on any header and regenerate contract ([c04e45a](https://github.com/smarter-sh/smarter-chat/commit/c04e45af7acc5a0cd2a084123f724dd9809d31d8)), closes [#6ea9d7](https://github.com/smarter-sh/smarter-chat/issues/6ea9d7) [#6ea9d7](https://github.com/smarter-sh/smarter-chat/issues/6ea9d7)
+
 ## [0.9.0-alpha.1](https://github.com/smarter-sh/smarter-chat/compare/v0.8.0...v0.9.0-alpha.1) (2026-10-14)
 
 ### Features
