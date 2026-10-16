@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.11.0](https://github.com/smarter-sh/smarter-chat/compare/v0.10.0...v0.11.0) (2026-10-16)
+
+### Features
+
+* **chat:** translate the chat into spanish and french ([d227354](https://github.com/smarter-sh/smarter-chat/commit/d22735424a7bedbdb0957f827df93ef55b497423))
+
 ## [0.10.0](https://github.com/smarter-sh/smarter-chat/compare/v0.9.1...v0.10.0) (2026-10-15)
 
 ### Features
