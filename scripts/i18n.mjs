@@ -36,11 +36,13 @@ export const CATALOGS_PATH = path.join(SRC_DIR, "catalogs.gen.ts");
 /**
  * The languages that Smarter Chat is translated into, other than English, its source language: the Smarter web
  * console's. Spanish is Latin American Spanish, under the generic "es" code, so that every variant of Spanish
- * that a page or a browser asks for gets it. These are used only to create a language's catalog.
+ * that a page or a browser asks for gets it. Brazilian Portuguese is under its locale name, pt_BR, the web console's
+ * pt-br. These are used only to create a language's catalog.
  */
 export const LANGUAGES = {
   es: { team: "Latin American Spanish", pluralForms: "nplurals=2; plural=(n != 1);" },
   fr: { team: "French", pluralForms: "nplurals=2; plural=(n > 1);" },
+  pt_BR: { team: "Brazilian Portuguese", pluralForms: "nplurals=2; plural=(n > 1);" },
 };
 
 /** The translation functions, and the positions of their context, singular and plural arguments. */

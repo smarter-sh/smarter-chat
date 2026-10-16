@@ -23,12 +23,18 @@ afterEach(() => {
 
 describe("matchLanguage", () => {
   it("matches a language, or its generic language, whatever its case", () => {
-    expect(LANGUAGES).toEqual(["en", "es", "fr"]);
+    expect(LANGUAGES).toEqual(["en", "es", "fr", "pt-br"]);
     expect(matchLanguage("es")).toBe("es");
     expect(matchLanguage("ES-mx")).toBe("es");
     expect(matchLanguage("es-419")).toBe("es");
     expect(matchLanguage("fr_CA")).toBe("fr");
     expect(matchLanguage(" en-US ")).toBe("en");
+    expect(matchLanguage("pt-br")).toBe("pt-br");
+    expect(matchLanguage("pt-BR")).toBe("pt-br");
+    expect(matchLanguage("pt_BR")).toBe("pt-br");
+    // a language that only has a regional catalog gets it for every variant
+    expect(matchLanguage("pt")).toBe("pt-br");
+    expect(matchLanguage("pt-PT")).toBe("pt-br");
   });
 
   it("matches nothing for other languages, or none", () => {
@@ -60,6 +66,9 @@ describe("activateLanguage", () => {
     expect(gettext("Start a new chat")).toBe("Iniciar un chat nuevo");
     expect(activateLanguage("fr-CA")).toBe("fr");
     expect(gettext("Start a new chat")).toBe("Démarrer un nouveau chat");
+    // the web console's pt-br, whose catalog is pt_BR
+    expect(activateLanguage("pt-br")).toBe("pt-br");
+    expect(gettext("Start a new chat")).toBe("Iniciar um novo chat");
     expect(activateLanguage(null)).toBe("en");
     expect(gettext("Start a new chat")).toBe("Start a new chat");
   });

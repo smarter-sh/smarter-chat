@@ -121,8 +121,8 @@ spec:
 - **Optional developer Console.** As in the Smarter workbench, a resizable side panel can show the LLMClient's
   configuration, the session's api calls, tool calls and Plugin usage, and a live server log stream.
 - **Accessible.** It has labeled regions and controls, keyboard-resizable panels, and MathML for screen readers.
-- **Translated.** Its own text is in English, Spanish or French: the page's language, or the one you ask for. The
-  LLMClient's welcome message, example prompts and responses are displayed as they are.
+- **Translated.** Its own text is in English, Spanish, French or Brazilian Portuguese: the page's language, or the one
+  you ask for. The LLMClient's welcome message, example prompts and responses are displayed as they are.
 - **Typed.** It's written in TypeScript, and its types are generated from Smarter's api contract.
 
 See [Features](https://docs.smarter.sh/smarter-framework/smarter-chat/features.html) for details.
@@ -197,22 +197,22 @@ the `<smarter-chat>` element, wherever the script is loaded:
 The element's attributes, the script tag's `data-` attributes and the properties of `window.SmarterChatConfig` (in
 camelCase, e.g. `apiKey`) are the same options. Only `chatbot` is required.
 
-| Option                | Default               | Description                                                                       |
-| --------------------- | --------------------- | --------------------------------------------------------------------------------- |
-| `chatbot`             | (required)            | The deployed LLMClient's url.                                                     |
-| `api-key`             |                       | A Smarter api key, for LLMClients that require one. It's public in the page.      |
-| `mode`                | `launcher` / `inline` | `launcher` (the script tag's default) or `inline` (the element's default).        |
-| `position`            | `bottom-right`        | The launcher's corner: `bottom-right` or `bottom-left`.                           |
-| `open`                | `false`               | Start with the launcher open.                                                     |
-| `label`               | `Chat`                | The launcher's accessible name.                                                   |
-| `color`               | `#ff5733`             | The launcher button's color.                                                      |
-| `width`, `height`     | `400px`, `600px`      | The launcher's panel, or the inline chat (`100%`, `600px`). Any css length.       |
-| `z-index`             | `2147483000`          | The launcher's stacking order.                                                    |
-| `session-cookie-name` | one per chatbot host  | The cookie that keeps the chat session.                                           |
-| `cookie-path`         | `/`                   | The session cookie's path. `/` keeps one conversation across the whole site.      |
-| `stream-progress`     | `true`                | Show a running prompt's steps, e.g. its tool calls.                               |
-| `debug`               | `false`               | Log to the browser console.                                                       |
-| `language`            | the page's            | The chat's own language: `en`, `es` or `fr`, or a regional variant, e.g. `es-MX`. |
+| Option                | Default               | Description                                                                                |
+| --------------------- | --------------------- | ------------------------------------------------------------------------------------------ |
+| `chatbot`             | (required)            | The deployed LLMClient's url.                                                              |
+| `api-key`             |                       | A Smarter api key, for LLMClients that require one. It's public in the page.               |
+| `mode`                | `launcher` / `inline` | `launcher` (the script tag's default) or `inline` (the element's default).                 |
+| `position`            | `bottom-right`        | The launcher's corner: `bottom-right` or `bottom-left`.                                    |
+| `open`                | `false`               | Start with the launcher open.                                                              |
+| `label`               | `Chat`                | The launcher's accessible name.                                                            |
+| `color`               | `#ff5733`             | The launcher button's color.                                                               |
+| `width`, `height`     | `400px`, `600px`      | The launcher's panel, or the inline chat (`100%`, `600px`). Any css length.                |
+| `z-index`             | `2147483000`          | The launcher's stacking order.                                                             |
+| `session-cookie-name` | one per chatbot host  | The cookie that keeps the chat session.                                                    |
+| `cookie-path`         | `/`                   | The session cookie's path. `/` keeps one conversation across the whole site.               |
+| `stream-progress`     | `true`                | Show a running prompt's steps, e.g. its tool calls.                                        |
+| `debug`               | `false`               | Log to the browser console.                                                                |
+| `language`            | the page's            | The chat's own language: `en`, `es`, `fr` or `pt-br`, or a regional variant, e.g. `es-MX`. |
 
 | `target` | | Script tag and `SmarterChatConfig` only: a css selector to render the chat inline in. |
 
@@ -397,7 +397,7 @@ Only `apiUrl` is required.
 | `debugCookieExpiration`   | `number`         | one day         | The debug cookie's lifetime, in milliseconds.                                                                                                                                                                                                                                                |
 | `smarterRequestId`        | `string`         | `""`            | A unique id of the page request, sent as the `X-Smarter-RequestId` header, for tracing.                                                                                                                                                                                                      |
 | `logStreamUrl`            | `string \| null` | `null`          | The url of a server log stream (Server-Sent Events), for the Console's Server Logs tab.                                                                                                                                                                                                      |
-| `language`                | `string \| null` | `null`          | The language of the chat's own text: `en`, `es` or `fr`, or a regional variant, e.g. `es-MX`. By default, the page's `<html lang>`, or else the browser's.                                                                                                                                   |
+| `language`                | `string \| null` | `null`          | The language of the chat's own text: `en`, `es`, `fr` or `pt-br`, or a regional variant, e.g. `es-MX`. By default, the page's `<html lang>`, or else the browser's.                                                                                                                          |
 
 The props control where and how the chat runs on your page. Its content and look come from the manifest, so there is
 no prop for the welcome message, the colors or the model.

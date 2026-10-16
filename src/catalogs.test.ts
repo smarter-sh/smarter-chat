@@ -35,10 +35,10 @@ describe("the message catalogs", () => {
   });
 
   it("are the Smarter web console's languages", () => {
-    expect(catalogLanguages()).toEqual(["es", "fr"]);
+    expect(catalogLanguages()).toEqual(["es", "fr", "pt_BR"]);
   });
 
-  it.each(["es", "fr"])("translate every message into %s, with its placeholders", (language) => {
+  it.each(["es", "fr", "pt_BR"])("translate every message into %s, with its placeholders", (language) => {
     const { header, entries } = parsePo(fs.readFileSync(catalogPath(language), "utf-8"));
     expect(header.Language).toBe(language);
     const nplurals = Number(/nplurals=(\d+)/.exec(header["Plural-Forms"])?.[1]);

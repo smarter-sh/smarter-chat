@@ -3,13 +3,14 @@
  *
  * Smarter Chat is translated with gettext, the same way as the Smarter web console, and has the same
  * languages: English, which is the source language of every message, Spanish (Latin American, under the
- * generic "es" code) and French. Its message catalogs are its own, in locale/<language>/LC_MESSAGES/smarter-chat.po,
+ * generic "es" code), French and Brazilian Portuguese ("pt-br", whose catalog is pt_BR). Its message catalogs are its own, in locale/<language>/LC_MESSAGES/smarter-chat.po,
  * because the chat also runs on pages that the Smarter platform didn't render: the npm library's and the embed
  * script's. `npm run i18n` compiles them into src/catalogs.gen.ts, which every build bundles.
  *
  * The language is the one that SmarterChat's `language` prop asks for, or else the page's, from the lang attribute
  * of its <html> element, which the web console sets to the console's language, or else the browser's. A language
- * that Smarter Chat doesn't have falls back to its generic language (fr-CA to fr), and then to English.
+ * that Smarter Chat doesn't have falls back to its generic language (fr-CA to fr), or else to a regional language
+ * of the same generic language (pt and pt-PT to pt-br), and then to English.
  * SmarterChat activates its language as it renders, so that the functions here, which every component and module
  * calls, translate into it. A page with two chats in two languages therefore gets the language of the last one to
  * render.
@@ -36,8 +37,16 @@ import { CATALOGS, type Catalog } from "@/catalogs.gen";
 /** The source language, which has no catalog. */
 export const DEFAULT_LANGUAGE = "en";
 
-/** The languages that Smarter Chat is translated into, including English. */
-export const LANGUAGES: readonly string[] = [DEFAULT_LANGUAGE, ...Object.keys(CATALOGS)];
+/** A language tag or locale name as a lowercase language tag, e.g. "pt-br" for "pt_BR" or " PT-BR ". */
+const normalize = (tag: string) => tag.trim().toLowerCase().replaceAll("_", "-");
+
+/** The catalogs by language tag: a catalog is named after its locale name, e.g. pt_BR for pt-br. */
+const CATALOGS_BY_LANGUAGE: Record<string, Catalog> = Object.fromEntries(
+  Object.entries(CATALOGS).map(([language, catalog]) => [normalize(language), catalog]),
+);
+
+/** The languages that Smarter Chat is translated into, including English, as lowercase language tags. */
+export const LANGUAGES: readonly string[] = [DEFAULT_LANGUAGE, ...Object.keys(CATALOGS_BY_LANGUAGE)];
 
 type InterpolationValues = Record<string, string | number | null | undefined>;
 
@@ -48,15 +57,16 @@ const CONTEXT_SEPARATOR = "\u0004";
 let activeLanguage: string | null = null;
 
 /**
- * The language of Smarter Chat that best matches a language tag, e.g. "fr" for "fr-CA", or null if it has none.
- * The tag is case-insensitive, and may use "_" for "-", as Django's locale names do.
+ * The language of Smarter Chat that best matches a language tag, e.g. "fr" for "fr-CA", or "pt-br" for "pt" and
+ * "pt-PT", or null if it has none. The tag is case-insensitive, and may use "_" for "-", as Django's locale names do.
  */
 export function matchLanguage(tag: string | null | undefined): string | null {
-  const normalized = tag?.trim().toLowerCase().replaceAll("_", "-");
+  const normalized = tag ? normalize(tag) : "";
   if (!normalized) return null;
   if (LANGUAGES.includes(normalized)) return normalized;
   const generic = normalized.split("-")[0];
-  return LANGUAGES.includes(generic) ? generic : null;
+  if (LANGUAGES.includes(generic)) return generic;
+  return LANGUAGES.find((language) => language.split("-")[0] === generic) ?? null;
 }
 
 /**
@@ -86,7 +96,7 @@ export function currentLanguage(): string {
   return activeLanguage;
 }
 
-const catalog = (): Catalog | undefined => CATALOGS[currentLanguage()];
+const catalog = (): Catalog | undefined => CATALOGS_BY_LANGUAGE[currentLanguage()];
 
 /** The translation of a message, by its key, or undefined if it has none. */
 function lookup(key: string): Catalog["messages"][string] | undefined {
