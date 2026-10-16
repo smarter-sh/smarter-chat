@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.12.0](https://github.com/smarter-sh/smarter-chat/compare/v0.11.0...v0.12.0) (2026-10-16)
+
+### Features
+
+* **chat:** translate the chat into brazilian portuguese ([2d7a477](https://github.com/smarter-sh/smarter-chat/commit/2d7a47791c3523c69cf37850e67934567ce099c9))
+
 ## [0.11.0](https://github.com/smarter-sh/smarter-chat/compare/v0.10.0...v0.11.0) (2026-10-16)
 
 ### Features
