@@ -59,7 +59,28 @@ export const SendPrompt: Story = {
   },
 };
 
+/** The chat's own text in Spanish, as the language prop asks. The LLMClient's own text is displayed as it is. */
+export const Spanish: Story = {
+  args: { language: "es" },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await canvas.findByText("Welcome to Stackademy! How can I help you today?");
+    await expect(canvas.getByRole("button", { name: "Iniciar un chat nuevo" })).toBeInTheDocument();
+  },
+};
+
+/** The chat's own text in French. */
+export const French: Story = {
+  args: { language: "fr" },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await canvas.findByText("Welcome to Stackademy! How can I help you today?");
+    await expect(canvas.getByRole("button", { name: "Démarrer un nouveau chat" })).toBeInTheDocument();
+  },
+};
+
 /** The LLM provider rejects the prompt, and its error is displayed in the thread. */
+
 export const PromptError: Story = {
   parameters: { msw: { handlers: promptErrorHandlers } },
   play: async ({ canvasElement }) => {

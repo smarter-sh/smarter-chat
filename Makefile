@@ -23,7 +23,7 @@ ACTIVATE_VENV := source venv/bin/activate
 WORKSPACE := ../..
 IN_WORKSPACE := $(shell grep -qs '"packages/\*"' $(WORKSPACE)/package.json && echo true)
 
-.PHONY: help init serve run build test coverage lint format release pre-commit-init pre-commit-run python-init clean
+.PHONY: help init serve run build test coverage lint format i18n release pre-commit-init pre-commit-run python-init clean
 all: help
 
 init:
@@ -60,6 +60,12 @@ lint:
 
 format:
 	npm run format
+
+# The message catalogs: extracts the messages that src/ marks for translation into locale/, keeping their
+# translations, and compiles locale/ into src/catalogs.gen.ts. Translate the new messages, then run it again.
+i18n:
+	npm run i18n
+
 
 # Publish the npm package, @smarter.sh/ui-chat, by hand, once the tests pass. Releases are
 # normally published by .github/workflows/release.yml. prepublishOnly builds it first.
@@ -101,6 +107,8 @@ help:
 	@echo 'coverage         - Run the unit tests with a coverage report in coverage/'
 	@echo 'lint             - Lint, type-check and check formatting'
 	@echo 'format           - Format the code with Prettier'
+	@echo 'i18n             - Update the message catalogs in locale/, and compile them'
+
 	@echo 'release          - Run the tests, then publish the npm package'
 	@echo 'python-init      - Create a Python virtual environment, for pre-commit'
 	@echo 'pre-commit-init  - Install the pre-commit and commit-msg hooks'

@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   DEFAULT_COLOR,
-  DEFAULT_LABEL,
   DEFAULT_Z_INDEX,
   booleanOption,
   chatbotUrl,
@@ -28,7 +27,7 @@ describe("parseOptions", () => {
         mode: "inline",
         position: "bottom-right",
         open: false,
-        label: DEFAULT_LABEL,
+        label: null,
         color: DEFAULT_COLOR,
         width: "100%",
         height: "600px",
@@ -37,6 +36,7 @@ describe("parseOptions", () => {
         cookiePath: "/",
         streamProgress: true,
         debug: false,
+        language: null,
       },
     });
   });
@@ -57,6 +57,7 @@ describe("parseOptions", () => {
       "cookie-path": "/shop/",
       "stream-progress": "false",
       debug: "true",
+      language: " es-MX ",
     });
     expect(options).toEqual({
       chatbot: "https://chat.example.com/sales/",
@@ -73,6 +74,7 @@ describe("parseOptions", () => {
       cookiePath: "/shop/",
       streamProgress: false,
       debug: true,
+      language: "es-MX",
     });
   });
 

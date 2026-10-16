@@ -12,6 +12,8 @@ import dockerfile from "highlight.js/lib/languages/dockerfile";
 import nginx from "highlight.js/lib/languages/nginx";
 import powershell from "highlight.js/lib/languages/powershell";
 
+import { gettext } from "./i18n";
+
 // the common languages, e.g. python, javascript, typescript, bash, json, yaml, sql, go, rust, java,
 // c, c++, c#, html and css, plus a few that LLMs often write and that common leaves out.
 hljs.registerLanguage("dockerfile", dockerfile);
@@ -23,8 +25,6 @@ export const COPY_BUTTON_CLASS = "smarter-chat-code-copy";
 // a mermaid code block, which mermaid.ts displays as a diagram.
 export const MERMAID_BLOCK_CLASS = "smarter-chat-mermaid";
 const MERMAID_LANGUAGE = "mermaid";
-const COPY_LABEL = "Copy";
-const COPIED_LABEL = "Copied!";
 const COPIED_DURATION = 2000;
 
 const HTML_ESCAPES: Record<string, string> = {
@@ -82,7 +82,8 @@ export function codeBlockHtml(text: string, info?: string): string {
     `<div class="${blockClass}">` +
     `<div class="${CODE_BLOCK_CLASS}-header">` +
     `<span class="${CODE_BLOCK_CLASS}-language">${escape(language)}</span>` +
-    `<button type="button" class="${COPY_BUTTON_CLASS}" aria-label="Copy code">${COPY_LABEL}</button>` +
+    `<button type="button" class="${COPY_BUTTON_CLASS}" aria-label="${escape(gettext("Copy code"))}">` +
+    `${escape(gettext("Copy"))}</button>` +
     `</div>` +
     `<pre><code class="${codeClass}">${highlightCode(code, language)}\n</code></pre>` +
     `</div>`
@@ -104,9 +105,9 @@ export function copyCodeBlock(target: EventTarget | null): boolean {
   navigator.clipboard
     ?.writeText(text)
     .then(() => {
-      button.textContent = COPIED_LABEL;
+      button.textContent = gettext("Copied!");
       setTimeout(() => {
-        button.textContent = COPY_LABEL;
+        button.textContent = gettext("Copy");
       }, COPIED_DURATION);
     })
     .catch(() => undefined);

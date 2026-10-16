@@ -124,4 +124,10 @@ export interface SmarterChatProps {
    * Server-Sent Events. Servers that don't stream answer as before.
    */
   streamProgress?: boolean;
+  /**
+   * The language of the chat's own text, e.g. its buttons' labels, as a language tag: "en", "es" or "fr", or a
+   * regional variant of one, e.g. "es-MX", which gets its generic language. By default, the page's (the lang
+   * attribute of its <html> element), or else the browser's. Other languages get English.
+   */
+  language?: string | null;
 }

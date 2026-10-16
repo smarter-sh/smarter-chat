@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import DocsDialog from "@/components/DocsDialog/Component";
-import { DOC_SECTIONS } from "@/components/DocsDialog/data";
+import { docSections } from "@/components/DocsDialog/data";
 
 describe("DocsDialog", () => {
   it("has a tab for each audience, Prompt Engineer first and selected", () => {
@@ -19,7 +19,7 @@ describe("DocsDialog", () => {
   it("lists the selected tab's technical references, which open in a new tab", async () => {
     const user = userEvent.setup();
     render(<DocsDialog onClose={() => {}} />);
-    for (const section of DOC_SECTIONS) {
+    for (const section of docSections()) {
       await user.click(screen.getByRole("tab", { name: section.title }));
       const panel = screen.getByRole("tabpanel", { name: section.title });
       expect(within(panel).getAllByRole("link")).toHaveLength(section.links.length);

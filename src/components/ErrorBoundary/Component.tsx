@@ -4,6 +4,7 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 
 import { loggerPrefix } from "@/const";
+import { gettext } from "@/lib/i18n";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -28,7 +29,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     if (this.state.error) {
       return (
         <div role="alert" className="smarter-chat-error-boundary">
-          <h2>Something went wrong.</h2>
+          <h2>{gettext("Something went wrong.")}</h2>
+
           <p>{this.state.error.message}</p>
         </div>
       );

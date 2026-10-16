@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import SmarterChat from "@/components/SmarterChat";
+import { activateLanguage, gettext, interpolate } from "@/lib/i18n";
 import type { EmbedOptions } from "./options";
 
 export const PANEL_ID = "smarter-chat-embed-panel";
@@ -34,6 +35,7 @@ function Chat({ options }: { options: EmbedOptions }) {
       sessionCookieName={options.sessionCookieName}
       debugCookieName={`${options.sessionCookieName}_debug`}
       cookiePath={options.cookiePath}
+      language={options.language}
     />
   );
 }
@@ -61,6 +63,10 @@ function CloseIcon() {
 }
 
 function Launcher({ options, open, onOpenChange }: EmbedAppProps) {
+  // the launcher's labels are in the chat's language, and the chat is rendered only once it opens.
+  activateLanguage(options.language);
+  // Translators: the default accessible name of the button that opens the chat, and of its panel.
+  const label = options.label ?? gettext("Chat");
   // the chat is rendered once the launcher has been opened, and stays rendered.
   const [opened, setOpened] = useState(open);
   if (open && !opened) setOpened(true);
@@ -93,7 +99,7 @@ function Launcher({ options, open, onOpenChange }: EmbedAppProps) {
         id={PANEL_ID}
         part="panel"
         className="smarter-chat-embed-panel"
-        aria-label={options.label}
+        aria-label={label}
         hidden={!open}
         ref={panelRef}
       >
@@ -105,7 +111,8 @@ function Launcher({ options, open, onOpenChange }: EmbedAppProps) {
         part="launcher"
         className="smarter-chat-embed-button"
         style={{ background: options.color }}
-        aria-label={open ? `Close ${options.label}` : options.label}
+        aria-label={open ? interpolate(gettext("Close %(label)s"), { label }) : label}
+
         aria-expanded={open}
         aria-controls={PANEL_ID}
         onClick={() => onOpenChange(!open)}

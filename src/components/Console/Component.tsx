@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import ReactJsonView from "@microlink/react-json-view";
 
+import { gettext } from "@/lib/i18n";
 import { logStreamUrlForLevel, useLogStream } from "@/lib/logStream";
 import { consoleData, type ConsoleConfig } from "@/components/Console/data";
 import { MenuItems, type MenuItem } from "@/components/Console/enums";
@@ -26,13 +27,41 @@ interface ConsoleProps {
   resetKey?: number | string;
 }
 
-const MENU: { label: string; id: MenuItem }[] = [
-  { label: "Api Calls", id: MenuItems.LLMCLIENT_REQUEST_HISTORY },
-  { label: "Tool Calls", id: MenuItems.CHAT_TOOL_CALL_HISTORY },
-  { label: "Plugin Usage", id: MenuItems.CHAT_PLUGIN_USAGE_HISTORY },
-  { label: "Config", id: MenuItems.CHAT_CONFIG },
-];
-const SERVER_LOGS = { label: "Server Logs", id: MenuItems.SERVER_LOGS };
+interface Tab {
+  id: MenuItem;
+  label: string;
+  /** What the Console says when the chat session has no data for the tab yet. */
+  empty: string;
+}
+
+/** The Console's tabs, from left to right, translated. The server logs, when there are any, are first. */
+function tabs(withServerLogs: boolean): Tab[] {
+  const serverLogs: Tab = { id: MenuItems.SERVER_LOGS, label: gettext("Server Logs"), empty: "" };
+  const menu: Tab[] = [
+    {
+      id: MenuItems.LLMCLIENT_REQUEST_HISTORY,
+      label: gettext("Api Calls"),
+      empty: gettext("No api calls in this chat session yet."),
+    },
+    {
+      id: MenuItems.CHAT_TOOL_CALL_HISTORY,
+      label: gettext("Tool Calls"),
+      empty: gettext("No tool calls in this chat session yet."),
+    },
+    {
+      id: MenuItems.CHAT_PLUGIN_USAGE_HISTORY,
+      label: gettext("Plugin Usage"),
+      empty: gettext("No plugin usage in this chat session yet."),
+    },
+    {
+      id: MenuItems.CHAT_CONFIG,
+      // Translators: the tab of the Console that displays the chat's configuration.
+      label: gettext("Config"),
+      empty: gettext("No config in this chat session yet."),
+    },
+  ];
+  return withServerLogs ? [serverLogs, ...menu] : menu;
+}
 
 function Console({ config, logStreamUrl = null, logLevel = null, resetKey }: ConsoleProps) {
   // the server logs, when there are any, are first, and selected. Their stream stays connected,
@@ -49,9 +78,9 @@ function Console({ config, logStreamUrl = null, logLevel = null, resetKey }: Con
     previousResetKey.current = resetKey;
     clearLogs();
   }, [resetKey, clearLogs]);
-  const menu = logStreamUrl ? [SERVER_LOGS, ...MENU] : MENU;
+  const menu = tabs(!!logStreamUrl);
   const showLogs = selectedMenuItem === MenuItems.SERVER_LOGS && !!logStreamUrl;
-  const selectedLabel = menu.find(({ id }) => id === selectedMenuItem)?.label ?? "";
+  const emptyText = menu.find(({ id }) => id === selectedMenuItem)?.empty ?? "";
 
   // a simulated bash shell.
   const [shell] = useState(() => ({
@@ -71,7 +100,7 @@ function Console({ config, logStreamUrl = null, logLevel = null, resetKey }: Con
             <div id="chatapp_console_app_content_container" className="app-container container-lg">
               <nav
                 id="chatapp_console"
-                aria-label="Console"
+                aria-label={gettext("Console")}
                 className="bg-gray-200 d-flex flex-stack flex-wrap mb-2 p-2 console-nav-items"
               >
                 <ul className="nav flex-wrap border-transparent">
@@ -95,17 +124,16 @@ function Console({ config, logStreamUrl = null, logLevel = null, resetKey }: Con
               <div
                 className={`console-output rounded ${showLogs ? "console-output-logs" : ""}`}
                 role="log"
-                aria-label="Console output"
+                aria-label={gettext("Console output")}
               >
                 <div className="console-output-content">
+                  {/* a terminal's own messages, which are in English. */}
                   <p className="mb-0">
                     Last login: {shell.lastLogin} from {shell.ipAddress}
                   </p>
                   <p className="mb-0">{shell.prompt}</p>
                   {showLogs && <ServerLogs {...logStream} />}
-                  {isEmpty && (
-                    <p className="mb-0 console-empty">No {selectedLabel.toLowerCase()} in this chat session yet.</p>
-                  )}
+                  {isEmpty && <p className="mb-0 console-empty">{emptyText}</p>}
                   {data.length > 0 && (
                     <>
                       {data.map((item, index) => (

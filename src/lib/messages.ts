@@ -12,6 +12,7 @@ import { Marked, type Tokens } from "marked";
 import type { ApiMessage, ChatMessage } from "../types";
 import { codeBlockHtml } from "./code";
 import { MessageDirectionEnum, SenderRoleEnum, ValidMessageRolesEnum, type MessageDirection } from "./enums";
+import { gettext } from "./i18n";
 import { mathExtension } from "./math";
 
 const HTML_ESCAPES: Record<string, string> = {
@@ -171,7 +172,9 @@ export function examplePrompts(prompts: string[] | null | undefined): string {
   if (!prompts || prompts.length === 0) {
     return "";
   }
-  return "Some example prompts to get you started:\n\n" + prompts.map((prompt) => `- ${prompt}\n`).join("");
+  return (
+    gettext("Some example prompts to get you started:") + "\n\n" + prompts.map((prompt) => `- ${prompt}\n`).join("")
+  );
 }
 
 /** The thread of a new chat session: the system role, the welcome message, and example prompts. */

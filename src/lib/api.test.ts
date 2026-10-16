@@ -38,6 +38,7 @@ import {
   type PromptProgressEvent,
 } from "./api";
 import { cookieMetaFactory, getCookie } from "./cookie";
+import { activateLanguage } from "./i18n";
 
 const cookies: ChatCookies = {
   csrfCookie: cookieMetaFactory("csrftoken", null, "localhost"),
@@ -347,6 +348,24 @@ describe("maxTokensMessage", () => {
     };
     expect(maxTokensMessage(completion)?.content).toBe(
       "The LLM reached this LLMClient's max tokens of 512 completion tokens, so its response is incomplete. Raise defaultMaxTokens in the LLMClient's manifest.",
+    );
+  });
+
+  it("explains an incomplete response that spent tokens reasoning, and an empty one, in the active language", () => {
+    const completion = (content: string | null) => ({
+      choices: [{ finish_reason: "length", message: { content } }],
+      usage: { completion_tokens: 1, completion_tokens_details: { reasoning_tokens: 1 } },
+    });
+    expect(maxTokensMessage(completion("It"))?.content).toBe(
+      "The LLM reached this LLMClient's max tokens of 1 completion token, 1 of which it spent reasoning, so its response is incomplete. Raise defaultMaxTokens in the LLMClient's manifest.",
+    );
+    activateLanguage("es");
+    expect(maxTokensMessage({ choices: [{ finish_reason: "length", message: { content: "Hoy" } }] })?.content).toBe(
+      "El LLM alcanzó el máximo de tokens de este LLMClient, así que su respuesta está incompleta. Aumenta defaultMaxTokens en el manifiesto del LLMClient.",
+    );
+    activateLanguage("fr");
+    expect(maxTokensMessage({ ...completion(null), usage: { completion_tokens: 8 } })?.content).toBe(
+      "Le LLM a atteint le nombre maximal de jetons de ce LLMClient, 8 jetons de complétion : sa réponse est donc vide. Augmentez defaultMaxTokens dans le manifeste du LLMClient.",
     );
   });
 

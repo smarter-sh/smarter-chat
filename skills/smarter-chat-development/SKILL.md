@@ -73,6 +73,7 @@ Never commit this package from the platform's repository.
 | `src/lib/styles.ts`                                              | The LLMClient's styles as `--smarter-chat-*` css properties, validated          |
 | `src/lib/code.ts`, `math.ts`, `mermaid.ts`                       | highlight.js, KaTeX, Mermaid (lazy)                                             |
 | `src/lib/cookie.ts`, `layout.ts`                                 | Session and debug cookies; the Console's layout in `localStorage`               |
+| `src/lib/i18n.tsx`, `locale/`, `src/catalogs.gen.ts`             | Translations: `gettext()`, the `.po` catalogs, the compiled catalogs            |
 | `src/embed/`                                                     | The embed script. See `smarter-chat-embed`                                      |
 | `src/mocks/`                                                     | Fixtures (copied from real responses), MSW handlers, fakes                      |
 | `contract/`, `src/contract.gen.ts`, `scripts/contract-types.mjs` | The generated api contract                                                      |
@@ -116,7 +117,22 @@ you work here, copy `contract/chat-contract.schema.json` over and run
 - **A dependency:** check its license (`doc/adr/016-licensing.md`) and its
   effect on `embed.js`'s 400 kB gzip budget (`doc/adr/010-bundle-size.md`).
   If it's large and rarely needed, load it lazily, as Mermaid is.
+- **Text that the chat displays:** wrap it in `gettext()` (or `ngettext`,
+  `pgettext`) from `@/lib/i18n`, at render time, never in a module-level
+  constant. The message is a string literal, a whole sentence, with named
+  `%(name)s` placeholders filled by `interpolate()`; a count uses `ngettext`.
+  Then `npm run i18n`, translate the new `msgstr`s in
+  `locale/es/LC_MESSAGES/smarter-chat.po` and `locale/fr/...` (the console's
+  terms: tú, "Modo de pruebas"; vous, "bac à sable"), check them with
+  `msgfmt --check -o /dev/null <file>.po`, and run `npm run i18n` again.
+  `src/catalogs.test.ts` fails on an out-of-date or untranslated catalog.
+  Don't translate the LLMClient's text, the platform's messages, the Console's
+  terminal and JSON, logs, or developer errors. See `doc/adr/018-translations.md`.
+- **A language:** add it to `LANGUAGES` in `scripts/i18n.mjs` (the platform's
+  `LANGUAGES` too, so the two match), `npm run i18n`, and translate its new
+  `.po` file. Its test in `src/catalogs.test.ts` lists the languages.
 - **A css file:** prefix classes `smarter-chat-`. In the embed script, it is
+
   shadow-root css automatically; `@font-face` rules are hoisted to the page.
 
 ## Related skills

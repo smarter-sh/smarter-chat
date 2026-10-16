@@ -9,7 +9,8 @@
  */
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 
-import { DOC_SECTIONS, type DocSection } from "@/components/DocsDialog/data";
+import { docSections, type DocSection } from "@/components/DocsDialog/data";
+import { gettext } from "@/lib/i18n";
 import "@/components/DocsDialog/styles.css";
 
 interface DocsDialogProps {
@@ -17,7 +18,7 @@ interface DocsDialogProps {
   sections?: DocSection[];
 }
 
-function DocsDialog({ onClose, sections = DOC_SECTIONS }: DocsDialogProps) {
+function DocsDialog({ onClose, sections = docSections() }: DocsDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -73,22 +74,22 @@ function DocsDialog({ onClose, sections = DOC_SECTIONS }: DocsDialogProps) {
         aria-labelledby="smarter-chat-docs-title"
       >
         <div className="smarter-chat-docs-header">
-          <h2 id="smarter-chat-docs-title">Docs</h2>
+          <h2 id="smarter-chat-docs-title">{gettext("Docs")}</h2>
           <button
             ref={closeRef}
             type="button"
             className="smarter-chat-docs-close"
             onClick={onClose}
-            aria-label="Close"
-            title="Close"
+            aria-label={gettext("Close")}
+            title={gettext("Close")}
           >
             &times;
           </button>
         </div>
         <p className="smarter-chat-docs-intro">
-          Technical references for building LLMClients, and the applications that host them.
+          {gettext("Technical references for building LLMClients, and the applications that host them.")}
         </p>
-        <div className="smarter-chat-docs-tabs" role="tablist" aria-label="Audience">
+        <div className="smarter-chat-docs-tabs" role="tablist" aria-label={gettext("Audience")}>
           {sections.map((tab, index) => (
             <button
               key={tab.title}

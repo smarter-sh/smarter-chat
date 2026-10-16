@@ -4,3 +4,6 @@ astroid
 # in the "Grammar Genius" sample app.
 broked
 afterAll
+# Spanish for 'manifest', in tests that assert the chat's Spanish messages. The
+# catalogs in locale/ are excluded from codespell; the tests are not.
+manifiesto

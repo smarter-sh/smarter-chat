@@ -37,3 +37,4 @@ See: [Michael Nygard's ADRs](https://cognitect.com/blog/2011/11/15/documenting-a
 - [ADR-015: Code Quality](015-code-quality.md)
 - [ADR-016: Licensing](016-licensing.md)
 - [ADR-017: Documentation](017-documentation.md)
+- [ADR-018: Translations](018-translations.md)

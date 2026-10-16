@@ -6,6 +6,7 @@
  * Long lines scroll horizontally, unless the user wraps them.
  */
 import { ansiCss, parseAnsi } from "@/lib/ansi";
+import { gettext } from "@/lib/i18n";
 import { useLogWrap } from "@/lib/layout";
 import type { LogEvent } from "@/lib/logStream";
 
@@ -15,13 +16,16 @@ interface ServerLogsProps {
   error: string | null;
 }
 
-// the stream's own status messages, which older records in its history may have. As in the log viewer.
+// the stream's own status messages, which older records in its history may have. As in the log viewer. These are
+// the server's, in English.
 const SUPPRESSED_LINES = new Set(["Waiting for log stream...", "[stream] connected"]);
 
 function status({ logs, connected, error }: ServerLogsProps): string {
   if (error) return error;
-  if (!connected) return "Connecting to the server log stream...";
-  return logs.length > 0 ? "Streaming server logs..." : "Streaming server logs... There are none yet.";
+  if (!connected) return gettext("Connecting to the server log stream...");
+  return logs.length > 0
+    ? gettext("Streaming server logs...")
+    : gettext("Streaming server logs... There are none yet.");
 }
 
 function LogLine({ message }: { message: string }) {
@@ -49,13 +53,13 @@ function ServerLogs(props: ServerLogsProps) {
           type="button"
           className="console-server-logs-wrap-toggle"
           aria-pressed={wrap}
-          title={wrap ? "Scroll long lines" : "Wrap long lines"}
+          title={wrap ? gettext("Scroll long lines") : gettext("Wrap long lines")}
           onClick={() => setWrap((previous) => !previous)}
         >
           <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor">
             <path d="M1 3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5Zm0 4a.5.5 0 0 1 .5-.5h11a2.5 2.5 0 0 1 0 5H9.707l.647.646a.5.5 0 0 1-.708.708l-1.5-1.5a.5.5 0 0 1 0-.708l1.5-1.5a.5.5 0 1 1 .708.708L9.707 11H12.5a1.5 1.5 0 0 0 0-3h-11a.5.5 0 0 1-.5-.5Zm0 4a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5Z" />
           </svg>
-          Wrap lines
+          {gettext("Wrap lines")}
         </button>
       </div>
       <div className="console-server-logs-lines">

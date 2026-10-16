@@ -259,6 +259,28 @@ describe("SmarterChat", () => {
     expect(screen.getByText("Smarter Chat is not available")).toBeInTheDocument();
   });
 
+  it("displays its own text in the language that it is asked for, but the LLMClient's as it is", async () => {
+    server.use(...chatHandlers);
+    render(<SmarterChat {...props} language="es-MX" />);
+    expect(screen.getByText("Configurando el área de trabajo...")).toBeInTheDocument();
+    expect(await screen.findByText(WELCOME)).toBeInTheDocument();
+    expect(screen.getByText("Algunos prompts de ejemplo para empezar:")).toBeInTheDocument();
+    expect(screen.getByText("openai gpt-4o-mini con 2 herramientas adicionales")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Iniciar un chat nuevo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Modo de pruebas" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Mensaje" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Llamadas a herramientas" })).toBeInTheDocument();
+  });
+
+  it("displays its own text in the page's language by default", async () => {
+    server.use(...chatHandlers);
+    document.documentElement.lang = "fr";
+    render(<SmarterChat {...props} />);
+    expect(await screen.findByText(WELCOME)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Démarrer un nouveau chat" })).toBeInTheDocument();
+    expect(screen.getByRole("separator", { name: "Redimensionner le chat et la console" })).toBeInTheDocument();
+  });
+
   it("is still configuring while the configuration loads", () => {
     server.use(...loadingHandlers);
     render(<SmarterChat {...props} />);

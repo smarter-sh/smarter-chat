@@ -10,3 +10,4 @@ package-lock.json
 **/*.tgz
 src/contract.gen.ts
 contract/chat-contract.schema.json
+src/catalogs.gen.ts

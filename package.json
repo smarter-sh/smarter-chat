@@ -58,6 +58,7 @@
     "build": "tsc -b && vite build",
     "build:lib": "vite build --mode lib && tsc -p tsconfig.lib.json",
     "contract:types": "node scripts/contract-types.mjs",
+    "i18n": "node scripts/i18n.mjs",
     "lint": "eslint --max-warnings=0 .",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",

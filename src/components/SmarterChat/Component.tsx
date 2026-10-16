@@ -20,6 +20,11 @@
  * The LLMClient's styles (its manifest's spec.config.styles) set its logo, which is displayed in
  * the header, its avatars, its background image, its fonts and its colors. See lib/styles.ts.
  *
+ * The chat's own text, e.g. its buttons' labels, is in the language that the `language` prop asks for, or else the
+ * page's, or else the browser's: English, Spanish or French. See lib/i18n.tsx. The LLMClient's own text, e.g. its
+ * welcome message and its example prompts, and the messages of the conversation are displayed as they are.
+ *
+
  * This is the component that the @smarter.sh/ui-chat npm package exports, and that the Smarter web
  * console's LLMClient prompt workbench renders. See main.tsx.
  */
@@ -40,6 +45,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import { DEFAULT_COOKIE_EXPIRATION, loggerPrefix, projectName, projectVersion } from "@/const";
 import { fetchConfig, fetchPrompt, type PromptProgressEvent } from "@/lib/api";
 import { copyCodeBlock } from "@/lib/code";
+import { activateLanguage, gettext, interpolate, ngettext } from "@/lib/i18n";
 import { renderMermaidDiagrams, toggleMermaidDiagram } from "@/lib/mermaid";
 import { cookieMetaFactory, setCookie } from "@/lib/cookie";
 import { MetadataRolesEnum, SenderRoleEnum } from "@/lib/enums";
@@ -91,7 +97,10 @@ function SmarterChat({
   smarterRequestId = "",
   logStreamUrl = null,
   streamProgress = true,
+  language = null,
 }: SmarterChatProps) {
+  // before anything below translates a message. See lib/i18n.tsx.
+  const activeLanguage = activateLanguage(language);
   const [config, setConfig] = useState<ChatConfig | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -187,8 +196,8 @@ function SmarterChat({
     const editor = chatAppRef.current?.querySelector(".cs-message-input__content-editor");
     editor?.setAttribute("role", "textbox");
     editor?.setAttribute("aria-multiline", "true");
-    editor?.setAttribute("aria-label", "Message");
-  }, []);
+    editor?.setAttribute("aria-label", gettext("Message"));
+  }, [activeLanguage]);
 
   useEffect(() => {
     // messages are html strings, so their code blocks' copy buttons, and their diagrams' code
@@ -294,13 +303,24 @@ function SmarterChat({
   const userAvatarUrl = imageUrl(styles?.user_avatar_url);
   const title = llmclient ? `${llmclient.app_name} v${llmclient.version || "1.0.0"}` : "";
   const totalTools = llmclient?.total_tools ?? 0;
-  const info = llmclient
-    ? `${llmclient.provider} ${llmclient.default_model}${totalTools > 0 ? ` with ${totalTools} additional tools` : ""}`
-    : "";
+  let info = "";
+  if (llmclient && totalTools > 0) {
+    info = interpolate(
+      // Translators: the LLM provider and model of the chat, e.g. "openai gpt-4o-mini with 3 additional tools".
+      ngettext(
+        "%(provider)s %(model)s with %(count)s additional tool",
+        "%(provider)s %(model)s with %(count)s additional tools",
+        totalTools,
+      ),
+      { provider: llmclient.provider, model: llmclient.default_model, count: totalTools },
+    );
+  } else if (llmclient) {
+    info = `${llmclient.provider} ${llmclient.default_model}`;
+  }
   const isValid = config?.meta_data?.is_valid ?? config?.meta_data?.ready ?? true;
   const isDeployed = !!(config?.meta_data?.is_deployed ?? llmclient?.deployed);
 
-  const assistant = llmclient?.app_assistant ?? "Assistant";
+  const assistant = llmclient?.app_assistant ?? gettext("Assistant");
 
   /** The avatar beside a message: the assistant's, or the user's, if the styles have one. */
   function messageAvatar(message: ChatMessage) {
@@ -308,20 +328,23 @@ function SmarterChat({
       return <Avatar src={assistantAvatarUrl} name={assistant} />;
     }
     if (message.sender === SenderRoleEnum.USER && userAvatarUrl) {
-      return <Avatar src={userAvatarUrl} name="You" />;
+      return <Avatar src={userAvatarUrl} name={gettext("You")} />;
     }
     return null;
   }
   const currentStep = progress.at(-1)?.message;
-  const typingText = currentStep ? `${assistant}: ${currentStep}` : `${assistant} is typing`;
+  const typingText = currentStep
+    ? // Translators: the assistant's name, and the current step of the running prompt, which is in English.
+      interpolate(gettext("%(assistant)s: %(step)s"), { assistant, step: currentStep })
+    : interpolate(gettext("%(assistant)s is typing"), { assistant });
 
   let headerName;
   if (configError) {
-    headerName = "Smarter Chat is not available";
+    headerName = gettext("Smarter Chat is not available");
   } else if (isReady) {
     headerName = <AppTitle title={title} isReady={isReady} isValid={isValid} isDeployed={isDeployed} />;
   } else {
-    headerName = "Configuring workbench...";
+    headerName = gettext("Configuring workbench...");
   }
 
   return (
@@ -329,7 +352,7 @@ function SmarterChat({
       <div className="smarter-chat-container" ref={containerRef}>
         <div
           role="region"
-          aria-label="Chat"
+          aria-label={gettext("Chat")}
           className={`smarter-chat-app ${isSplit ? "" : "smarter-chat-app-full"}`}
           style={isSplit ? { flexBasis: `${chatWidth}%` } : undefined}
         >
@@ -350,11 +373,15 @@ function SmarterChat({
                           onClick={handleToggleMetadata}
                           title={
                             showMetadata
-                              ? "Sandbox mode: Smarter's system, tool and meta data messages are displayed. Click for production mode."
-                              : "Production mode: the conversation is displayed as its users see it. Click for sandbox mode."
+                              ? gettext(
+                                  "Sandbox mode: Smarter's system, tool and meta data messages are displayed. Click for production mode.",
+                                )
+                              : gettext(
+                                  "Production mode: the conversation is displayed as its users see it. Click for sandbox mode.",
+                                )
                           }
                         >
-                          {showMetadata ? "Sandbox mode" : "Production mode"}
+                          {showMetadata ? gettext("Sandbox mode") : gettext("Production mode")}
                         </Button>
                       )}
                       {showMetadata && (
@@ -362,26 +389,27 @@ function SmarterChat({
                           className="smarter-chat-toolbar-button smarter-chat-docs-button"
                           icon={<DocsIcon />}
                           onClick={() => setDocsOpen(true)}
-                          title="Technical references for prompt engineers and software engineers"
+                          title={gettext("Technical references for prompt engineers and software engineers")}
                           aria-haspopup="dialog"
                         >
-                          Docs
+                          {/* Translators: the button that opens the dialog of links to the documentation. */}
+                          {gettext("Docs")}
                         </Button>
                       )}
                       <Button
                         className="smarter-chat-toolbar-button"
                         icon={<NewChatIcon />}
                         onClick={handleNewChat}
-                        title="Start a new chat"
-                        aria-label="Start a new chat"
+                        title={gettext("Start a new chat")}
+                        aria-label={gettext("Start a new chat")}
                       />
                       {showConsole && !isProduction && (
                         <Button
                           className="smarter-chat-toolbar-button smarter-chat-console-toggle"
                           icon={<ConsoleIcon visible={consoleVisible} />}
                           onClick={() => setConsoleVisible((visible) => !visible)}
-                          title={consoleVisible ? "Hide the Console" : "Show the Console"}
-                          aria-label="Show the Console"
+                          title={consoleVisible ? gettext("Hide the Console") : gettext("Show the Console")}
+                          aria-label={gettext("Show the Console")}
                           aria-pressed={consoleVisible}
                         />
                       )}
@@ -452,7 +480,7 @@ function SmarterChat({
             <input
               type="file"
               accept=".py,.txt,.md,.json,.yaml,.yml,.csv"
-              aria-label="Attach a file"
+              aria-label={gettext("Attach a file")}
               ref={fileInputRef}
               style={{ display: "none" }}
               onChange={handleFileChange}

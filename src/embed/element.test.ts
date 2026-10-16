@@ -100,6 +100,17 @@ describe("<smarter-chat>", () => {
     expect(toggled.mock.calls).toEqual([[true], [false]]);
   });
 
+  it("labels the launcher in the chat's language", async () => {
+    server.use(...chatHandlers);
+    const user = userEvent.setup();
+    const element = await chat({ chatbot: API_URL, mode: "launcher", language: "fr" });
+    const view = shadow(element);
+    await user.click(view.getByRole("button", { name: "Chat" }));
+    expect(await view.findByText(WELCOME)).toBeInTheDocument();
+    expect(view.getByRole("button", { name: "Fermer Chat" })).toBeInTheDocument();
+    expect(view.getByRole("button", { name: "Démarrer un nouveau chat" })).toBeInTheDocument();
+  });
+
   it("closes the launcher with Escape, and returns the focus to its button", async () => {
     server.use(...chatHandlers);
     const element = await chat({ chatbot: API_URL, mode: "launcher", open: "" });

@@ -10,6 +10,8 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { gettext } from "./i18n";
+
 /** A log record. Records that aren't JSON are displayed as their message. */
 export interface LogEvent {
   message: string;
@@ -100,7 +102,7 @@ export function useLogStream(streamUrl: string | null) {
     source.onerror = () => {
       // the browser reconnects by itself, after the server's retry interval.
       setConnected(false);
-      setError("The log stream disconnected. Reconnecting...");
+      setError(gettext("The log stream disconnected. Reconnecting..."));
     };
 
     return () => {

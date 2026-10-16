@@ -2,6 +2,7 @@
  * The chat's title: the LLMClient's app name and version, with icons for whether it is valid, and
  * whether it is deployed or is still in the sandbox.
  */
+import { gettext } from "@/lib/i18n";
 import "@/components/AppTitle/styles.css";
 
 interface AppTitleProps {
@@ -29,20 +30,23 @@ const ROCKET =
 
 function AppTitle({ title, isReady, isValid, isDeployed }: AppTitleProps) {
   if (!isReady) {
-    return <span>Loading...</span>;
+    return <span>{gettext("Loading...")}</span>;
   }
   return (
     <span className="smarter-chat-title">
       {title}
       {isValid ? (
-        <Icon label="valid" color="green" path={CHECK_CIRCLE} />
+        // Translators: the LLMClient's manifest is valid.
+        <Icon label={gettext("valid")} color="green" path={CHECK_CIRCLE} />
       ) : (
-        <Icon label="not valid" color="red" path={X_CIRCLE} />
+        <Icon label={gettext("not valid")} color="red" path={X_CIRCLE} />
       )}
       {isDeployed ? (
-        <Icon label="deployed" color="orange" path={ROCKET} />
+        // Translators: the LLMClient is deployed.
+        <Icon label={gettext("deployed")} color="orange" path={ROCKET} />
       ) : (
-        <span className="smarter-chat-title-sandbox">(sandbox)</span>
+        // Translators: the LLMClient is not deployed, and runs only in the sandbox.
+        <span className="smarter-chat-title-sandbox">{gettext("(sandbox)")}</span>
       )}
     </span>
   );

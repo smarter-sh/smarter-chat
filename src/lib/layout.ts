@@ -13,6 +13,8 @@ import {
   type SetStateAction,
 } from "react";
 
+import { gettext } from "./i18n";
+
 /** The chat's width, as a percentage of the component's width. */
 export const DEFAULT_CHAT_WIDTH = 33.33;
 export const MIN_CHAT_WIDTH = 20;
@@ -98,7 +100,8 @@ export function useChatWidth(containerRef: RefObject<HTMLElement | null>) {
     role: "separator",
     tabIndex: 0,
     "aria-orientation": "vertical" as const,
-    "aria-label": "Resize the chat and the Console",
+    "aria-label": gettext("Resize the chat and the Console"),
+
     "aria-valuenow": Math.round(chatWidth),
     "aria-valuemin": MIN_CHAT_WIDTH,
     "aria-valuemax": MAX_CHAT_WIDTH,

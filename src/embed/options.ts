@@ -22,8 +22,8 @@ export interface EmbedOptions {
   position: EmbedPosition;
   /** Whether the launcher starts open. */
   open: boolean;
-  /** The launcher's accessible name, and the chat panel's. */
-  label: string;
+  /** The launcher's accessible name, and the chat panel's. Null for the default, "Chat", in the chat's language. */
+  label: string | null;
   /** The launcher button's background color. */
   color: string;
   /** The width of the inline chat, or of the launcher's panel. */
@@ -40,6 +40,8 @@ export interface EmbedOptions {
   streamProgress: boolean;
   /** Log to the browser console. */
   debug: boolean;
+  /** The language of the chat's own text, e.g. "fr". Null for the page's, or else the browser's. */
+  language: string | null;
 }
 
 /** The result of reading the options: the options, or why they can't be used. */
@@ -61,9 +63,9 @@ export const OPTION_ATTRIBUTES = [
   "cookie-path",
   "stream-progress",
   "debug",
+  "language",
 ] as const;
 
-export const DEFAULT_LABEL = "Chat";
 export const DEFAULT_COLOR = "#ff5733";
 // the topmost layer that pages use, less a little, so that a page's own topmost elements, e.g. a cookie banner,
 // can still cover the launcher.
@@ -136,7 +138,7 @@ export function parseOptions(
       mode,
       position,
       open: booleanOption(get("open"), false),
-      label: get("label")?.trim() || DEFAULT_LABEL,
+      label: get("label")?.trim() || null,
       color: safeCssValue(get("color")) ?? DEFAULT_COLOR,
       width: safeCssValue(get("width")) ?? DEFAULT_SIZES[mode].width,
       height: safeCssValue(get("height")) ?? DEFAULT_SIZES[mode].height,
@@ -148,6 +150,8 @@ export function parseOptions(
       cookiePath: cookiePath?.startsWith("/") ? cookiePath : "/",
       streamProgress: booleanOption(get("stream-progress"), true),
       debug: booleanOption(get("debug"), false),
+      // a language tag, e.g. "es-MX". Anything else is ignored, and SmarterChat falls back to English.
+      language: get("language")?.trim() || null,
     },
   };
 }

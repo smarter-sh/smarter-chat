@@ -10,7 +10,9 @@ repos:
     hooks:
       - id: codespell
         args: ["--ignore-words=codespell.txt"]
-        exclude: '\.svg$|^node_modules/|^dist/|^CHANGELOG\.md$|^\.storybook/public/mockServiceWorker\.js$'
+        # the message catalogs are in Spanish and French.
+        exclude: '\.svg$|^node_modules/|^dist/|^CHANGELOG\.md$|^\.storybook/public/mockServiceWorker\.js$|^locale/|^src/catalogs\.gen\.ts$'
+
   # Prettier and ESLint, with this repository's own configuration, from its node_modules (make init),
   # or from the Smarter React workspace's, two directories up, when it is inside one.
   - repo: local

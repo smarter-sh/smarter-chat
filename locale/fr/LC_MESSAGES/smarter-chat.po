@@ -1,0 +1,368 @@
+# French messages of Smarter Chat.
+# Don't edit the msgids here: change the source, then run `npm run i18n`.
+# This file is distributed under the same license as the @smarter.sh/ui-chat package (AGPL-3.0).
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Smarter Chat\n"
+"Report-Msgid-Bugs-To: https://github.com/smarter-sh/smarter-chat/issues\n"
+"Last-Translator: The Smarter Project\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: src/components/AppTitle/Component.tsx
+msgid "Loading..."
+msgstr "Chargement..."
+
+#. Translators: the LLMClient's manifest is valid.
+#: src/components/AppTitle/Component.tsx
+msgid "valid"
+msgstr "valide"
+
+#: src/components/AppTitle/Component.tsx
+msgid "not valid"
+msgstr "non valide"
+
+#. Translators: the LLMClient is deployed.
+#: src/components/AppTitle/Component.tsx
+msgid "deployed"
+msgstr "déployé"
+
+#. Translators: the LLMClient is not deployed, and runs only in the sandbox.
+#: src/components/AppTitle/Component.tsx
+msgid "(sandbox)"
+msgstr "(bac à sable)"
+
+#: src/components/Console/Component.tsx
+msgid "Server Logs"
+msgstr "Journaux du serveur"
+
+#: src/components/Console/Component.tsx
+msgid "Api Calls"
+msgstr "Appels à l'api"
+
+#: src/components/Console/Component.tsx
+msgid "No api calls in this chat session yet."
+msgstr "Aucun appel à l'api dans cette session de chat pour l'instant."
+
+#: src/components/Console/Component.tsx
+msgid "Tool Calls"
+msgstr "Appels d'outils"
+
+#: src/components/Console/Component.tsx
+msgid "No tool calls in this chat session yet."
+msgstr "Aucun appel d'outil dans cette session de chat pour l'instant."
+
+#: src/components/Console/Component.tsx
+msgid "Plugin Usage"
+msgstr "Utilisation des plugins"
+
+#: src/components/Console/Component.tsx
+msgid "No plugin usage in this chat session yet."
+msgstr "Aucun plugin utilisé dans cette session de chat pour l'instant."
+
+#. Translators: the tab of the Console that displays the chat's configuration.
+#: src/components/Console/Component.tsx
+msgid "Config"
+msgstr "Configuration"
+
+#: src/components/Console/Component.tsx
+msgid "No config in this chat session yet."
+msgstr "Aucune configuration dans cette session de chat pour l'instant."
+
+#: src/components/Console/Component.tsx
+msgid "Console"
+msgstr "Console"
+
+#: src/components/Console/Component.tsx
+msgid "Console output"
+msgstr "Sortie de la console"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Connecting to the server log stream..."
+msgstr "Connexion au flux des journaux du serveur..."
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Streaming server logs..."
+msgstr "Diffusion des journaux du serveur..."
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Streaming server logs... There are none yet."
+msgstr "Diffusion des journaux du serveur... Il n'y en a pas encore."
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Scroll long lines"
+msgstr "Faire défiler les lignes longues"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Wrap long lines"
+msgstr "Renvoyer les lignes longues à la ligne"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Wrap lines"
+msgstr "Retour à la ligne"
+
+#. Translators: the button that opens the dialog of links to the documentation.
+#: src/components/DocsDialog/Component.tsx src/components/SmarterChat/Component.tsx
+msgid "Docs"
+msgstr "Documentation"
+
+#: src/components/DocsDialog/Component.tsx
+msgid "Close"
+msgstr "Fermer"
+
+#: src/components/DocsDialog/Component.tsx
+msgid "Technical references for building LLMClients, and the applications that host them."
+msgstr "Références techniques pour créer des LLMClients et les applications qui les hébergent."
+
+#: src/components/DocsDialog/Component.tsx
+msgid "Audience"
+msgstr "Public"
+
+#: src/components/DocsDialog/data.ts
+msgid "The chat workbench: sandbox and production modes, the Console, and the server logs."
+msgstr "L'atelier du chat : les modes bac à sable et production, la console et les journaux du serveur."
+
+#: src/components/DocsDialog/data.ts
+msgid "The LLMClient class, which is the main interface to the Smarter API."
+msgstr "La classe LLMClient, l'interface principale de l'API de Smarter."
+
+#: src/components/DocsDialog/data.ts
+msgid "How to leverage LLM tool calling with Smarter."
+msgstr "Comment tirer parti des appels d'outils du LLM avec Smarter."
+
+#: src/components/DocsDialog/data.ts
+msgid "How to create and use guardrails with the Smarter API."
+msgstr "Comment créer et utiliser des garde-fous avec l'API de Smarter."
+
+#: src/components/DocsDialog/data.ts
+msgid "How to create and use budgets with the Smarter API."
+msgstr "Comment créer et utiliser des budgets avec l'API de Smarter."
+
+#: src/components/DocsDialog/data.ts
+msgid "The npm package of this chat component, its props, and how to install it."
+msgstr "Le paquet npm de ce composant de chat, ses props et comment l'installer."
+
+#: src/components/DocsDialog/data.ts
+msgid "The REST api behind the chat: its configuration and prompt endpoints."
+msgstr "L'api REST derrière le chat : ses endpoints de configuration et de prompts."
+
+#: src/components/DocsDialog/data.ts
+msgid "How to host a Smarter chatbot in your own React application."
+msgstr "Comment héberger un chatbot Smarter dans votre propre application React."
+
+#: src/components/DocsDialog/data.ts
+msgid "What deploying an LLMClient creates in Kubernetes, and how to operate it in production."
+msgstr "Ce que le déploiement d'un LLMClient crée dans Kubernetes, et comment l'exploiter en production."
+
+#: src/components/DocsDialog/data.ts
+msgid "Prompt Engineer"
+msgstr "Ingénieur de prompts"
+
+#: src/components/DocsDialog/data.ts
+msgid "Building and testing LLMClients in the sandbox."
+msgstr "Créer et tester des LLMClients dans le bac à sable."
+
+#: src/components/DocsDialog/data.ts
+msgid "Software Engineer"
+msgstr "Ingénieur logiciel"
+
+#: src/components/DocsDialog/data.ts
+msgid "Hosting an LLMClient in your own application."
+msgstr "Héberger un LLMClient dans votre propre application."
+
+#: src/components/ErrorBoundary/Component.tsx
+msgid "Something went wrong."
+msgstr "Une erreur s'est produite."
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Message"
+msgstr "Message"
+
+#. Translators: the LLM provider and model of the chat, e.g. "openai gpt-4o-mini with 3 additional tools".
+#: src/components/SmarterChat/Component.tsx
+msgid "%(provider)s %(model)s with %(count)s additional tool"
+msgid_plural "%(provider)s %(model)s with %(count)s additional tools"
+msgstr[0] "%(provider)s %(model)s avec %(count)s outil supplémentaire"
+msgstr[1] "%(provider)s %(model)s avec %(count)s outils supplémentaires"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Assistant"
+msgstr "Assistant"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "You"
+msgstr "Vous"
+
+#. Translators: the assistant's name, and the current step of the running prompt, which is in English.
+#: src/components/SmarterChat/Component.tsx
+msgid "%(assistant)s: %(step)s"
+msgstr "%(assistant)s : %(step)s"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "%(assistant)s is typing"
+msgstr "%(assistant)s est en train d'écrire"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Smarter Chat is not available"
+msgstr "Smarter Chat n'est pas disponible"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Configuring workbench..."
+msgstr "Configuration de l'atelier..."
+
+#. Translators: the default accessible name of the button that opens the chat, and of its panel.
+#: src/components/SmarterChat/Component.tsx src/embed/EmbedApp.tsx
+msgid "Chat"
+msgstr "Chat"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Sandbox mode: Smarter's system, tool and meta data messages are displayed. Click for production mode."
+msgstr "Mode bac à sable : les messages système, d'outils et de métadonnées de Smarter sont affichés. Cliquez pour passer en mode production."
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Production mode: the conversation is displayed as its users see it. Click for sandbox mode."
+msgstr "Mode production : la conversation est affichée telle que ses utilisateurs la voient. Cliquez pour passer en mode bac à sable."
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Sandbox mode"
+msgstr "Mode bac à sable"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Production mode"
+msgstr "Mode production"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Technical references for prompt engineers and software engineers"
+msgstr "Références techniques pour les ingénieurs de prompts et les ingénieurs logiciels"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Start a new chat"
+msgstr "Démarrer un nouveau chat"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Hide the Console"
+msgstr "Masquer la console"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Show the Console"
+msgstr "Afficher la console"
+
+#: src/components/SmarterChat/Component.tsx
+msgid "Attach a file"
+msgstr "Joindre un fichier"
+
+#: src/embed/EmbedApp.tsx
+msgid "Close %(label)s"
+msgstr "Fermer %(label)s"
+
+#: src/lib/api.ts
+msgid "Unexpected response from the Smarter api (http %(status)s): %(text)s"
+msgstr "Réponse inattendue de l'api de Smarter (http %(status)s) : %(text)s"
+
+#: src/lib/api.ts
+msgid "The Smarter api returned http %(status)s %(statusText)s"
+msgstr "L'api de Smarter a renvoyé http %(status)s %(statusText)s"
+
+#: src/lib/api.ts
+msgid "The Smarter api returned an incomplete configuration."
+msgstr "L'api de Smarter a renvoyé une configuration incomplète."
+
+#: src/lib/api.ts
+msgid "The Smarter api returned an empty event stream."
+msgstr "L'api de Smarter a renvoyé un flux d'événements vide."
+
+#: src/lib/api.ts
+msgid "The Smarter api's event stream ended without a result."
+msgstr "Le flux d'événements de l'api de Smarter s'est terminé sans résultat."
+
+#: src/lib/api.ts
+msgid "The LLM reached this LLMClient's max tokens of %(tokens)s completion token, %(reasoning)s of which it spent reasoning, so its response is incomplete."
+msgid_plural "The LLM reached this LLMClient's max tokens of %(tokens)s completion tokens, %(reasoning)s of which it spent reasoning, so its response is incomplete."
+msgstr[0] "Le LLM a atteint le nombre maximal de jetons de ce LLMClient, %(tokens)s jeton de complétion, dont %(reasoning)s consacrés au raisonnement : sa réponse est donc incomplète."
+msgstr[1] "Le LLM a atteint le nombre maximal de jetons de ce LLMClient, %(tokens)s jetons de complétion, dont %(reasoning)s consacrés au raisonnement : sa réponse est donc incomplète."
+
+#: src/lib/api.ts
+msgid "The LLM reached this LLMClient's max tokens of %(tokens)s completion token, %(reasoning)s of which it spent reasoning, so its response is empty."
+msgid_plural "The LLM reached this LLMClient's max tokens of %(tokens)s completion tokens, %(reasoning)s of which it spent reasoning, so its response is empty."
+msgstr[0] "Le LLM a atteint le nombre maximal de jetons de ce LLMClient, %(tokens)s jeton de complétion, dont %(reasoning)s consacrés au raisonnement : sa réponse est donc vide."
+msgstr[1] "Le LLM a atteint le nombre maximal de jetons de ce LLMClient, %(tokens)s jetons de complétion, dont %(reasoning)s consacrés au raisonnement : sa réponse est donc vide."
+
+#: src/lib/api.ts
+msgid "The LLM reached this LLMClient's max tokens of %(tokens)s completion token, so its response is incomplete."
+msgid_plural "The LLM reached this LLMClient's max tokens of %(tokens)s completion tokens, so its response is incomplete."
+msgstr[0] "Le LLM a atteint le nombre maximal de jetons de ce LLMClient, %(tokens)s jeton de complétion : sa réponse est donc incomplète."
+msgstr[1] "Le LLM a atteint le nombre maximal de jetons de ce LLMClient, %(tokens)s jetons de complétion : sa réponse est donc incomplète."
+
+#: src/lib/api.ts
+msgid "The LLM reached this LLMClient's max tokens of %(tokens)s completion token, so its response is empty."
+msgid_plural "The LLM reached this LLMClient's max tokens of %(tokens)s completion tokens, so its response is empty."
+msgstr[0] "Le LLM a atteint le nombre maximal de jetons de ce LLMClient, %(tokens)s jeton de complétion : sa réponse est donc vide."
+msgstr[1] "Le LLM a atteint le nombre maximal de jetons de ce LLMClient, %(tokens)s jetons de complétion : sa réponse est donc vide."
+
+#: src/lib/api.ts
+msgid "The LLM reached this LLMClient's max tokens, so its response is incomplete."
+msgstr "Le LLM a atteint le nombre maximal de jetons de ce LLMClient : sa réponse est donc incomplète."
+
+#: src/lib/api.ts
+msgid "The LLM reached this LLMClient's max tokens, so its response is empty."
+msgstr "Le LLM a atteint le nombre maximal de jetons de ce LLMClient : sa réponse est donc vide."
+
+#. Translators: defaultMaxTokens is a field of the LLMClient's manifest, which is not translated.
+#: src/lib/api.ts
+msgid "Raise defaultMaxTokens in the LLMClient's manifest."
+msgstr "Augmentez defaultMaxTokens dans le manifeste du LLMClient."
+
+#: src/lib/code.ts
+msgid "Copy code"
+msgstr "Copier le code"
+
+#: src/lib/code.ts
+msgid "Copy"
+msgstr "Copier"
+
+#: src/lib/code.ts
+msgid "Copied!"
+msgstr "Copié !"
+
+#: src/lib/layout.ts
+msgid "Resize the chat and the Console"
+msgstr "Redimensionner le chat et la console"
+
+#: src/lib/logStream.ts
+msgid "The log stream disconnected. Reconnecting..."
+msgstr "Le flux des journaux s'est déconnecté. Reconnexion..."
+
+#. Translators: a button that shows the code of a diagram, instead of the diagram.
+#: src/lib/mermaid.ts
+msgctxt "button"
+msgid "Code"
+msgstr "Code"
+
+#. Translators: a button that shows the code of a diagram, instead of the diagram.
+#: src/lib/mermaid.ts
+msgid "Show the diagram's code"
+msgstr "Afficher le code du diagramme"
+
+#. Translators: a button that shows a diagram, instead of its code.
+#: src/lib/mermaid.ts
+msgctxt "button"
+msgid "Diagram"
+msgstr "Diagramme"
+
+#. Translators: a button that shows a diagram, instead of its code.
+#: src/lib/mermaid.ts
+msgid "Show the diagram"
+msgstr "Afficher le diagramme"
+
+#: src/lib/mermaid.ts
+msgid "Diagram"
+msgstr "Diagramme"
+
+#: src/lib/messages.ts
+msgid "Some example prompts to get you started:"
+msgstr "Quelques exemples de prompts pour commencer :"

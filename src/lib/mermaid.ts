@@ -20,13 +20,29 @@
 import DOMPurify from "dompurify";
 
 import { CODE_BLOCK_CLASS, COPY_BUTTON_CLASS, MERMAID_BLOCK_CLASS } from "./code";
+import { gettext, pgettext } from "./i18n";
 import { importMermaid } from "./mermaidImport";
 import "./mermaid.css";
 
 export const DIAGRAM_CLASS = "smarter-chat-mermaid-diagram";
 export const TOGGLE_BUTTON_CLASS = "smarter-chat-mermaid-toggle";
-const SHOW_CODE = { label: "Code", name: "Show the diagram's code" };
-const SHOW_DIAGRAM = { label: "Diagram", name: "Show the diagram" };
+
+interface ToggleLabels {
+  label: string;
+  name: string;
+}
+
+/** The text and the accessible name of the button that shows a diagram's code. */
+function showCodeLabels(): ToggleLabels {
+  // Translators: a button that shows the code of a diagram, instead of the diagram.
+  return { label: pgettext("button", "Code"), name: gettext("Show the diagram's code") };
+}
+
+/** The text and the accessible name of the button that shows a diagram again, instead of its code. */
+function showDiagramLabels(): ToggleLabels {
+  // Translators: a button that shows a diagram, instead of its code.
+  return { label: pgettext("button", "Diagram"), name: gettext("Show the diagram") };
+}
 
 type Mermaid = Awaited<ReturnType<typeof importMermaid>>["default"];
 
@@ -115,15 +131,16 @@ function showDiagram(block: HTMLElement, svg: string): void {
   diagram.className = DIAGRAM_CLASS;
   // a figure, rather than an img, so that mermaid's own accessible title and description are kept.
   diagram.setAttribute("role", "figure");
-  diagram.setAttribute("aria-label", "Diagram");
+  diagram.setAttribute("aria-label", gettext("Diagram"));
   diagram.innerHTML = svg;
   pre.before(diagram);
   pre.hidden = true;
   const toggle = document.createElement("button");
   toggle.type = "button";
   toggle.className = TOGGLE_BUTTON_CLASS;
-  toggle.textContent = SHOW_CODE.label;
-  toggle.setAttribute("aria-label", SHOW_CODE.name);
+  const labels = showCodeLabels();
+  toggle.textContent = labels.label;
+  toggle.setAttribute("aria-label", labels.name);
   copy.before(toggle);
 }
 
@@ -167,7 +184,8 @@ export function toggleMermaidDiagram(target: EventTarget | null): boolean {
   const showCode = pre.hidden;
   pre.hidden = !showCode;
   diagram.hidden = showCode;
-  const next = showCode ? SHOW_DIAGRAM : SHOW_CODE;
+  const next = showCode ? showDiagramLabels() : showCodeLabels();
+
   button.textContent = next.label;
   button.setAttribute("aria-label", next.name);
   return true;

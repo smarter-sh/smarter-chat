@@ -27,6 +27,7 @@
 import type { ApiMessage, ChatConfig, ChatCookies, ClientContext, Contract, LLMClientConfig } from "../types";
 import { getCookie, setCookie } from "./cookie";
 import { SenderRoleEnum } from "./enums";
+import { gettext, interpolate, ngettext } from "./i18n";
 
 const applicationJson = "application/json";
 const textEventStream = "text/event-stream";
@@ -112,7 +113,10 @@ async function getJson(response: Response): Promise<Record<string, unknown>> {
   if (!contentType.includes(applicationJson)) {
     const text = await response.text();
     throw new SmarterApiError(
-      `Unexpected response from the Smarter api (http ${response.status}): ${text.slice(0, 200)}`,
+      interpolate(gettext("Unexpected response from the Smarter api (http %(status)s): %(text)s"), {
+        status: response.status,
+        text: text.slice(0, 200),
+      }),
       response.status,
     );
   }
@@ -130,7 +134,10 @@ export function errorMessage(json: Record<string, unknown>, response: ResponseSt
     if (typeof message === "string") return message;
     if (typeof description === "string") return description;
   }
-  return `The Smarter api returned http ${response.status} ${response.statusText}`.trim();
+  return interpolate(gettext("The Smarter api returned http %(status)s %(statusText)s"), {
+    status: response.status,
+    statusText: response.statusText,
+  }).trim();
 }
 
 /**
@@ -197,7 +204,7 @@ export async function fetchConfig(apiUrl: string, cookies: ChatCookies, context:
   }
   const config = normalizeConfig(json.data);
   if (!config) {
-    throw new SmarterApiError("The Smarter api returned an incomplete configuration.", response.status);
+    throw new SmarterApiError(gettext("The Smarter api returned an incomplete configuration."), response.status);
   }
   setCookie(cookies.sessionCookie, config.session_key);
   setCookie(cookies.debugCookie, config.debug_mode);
@@ -269,7 +276,7 @@ async function readPromptEventStream(
   // assigned in a callback, which typescript's narrowing doesn't see.
   const received: { result: { status?: number; response?: Record<string, unknown> } | null } = { result: null };
   if (!response.body) {
-    throw new SmarterApiError("The Smarter api returned an empty event stream.", response.status);
+    throw new SmarterApiError(gettext("The Smarter api returned an empty event stream."), response.status);
   }
   await readEventStream(response.body, (event, data) => {
     try {
@@ -280,7 +287,7 @@ async function readPromptEventStream(
     }
   });
   if (!received.result) {
-    throw new SmarterApiError("The Smarter api's event stream ended without a result.", response.status);
+    throw new SmarterApiError(gettext("The Smarter api's event stream ended without a result."), response.status);
   }
   const { status, response: json } = received.result;
   return { json: json ?? {}, status: status ?? response.status };
@@ -305,12 +312,42 @@ export function maxTokensMessage(completion: Record<string, unknown> | null | un
   const usage = completion?.usage as CompletionUsage | undefined;
   const tokens = usage?.completion_tokens;
   const reasoning = usage?.completion_tokens_details?.reasoning_tokens;
-  const limit = tokens ? ` of ${tokens} completion tokens` : "";
-  const spent = reasoning ? `, ${reasoning} of which it spent reasoning` : "";
-  const outcome = choice.message?.content ? "so its response is incomplete" : "so its response is empty";
+  const incomplete = !!choice.message?.content;
+  let explanation: string;
+  if (tokens && reasoning) {
+    explanation = incomplete
+      ? ngettext(
+          "The LLM reached this LLMClient's max tokens of %(tokens)s completion token, %(reasoning)s of which it spent reasoning, so its response is incomplete.",
+          "The LLM reached this LLMClient's max tokens of %(tokens)s completion tokens, %(reasoning)s of which it spent reasoning, so its response is incomplete.",
+          tokens,
+        )
+      : ngettext(
+          "The LLM reached this LLMClient's max tokens of %(tokens)s completion token, %(reasoning)s of which it spent reasoning, so its response is empty.",
+          "The LLM reached this LLMClient's max tokens of %(tokens)s completion tokens, %(reasoning)s of which it spent reasoning, so its response is empty.",
+          tokens,
+        );
+  } else if (tokens) {
+    explanation = incomplete
+      ? ngettext(
+          "The LLM reached this LLMClient's max tokens of %(tokens)s completion token, so its response is incomplete.",
+          "The LLM reached this LLMClient's max tokens of %(tokens)s completion tokens, so its response is incomplete.",
+          tokens,
+        )
+      : ngettext(
+          "The LLM reached this LLMClient's max tokens of %(tokens)s completion token, so its response is empty.",
+          "The LLM reached this LLMClient's max tokens of %(tokens)s completion tokens, so its response is empty.",
+          tokens,
+        );
+  } else {
+    explanation = incomplete
+      ? gettext("The LLM reached this LLMClient's max tokens, so its response is incomplete.")
+      : gettext("The LLM reached this LLMClient's max tokens, so its response is empty.");
+  }
+  // Translators: defaultMaxTokens is a field of the LLMClient's manifest, which is not translated.
+  const advice = gettext("Raise defaultMaxTokens in the LLMClient's manifest.");
   return {
     role: SenderRoleEnum.SMARTER,
-    content: `The LLM reached this LLMClient's max tokens${limit}${spent}, ${outcome}. Raise defaultMaxTokens in the LLMClient's manifest.`,
+    content: `${interpolate(explanation, { tokens, reasoning })} ${advice}`,
   };
 }
 
