@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 
 
+## [0.12.1](https://github.com/smarter-sh/smarter-chat/compare/v0.12.0...v0.12.1) (2026-10-17)
+
+### Bug Fixes
+
+* **chat:** add keyboard navigation and a toolbar to the server logs ([a151e13](https://github.com/smarter-sh/smarter-chat/commit/a151e139b06612b37ad749902a2d3ed8cc898965))
+
 ## [0.12.0](https://github.com/smarter-sh/smarter-chat/compare/v0.11.0...v0.12.0) (2026-10-16)
 
 ### Features
