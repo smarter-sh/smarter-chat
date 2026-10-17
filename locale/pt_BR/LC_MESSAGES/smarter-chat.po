@@ -83,8 +83,80 @@ msgid "Console output"
 msgstr "Saída do console"
 
 #: src/components/Console/ServerLogs.tsx
+msgid "Top"
+msgstr "Topo"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Bottom, and follow new records"
+msgstr "Final, e acompanhar os novos registros"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Up a line"
+msgstr "Subir uma linha"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Down a line"
+msgstr "Descer uma linha"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Up a page"
+msgstr "Subir uma página"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Down a page"
+msgstr "Descer uma página"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Scroll left"
+msgstr "Rolar para a esquerda"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Scroll right"
+msgstr "Rolar para a direita"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Start of the lines"
+msgstr "Início das linhas"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "End of the longest line"
+msgstr "Fim da linha mais longa"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Wrap long lines, or scroll them"
+msgstr "Quebrar as linhas longas, ou rolá-las"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Follow new records, or stop"
+msgstr "Acompanhar os novos registros, ou parar"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Filter the lines"
+msgstr "Filtrar as linhas"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Copy the lines"
+msgstr "Copiar as linhas"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Full screen, or not"
+msgstr "Tela cheia, ou não"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Show these shortcuts, or hide them"
+msgstr "Mostrar estes atalhos, ou ocultá-los"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Leave full screen, hide the shortcuts, or clear the filter"
+msgstr "Sair da tela cheia, ocultar os atalhos, ou limpar o filtro"
+
+#: src/components/Console/ServerLogs.tsx
 msgid "Connecting to the server log stream..."
 msgstr "Conectando ao fluxo de logs do servidor..."
+
+#: src/components/Console/ServerLogs.tsx
+msgid "%(shown)s of %(total)s lines match."
+msgstr "%(shown)s de %(total)s linhas correspondem."
 
 #: src/components/Console/ServerLogs.tsx
 msgid "Streaming server logs..."
@@ -95,16 +167,68 @@ msgid "Streaming server logs... There are none yet."
 msgstr "Transmitindo os logs do servidor... Ainda não há nenhum."
 
 #: src/components/Console/ServerLogs.tsx
-msgid "Scroll long lines"
-msgstr "Rolar as linhas longas"
+msgid "Filter the server logs"
+msgstr "Filtrar os logs do servidor"
 
 #: src/components/Console/ServerLogs.tsx
-msgid "Wrap long lines"
-msgstr "Quebrar as linhas longas"
+msgid "Filter (/)"
+msgstr "Filtrar (/)"
 
 #: src/components/Console/ServerLogs.tsx
 msgid "Wrap lines"
 msgstr "Quebrar linhas"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Scroll long lines (w)"
+msgstr "Rolar as linhas longas (w)"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Wrap long lines (w)"
+msgstr "Quebrar as linhas longas (w)"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Follow"
+msgstr "Acompanhar"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Stop following new records (s)"
+msgstr "Parar de acompanhar os novos registros (s)"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Follow new records (s)"
+msgstr "Acompanhar os novos registros (s)"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Copied"
+msgstr "Copiado"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Copy the lines (c)"
+msgstr "Copiar as linhas (c)"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Full screen"
+msgstr "Tela cheia"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Leave full screen (F, Esc)"
+msgstr "Sair da tela cheia (F, Esc)"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Full screen (F)"
+msgstr "Tela cheia (F)"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Keyboard shortcuts"
+msgstr "Atalhos de teclado"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Keyboard shortcuts (?)"
+msgstr "Atalhos de teclado (?)"
+
+#: src/components/Console/ServerLogs.tsx
+msgid "Server logs"
+msgstr "Logs do servidor"
 
 #. Translators: the button that opens the dialog of links to the documentation.
 #: src/components/DocsDialog/Component.tsx src/components/SmarterChat/Component.tsx
